@@ -1,3 +1,11 @@
 CMakeFiles/
 build/
+doc/
 .idea/
+
+.gitignore
+.dockerignore
+Dockerfile
+Makefile
+README.md
+LICENSE

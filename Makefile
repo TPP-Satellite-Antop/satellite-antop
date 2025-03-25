@@ -5,8 +5,12 @@ build:
 	docker build . --rm -t satellite-antop:latest
 .PHONY: build
 
-run:
+run: build
 	docker run -it satellite-antop:latest
+.PHONY: run
+
+test: build
+	docker run -it satellite-antop:latest sh -c "cd build && ctest"
 .PHONY: run
 
 clean:

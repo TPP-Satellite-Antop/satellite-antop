@@ -14,6 +14,6 @@ WORKDIR /app
 
 COPY . .
 
-RUN cmake -S cmake -B build && cmake --build build
+RUN cmake -S . -B build && cmake --build build
 
-ENTRYPOINT ["./build/SatelliteAntop"]
+CMD ["./build/SatelliteAntop"]

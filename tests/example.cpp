@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
 
-TEST(PlaceholderTest, AlwaysPasses) {
-    SUCCEED(); // Indicates the test succeeded unconditionally
+TEST(SampleTest, BasicAssertion) {
+    EXPECT_EQ(1, 1);
 }
