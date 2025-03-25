@@ -3,6 +3,7 @@ build/
 doc/
 .idea/
 
+.github
 .gitignore
 .dockerignore
 Dockerfile
