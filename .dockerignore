@@ -1,0 +1,12 @@
+CMakeFiles/
+build/
+doc/
+.idea/
+
+.github
+.gitignore
+.dockerignore
+Dockerfile
+Makefile
+README.md
+LICENSE
