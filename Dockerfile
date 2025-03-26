@@ -8,7 +8,9 @@ RUN apk update && \
         make \
         gtest \
         libtool \
-        musl-dev
+        musl-dev \
+        git \
+        doxygen
 
 WORKDIR /app
 
