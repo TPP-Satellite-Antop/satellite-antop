@@ -1,6 +1,5 @@
 cmake_policy(SET CMP0135 NEW)
 
-include(FetchContent)
 include(GoogleTest)
 
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)

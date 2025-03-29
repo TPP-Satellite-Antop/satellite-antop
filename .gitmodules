@@ -1,0 +1,3 @@
+[submodule "lib/h3"]
+	path = lib/h3
+	url = https://github.com/uber/h3.git
