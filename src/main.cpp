@@ -2,9 +2,10 @@
 #include <iomanip>
 
 extern "C" {
-    #include "../lib/h3/src/h3lib/include/coordijk.h"
+ #include "constants.h"
 }
 
 int main() {
+    std::cout << NUM_ICOSA_FACES << std::endl;
     return 0;
 }
