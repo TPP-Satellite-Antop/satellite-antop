@@ -7,8 +7,8 @@ set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(googletest URL https://github.com/google/googletest/archive/refs/heads/main.zip)
 FetchContent_MakeAvailable(googletest)
 
-add_executable(SatelliteAntopTest example.cpp)
+add_executable(SatelliteAntopTest example.cpp address.cpp)
 
-target_link_libraries(SatelliteAntopTest PRIVATE GTest::gtest_main)
+target_link_libraries(SatelliteAntopTest PRIVATE SatelliteAntop GTest::gtest_main)
 
 gtest_discover_tests(SatelliteAntopTest)

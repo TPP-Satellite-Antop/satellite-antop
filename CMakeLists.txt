@@ -11,8 +11,8 @@ FetchContent_MakeAvailable(h3)
 
 enable_testing()
 
-add_executable(SatelliteAntop src/main.cpp src/address.cpp)
+add_library(SatelliteAntop src/main.cpp src/address.cpp)
 add_subdirectory(tests)
 
-target_include_directories(SatelliteAntop PRIVATE ${h3_SOURCE_DIR}/src)
+target_include_directories(SatelliteAntop PUBLIC ${h3_SOURCE_DIR}/src)
 target_link_libraries(SatelliteAntop PUBLIC h3)

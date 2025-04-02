@@ -23,14 +23,15 @@ typedef enum {
 } DirectionValue;
 
 class Address {
-    std::vector<uint8_t> data;
+    std::vector<uint8_t> _data;
     size_t size = 0;
     size_t len = 0;
 
 public:
     Address();
 
-    void push(CoordIJK coord);
+    void push(const CoordIJK *coord);
+    std::vector<uint8_t> data();
 };
 
 

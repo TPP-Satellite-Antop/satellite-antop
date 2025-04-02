@@ -1,22 +1,24 @@
 #include "address.h"
 
-Address::Address() {
-
-}
+Address::Address() = default;
 
 void Address::push(const CoordIJK *coord) {
-    uint8_t direction = _unitIjkToDigit(coord);
+    const uint8_t direction = _unitIjkToDigit(coord);
     if (direction >= INVALID_DIGIT) {
         return;
     }
 
     if (size % 2 == 0) {
-        data.push_back(direction);
+        _data.push_back(direction);
         len++;
     } else {
-        data[len - 1] += direction << 3;
+        _data[len - 1] += direction << 3;
     }
 
     size++;
+}
+
+std::vector<uint8_t> Address::data() {
+    return _data;
 }
 
