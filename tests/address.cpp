@@ -6,18 +6,24 @@ extern "C" {
 
 TEST(AddressTest, PushOneCoordToEmptyAddress) {
     Address address;
-    const CoordIJK coord{1, 1, 0};
+    constexpr CoordIJK coord{1, 1, 0};
 
     address.push(&coord);
 
     ASSERT_EQ(address.data(), std::vector<uint8_t>{IJ_AXES_DIGIT});
 }
 
-TEST(AddressTest, PushManyCoordToEmptyAddress) {
+TEST(AddressTest, PushSomeCoordToEmptyAddress) {
     Address address;
-    const CoordIJK coord{1, 1, 0};
+    constexpr CoordIJK coord1{1, 1, 0};
+    constexpr CoordIJK coord2{0, 1, 0};
+    constexpr CoordIJK coord3{1, 1, 0};
 
-    address.push(&coord);
+    address.push(&coord1);
+    address.push(&coord2);
+    address.push(&coord3);
 
-    ASSERT_EQ(address.data(), std::vector<uint8_t>{IJ_AXES_DIGIT});
+    const auto exp = std::vector<uint8_t>{IJ_AXES_DIGIT + (J_AXES_DIGIT << 3), IJ_AXES_DIGIT};
+
+    ASSERT_EQ(address.data(), exp);
 }

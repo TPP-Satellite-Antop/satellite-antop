@@ -31,6 +31,7 @@ public:
     Address();
 
     void push(const CoordIJK *coord);
+
     std::vector<uint8_t> data();
 };
 
