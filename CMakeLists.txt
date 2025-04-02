@@ -4,15 +4,31 @@ project(SatelliteAntop)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(LIBRARY_NAME "SatelliteAntopLib")
+set(EXECUTABLE_NAME "SatelliteAntop")
+
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
 include(FetchContent)
+
+option(ENABLE_TESTING "Enable a Unit Testing Build" ON)
+if(ENABLE_TESTING)
+    FetchContent_Declare(
+            googletest
+            URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+    )
+    FetchContent_MakeAvailable(googletest)
+    include(CTest)
+    enable_testing()
+    add_subdirectory(tests)
+endif ()
+
 FetchContent_Declare(h3 GIT_REPOSITORY https://github.com/uber/h3.git GIT_TAG v4.2.1 GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(h3)
 
-enable_testing()
+add_library(${LIBRARY_NAME} src/address.cpp)
+target_include_directories(${LIBRARY_NAME} PUBLIC ${h3_SOURCE_DIR}/src)
+target_link_libraries(${LIBRARY_NAME} PUBLIC h3)
 
-add_library(SatelliteAntop src/main.cpp src/address.cpp)
-add_subdirectory(tests)
-
-target_include_directories(SatelliteAntop PUBLIC ${h3_SOURCE_DIR}/src)
-target_link_libraries(SatelliteAntop PUBLIC h3)
+add_executable(${EXECUTABLE_NAME} src/main.cpp)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME})

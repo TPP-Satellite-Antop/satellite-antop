@@ -1,14 +1,12 @@
-cmake_policy(SET CMP0135 NEW)
-
 include(GoogleTest)
 
-set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+set(TEST_MAIN "SatelliteAntopTest")
+set(TEST_SOURCES "example.cpp")
+set(TEST_INCLUDES "./")
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE) # config for Windows
 
-FetchContent_Declare(googletest URL https://github.com/google/googletest/archive/refs/heads/main.zip)
-FetchContent_MakeAvailable(googletest)
+add_executable(${TEST_MAIN} ${TEST_SOURCES})
+target_include_directories(${TEST_MAIN} PUBLIC ${TEST_INCLUDES})
+target_link_libraries(${TEST_MAIN} PUBLIC ${LIBRARY_NAME} GTest::gtest_main)
 
-add_executable(SatelliteAntopTest example.cpp address.cpp)
-
-target_link_libraries(SatelliteAntopTest PRIVATE SatelliteAntop GTest::gtest_main)
-
-gtest_discover_tests(SatelliteAntopTest)
+gtest_discover_tests(${TEST_MAIN})
