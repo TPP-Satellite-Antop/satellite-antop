@@ -4,8 +4,9 @@ project(SatelliteAntop)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(LIBRARY_NAME "SatelliteAntopLib")
-set(EXECUTABLE_NAME "SatelliteAntop")
+
+set(LIBRARY_NAME SatelliteAntopLib)
+set(EXECUTABLE_NAME SatelliteAntop)
 
 include(FetchContent)
 
@@ -26,4 +27,4 @@ target_include_directories(${LIBRARY_NAME} PUBLIC ${h3_SOURCE_DIR}/src)
 target_link_libraries(${LIBRARY_NAME} PUBLIC h3)
 
 add_executable(${EXECUTABLE_NAME} src/main.cpp)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME})
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC ${LIBRARY_NAME})
