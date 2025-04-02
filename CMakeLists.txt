@@ -7,16 +7,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(LIBRARY_NAME "SatelliteAntopLib")
 set(EXECUTABLE_NAME "SatelliteAntop")
 
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
-
 include(FetchContent)
 
 option(ENABLE_TESTING "Enable a Unit Testing Build" ON)
 if(ENABLE_TESTING)
-    FetchContent_Declare(
-            googletest
-            URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-    )
+    FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG v1.16.0 GIT_SHALLOW TRUE)
     FetchContent_MakeAvailable(googletest)
     include(CTest)
     enable_testing()

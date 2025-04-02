@@ -1,4 +1,3 @@
-/*
 #include "address.h"
 
 Address::Address() = default;
@@ -18,7 +17,6 @@ void Address::push(const CoordIJK *coord) {
 
     size++;
 }
-*/
 
 std::vector<uint8_t> Address::data() {
     return _data;
