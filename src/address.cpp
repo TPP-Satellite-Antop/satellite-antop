@@ -1,3 +1,4 @@
+/*
 #include "address.h"
 
 Address::Address() {
@@ -19,4 +20,5 @@ void Address::push(const CoordIJK *coord) {
 
     size++;
 }
+*/
 

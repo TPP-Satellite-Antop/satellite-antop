@@ -12,3 +12,13 @@ Run the image
 ```sh
 docker run satellite-antop
 ```
+
+## Running tests locally
+```sh
+mkdir build
+cd build
+cmake ..
+make
+ctest
+```
+
