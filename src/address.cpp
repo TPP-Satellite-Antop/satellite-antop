@@ -1,6 +1,15 @@
 #include "address.h"
 
-Address::Address() = default;
+Address::Address(const bool prime)
+    : prime(prime) {}
+
+Address Address::copy() const {
+    Address addr(this->prime);
+    addr._data = this->_data;
+    addr.size = this->size;
+    addr.len = this->len;
+    return addr;
+}
 
 void Address::push(const CoordIJK *coord) {
     const uint8_t direction = _unitIjkToDigit(coord);
