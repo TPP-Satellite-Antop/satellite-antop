@@ -30,4 +30,3 @@ void Address::push(const CoordIJK *coord) {
 std::vector<uint8_t> Address::data() {
     return _data;
 }
-
