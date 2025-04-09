@@ -27,5 +27,7 @@ add_library(${LIBRARY_NAME} src/address.cpp)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_INCLUDE_DIR} ${h3_SOURCE_DIR}/src)
 target_link_libraries(${LIBRARY_NAME} PUBLIC h3)
 
-add_executable(${EXECUTABLE_NAME} src/main.cpp)
+add_executable(${EXECUTABLE_NAME} src/main.cpp
+        src/bimap.cpp
+        src/bimap.h)
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC ${LIBRARY_NAME})

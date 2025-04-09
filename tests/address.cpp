@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "address.h"
+
 extern "C" {
     #include "h3lib/include/coordijk.h"
 }

@@ -1,5 +1,7 @@
 #include "address.h"
 
+Address::Address() = default;
+
 Address::Address(const bool prime)
     : prime(prime) {}
 

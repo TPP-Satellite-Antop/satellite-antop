@@ -2,21 +2,39 @@
 
 #include "antop.h"
 #include "address.h"
+#include "addrIdxBiMap.h"
 
 void init(LatLng ref, int res) {
-    std::map<H3Index, Address> allocdIdx;
-    std::map<std::vector<uint8_t>, H3Index> allocdAddr;
+    AddrIdxBiMap allocd;
 
     H3Index idx;
     if (latLngToCell(&ref, res, &idx) != 0) {
-        std::cerr << "Error converting coordinate to H3 index!" << std::endl;
+        std::cerr << "Error converting coordinate to H3 index." << std::endl;
         return;
     }
 
     Address addr(false);
 
-    allocdIdx.insert_or_assign(idx, addr);
-    allocdAddr.insert_or_assign(addr.data(), idx);
+    allocd.insert(idx, addr);
+
+    H3Index* out;
+    if gridDisk(idx, res, out) != 0 {
+        std::cerr << "Error finding index " << idx << " neigbhours." << std::endl;
+        return;
+    }
+
+    int l = out.size();
+    for (int i = 0; i < l; i++) {
+        H3Index h3 = out[i];
+        if (h3 == 0) {
+            continue;
+        }
+
+        addr = addr(false);
+        allocd.insert(h3, addr);
+    }
+
+
 
     
 

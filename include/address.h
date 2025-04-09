@@ -11,9 +11,10 @@ class Address {
     std::vector<uint8_t> _data;
     size_t size = 0;
     size_t len = 0;
-    bool prime;
+    bool prime{};
 
 public:
+    Address();
     explicit Address(bool prime);
 
     [[nodiscard]] Address copy() const;
