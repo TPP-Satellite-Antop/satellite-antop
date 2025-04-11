@@ -32,3 +32,14 @@ void Address::push(const CoordIJK *coord) {
 std::vector<uint8_t> Address::data() {
     return _data;
 }
+
+bool Address::operator<(const Address& other) const { //TODO check
+    if (prime != other.prime)
+        return prime < other.prime;
+    if (size != other.size)
+        return size < other.size;
+    if (len != other.len)
+        return len < other.len;
+    return _data < other._data;  // std::vector already defines operator<
+}
+
