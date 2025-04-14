@@ -9,7 +9,7 @@
 #define PENTAGON_VALUE 0
 
 void initNeighbors(AddrIdxBiMap allocd, H3Index idx, int res) {
-  	H3Index* out = nullptr;
+  	H3Index out[MAX_NEIGHBORS];
   	if (gridDisk(idx, res, out) != E_SUCCESS) {
    		std::cerr << Errors::getNeighborsSearchError(idx) << std::endl;
     	return;
