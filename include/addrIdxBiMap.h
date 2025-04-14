@@ -12,7 +12,6 @@ public:
     AddrIdxBiMap();
     void insert(const H3Index& idx, const Address& addr);
     H3Index retrieveIdx(const Address &addr);
-
     Address retrieveAddr(const H3Index &idx);
 
 private:

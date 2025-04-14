@@ -17,7 +17,6 @@ TEST(AddrIdxBiMapTest, InsertAndRetrieve) {
     auto retrievedIdx = bimap.retrieveIdx(addr);
     ASSERT_EQ(retrievedIdx, idx);
 
-    // Check if the address can be retrieved from the index
     auto retrievedAddr = bimap.retrieveAddr(idx);
     ASSERT_EQ(retrievedAddr.data(), addr.data());
 }

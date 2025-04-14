@@ -42,3 +42,23 @@ TEST(AddressTest, PushSomeCoordToEmptyAddress) {
 
     ASSERT_EQ(address.data(), exp);
 }
+
+TEST(AddrIdxBiMapTest, InitNeighborsWithGridDisk) {
+    H3Index idx = 0x807dfffffffffff;
+    int res = 0;
+
+    H3Index out[6];
+    if (gridDisk(idx, res, out) != E_SUCCESS) {
+        FAIL() << "gridDisk failed!";
+    }
+
+    bool foundValidNeighbor = false;
+    for (int i = 0; i < 6; i++) {
+        if (out[i] != 0) {  // Non-zero values indicate valid neighbors (no pentagons)
+            foundValidNeighbor = true;
+            break;
+        }
+    }
+
+    ASSERT_TRUE(foundValidNeighbor);
+}

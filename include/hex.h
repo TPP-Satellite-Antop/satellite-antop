@@ -4,11 +4,14 @@
 #include "address.h"
 
 class Hex {
-    Address baseAddr;
-    Address primeAddr;
 
-public:
-    Hex();
+    private:
+        Address baseAddr;
+        Address primeAddr;
+
+    public:
+        Hex();
+
 };
 
 #endif //HEX_H
