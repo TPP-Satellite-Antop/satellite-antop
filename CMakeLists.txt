@@ -8,8 +8,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(LIBRARY_NAME SatelliteAntopLib)
 set(EXECUTABLE_NAME SatelliteAntop)
 set(PROJECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
 include(FetchContent)
+include(LTO)
 
 option(ENABLE_TESTING "Enable a Unit Testing Build" ON)
 if(ENABLE_TESTING)
@@ -29,3 +31,8 @@ target_link_libraries(${LIBRARY_NAME} PUBLIC h3)
 
 add_executable(${EXECUTABLE_NAME} src/main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC ${LIBRARY_NAME})
+
+target_lto(${EXECUTABLE_NAME})
+target_lto(${LIBRARY_NAME})
+
+
