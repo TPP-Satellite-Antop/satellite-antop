@@ -1,21 +1,27 @@
-FROM alpine:3.21.2 AS builder
+FROM debian:trixie-slim AS builder
 
-RUN apk update && \
-    apk add --no-cache \
+RUN apt-get update && \
+    apt-get install -y \
         gcc \
         g++ \
         cmake \
         make \
-        gtest \
         libtool \
-        musl-dev \
         git \
-        doxygen
+        doxygen \
+        wget && \
+    # Download and install the latest CMake version
+    wget https://github.com/Kitware/CMake/releases/download/v3.21.1/cmake-3.21.1-linux-x86_64.tar.gz && \
+    tar -xzvf cmake-3.21.1-linux-x86_64.tar.gz && \
+    mv cmake-3.21.1-linux-x86_64 /opt/cmake && \
+    ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake && \
+    rm -rf cmake-3.21.1-linux-x86_64.tar.gz
 
 WORKDIR /app
 
 COPY . .
 
+# Build the project using CMake
 RUN cmake -S . -B build && cmake --build build
 
 CMD ["./build/SatelliteAntop"]
