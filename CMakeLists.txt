@@ -14,6 +14,7 @@ include(FetchContent)
 include(LTO)
 include(Sanitizer)
 add_sanitizer_flags()
+include(Warnings)
 
 option(ENABLE_TESTING "Enable a Unit Testing Build" ON)
 if(ENABLE_TESTING)
@@ -36,5 +37,8 @@ target_link_libraries(${EXECUTABLE_NAME} PUBLIC ${LIBRARY_NAME})
 
 target_lto(${EXECUTABLE_NAME})
 target_lto(${LIBRARY_NAME})
+target_set_warnings(${EXECUTABLE_NAME})
+target_set_warnings(${LIBRARY_NAME})
+
 
 
