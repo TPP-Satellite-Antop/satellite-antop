@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 
 include(GoogleTest)
+include(Sanitizer)
+add_sanitizer_flags()
 
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(TEST_MAIN SatelliteAntopTest)
