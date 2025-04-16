@@ -12,6 +12,8 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
 include(FetchContent)
 include(LTO)
+include(Sanitizer)
+add_sanitizer_flags()
 
 option(ENABLE_TESTING "Enable a Unit Testing Build" ON)
 if(ENABLE_TESTING)
