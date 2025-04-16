@@ -1,6 +1,8 @@
 #include <iostream>
 #include <iomanip>
 
+#include "antop.h"
+
 extern "C" {
     #include "h3lib/include/h3Index.h"
     #include "h3lib/include/localij.h"
@@ -21,7 +23,7 @@ int main() {
     LatLng coord = {0, 0};  // San Francisco
     int resolution = 0;  // H3 resolution (0-15, 0 coarsest, 15 finest)
 
-    H3Index cell;
+    /*H3Index cell;
     // Call H3 function: latLngToCell
     if (latLngToCell(&coord, resolution, &cell) != 0) {
         std::cerr << "Error converting coordinate to H3 index!" << std::endl;
@@ -45,7 +47,9 @@ int main() {
     aux_func(0x805ffffffffffff, 0x8081fffffffffff);
     aux_func(0x808bfffffffffff, 0x8081fffffffffff);
     aux_func(0x80a9fffffffffff, 0x8081fffffffffff);
-    aux_func(0x80a5fffffffffff, 0x8081fffffffffff);
+    aux_func(0x80a5fffffffffff, 0x8081fffffffffff);*/
+
+    init(coord, resolution);
 
 
     return 0;

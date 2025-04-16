@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(SatelliteAntop)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(LIBRARY_NAME SatelliteAntopLib)
@@ -23,7 +23,7 @@ endif ()
 FetchContent_Declare(h3 GIT_REPOSITORY https://github.com/uber/h3.git GIT_TAG v4.2.1 GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(h3)
 
-add_library(${LIBRARY_NAME} src/address.cpp src/addrIdxBiMap.cpp)
+add_library(${LIBRARY_NAME} src/address.cpp src/addrIdxBiMap.cpp src/antop.cpp)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_INCLUDE_DIR} ${h3_SOURCE_DIR}/src)
 target_link_libraries(${LIBRARY_NAME} PUBLIC h3)
 

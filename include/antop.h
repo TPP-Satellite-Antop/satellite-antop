@@ -11,4 +11,6 @@ public:
     Antop();
 };
 
+void init(LatLng ref, int res);
+
 #endif //ANTOP_H
