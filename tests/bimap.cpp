@@ -10,8 +10,8 @@ TEST(AddrIdxBiMapTest, InsertAndRetrieve) {
     AddrIdxBiMap bimap;
     H3Index idx = 0x807dfffffffffff;
     Address addr(false);
-    addr.push(new CoordIJK{1, 1, 0});
-
+    CoordIJK coord{1, 1, 0};
+    addr.push(&coord);
     bimap.insert(idx, addr);
 
     auto retrievedIdx = bimap.retrieveIdx(addr);
