@@ -14,9 +14,9 @@ TEST(AddrIdxBiMapTest, InsertAndRetrieve) {
     addr.push(&coord);
     bimap.insert(idx, addr);
 
-    auto retrievedIdx = bimap.retrieveIdx(addr);
+    auto retrievedIdx = bimap.getIdx(addr);
     ASSERT_EQ(retrievedIdx, idx);
 
-    auto retrievedAddr = bimap.retrieveAddr(idx);
+    auto retrievedAddr = bimap.getAddr(idx);
     ASSERT_EQ(retrievedAddr.data(), addr.data());
 }

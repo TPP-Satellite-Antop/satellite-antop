@@ -25,38 +25,45 @@ std::ostream& operator<<(std::ostream& os, const std::vector<uint8_t>& vec) {
     return os;
 }
 
-void initNeighbors(AddrIdxBiMap allocd, H3Index idx, Address addr, int res) {
+void initNeighbors(AddrIdxBiMap allocd, const AddrIdx &origin) {
   	H3Index out[MAX_NEIGHBORS];
-  	if (gridDisk(idx, 1, out) != E_SUCCESS) {
-   		std::cerr << Errors::getNeighborsSearchError(idx) << std::endl;
+  	if (gridDisk(origin.idx, 1, out) != E_SUCCESS) {
+   		std::cerr << Errors::getNeighborsSearchError(origin.idx) << std::endl;
     	return;
   	}
 
-    std::cout << "Origin: " << idx << std::endl;
+    std::vector<AddrIdx> addrIdxArray;
 
-
-    for (ssize_t i = 0; i < MAX_NEIGHBORS; i++) {
-        H3Index h3 = out[i];
-        if (h3 == PENTAGON_VALUE) {
+    for (const unsigned long h3 : out) {
+        // Invalid index or hex already mapped with an address.
+        if (h3 == PENTAGON_VALUE || allocd.tryGetAddr(h3)) {
             continue;
         }
 
         CoordIJK output;
-        if (const H3Error e = cellToLocalIjk(idx, h3, &output); e != 0) {
+        if (const H3Error e = cellToLocalIjk(origin.idx, h3, &output); e != 0) {
             std::cerr << "Error converting coordinate to H3 index: " << e << std::endl;
             continue;
         }
 
-        Address newAddr = addr.copy();
+        Address newAddr = origin.addr.copy();
         newAddr.push(&output);
 
-        std::cout << newAddr.data() << std::endl;
+        // Address already allocated.
+        if (allocd.tryGetIdx(newAddr)) {
+            continue;
+        }
 
-        // allocd.insert(h3, Address(false));
+        allocd.insert(h3, newAddr);
+        addrIdxArray.push_back({h3, newAddr});
+    }
+
+    for (const AddrIdx& val : addrIdxArray) {
+        initNeighbors(allocd, val);
     }
 }
 
-void init(LatLng ref, int res) {
+void init(const LatLng ref, const int res) {
     AddrIdxBiMap allocd;
 
     H3Index idx;
@@ -67,6 +74,6 @@ void init(LatLng ref, int res) {
 
     const Address addr(false);
     allocd.insert(idx, addr);
-    initNeighbors(allocd, idx, addr, res);
+    initNeighbors(allocd, {idx, addr});
 }
 
