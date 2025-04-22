@@ -9,7 +9,7 @@ extern "C" {
     #include "h3lib/include/localij.h"
 }
 
-#define MAX_NEIGHBORS 6
+#define MAX_NEIGHBORS 7 //including itself
 #define PENTAGON_VALUE 0
 
 
@@ -35,6 +35,9 @@ void initNeighbors(AddrIdxBiMap allocd, const AddrIdx &origin) {
     std::vector<AddrIdx> addrIdxArray;
 
     for (const unsigned long h3 : out) {
+        if (h3 == origin.idx) {
+            continue;
+        }
         // Invalid index or hex already mapped with an address.
         if (h3 == PENTAGON_VALUE || allocd.tryGetAddr(h3)) {
             continue;
@@ -61,6 +64,8 @@ void initNeighbors(AddrIdxBiMap allocd, const AddrIdx &origin) {
     for (const AddrIdx& val : addrIdxArray) {
         initNeighbors(allocd, val);
     }
+
+    std::cout <<"Finished a grid" << std::endl;
 }
 
 void init(const LatLng ref, const int res) {

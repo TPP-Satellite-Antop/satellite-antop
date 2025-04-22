@@ -10,7 +10,7 @@ docker build -t satellite-antop .
 
 Run the image
 ```sh
-docker run satellite-antop
+docker run satellite-antop:latest
 ```
 
 ## Running tests locally

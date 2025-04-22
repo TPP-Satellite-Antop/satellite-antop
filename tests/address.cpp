@@ -43,7 +43,7 @@ TEST(AddressTest, PushSomeCoordToEmptyAddress) {
     ASSERT_EQ(address.data(), exp);
 }
 
-TEST(AddrIdxBiMapTest, InitNeighborsWithGridDisk) {
+TEST(AddressTest, InitNeighborsWithGridDisk) {
     H3Index idx = 0x807dfffffffffff;
     int res = 0;
 
@@ -53,8 +53,8 @@ TEST(AddrIdxBiMapTest, InitNeighborsWithGridDisk) {
     }
 
     bool foundValidNeighbor = false;
-    for (int i = 0; i < 6; i++) {
-        if (out[i] != 0) {  // Non-zero values indicate valid neighbors (no pentagons)
+    for (const unsigned long i : out) {
+        if (i != 0) {  // Non-zero values indicate valid neighbors (no pentagons)
             foundValidNeighbor = true;
             break;
         }
