@@ -16,10 +16,10 @@ class AddrIdxBiMap {
 
 public:
     AddrIdxBiMap();
-    void insert(const H3Index& idx, const Address& addr);
+    void insert(const AddrIdx& addrIdx);
     H3Index getIdx(const Address &addr);
 
-    std::optional<H3Index> tryGetIdx(const Address &addr) const;
+    [[nodiscard]] std::optional<H3Index> tryGetIdx(const Address &addr) const;
 
     Address getAddr(const H3Index &idx);
     [[nodiscard]] std::optional<Address> tryGetAddr(const H3Index &idx) const;

@@ -8,15 +8,36 @@ extern "C" {
 
 TEST(AddrIdxBiMapTest, InsertAndRetrieve) {
     AddrIdxBiMap bimap;
-    H3Index idx = 0x807dfffffffffff;
+    constexpr H3Index idx = 0x807dfffffffffff;
     Address addr(false);
-    CoordIJK coord{1, 1, 0};
+    constexpr CoordIJK coord{1, 1, 0};
     addr.push(&coord);
-    bimap.insert(idx, addr);
+    bimap.insert({idx, addr});
 
-    auto retrievedIdx = bimap.getIdx(addr);
-    ASSERT_EQ(retrievedIdx, idx);
+    ASSERT_EQ(bimap.getIdx(addr), idx);
+    ASSERT_EQ(bimap.getAddr(idx).data(), addr.data());
+}
 
-    auto retrievedAddr = bimap.getAddr(idx);
-    ASSERT_EQ(retrievedAddr.data(), addr.data());
+TEST(AddrIdxBiMapTest, TryRetrieve) {
+    AddrIdxBiMap bimap;
+    constexpr H3Index idx = 0x807dfffffffffff;
+    Address addr(false);
+    constexpr CoordIJK coord{1, 1, 0};
+    addr.push(&coord);
+    bimap.insert({idx, addr});
+
+    const auto optIdx = bimap.tryGetIdx(addr);
+    auto optAddr = bimap.tryGetAddr(idx);
+
+    ASSERT_TRUE(optIdx.has_value());
+    ASSERT_TRUE(optAddr.has_value());
+    ASSERT_EQ(optIdx.value(), idx);
+    ASSERT_EQ(optAddr.value().data(), addr.data());
+}
+
+TEST(AddrIdxBiMapTest, EmptyTryRetrieve) {
+    const AddrIdxBiMap bimap;
+
+    ASSERT_FALSE(bimap.tryGetIdx(Address(false)).has_value());
+    ASSERT_FALSE(bimap.tryGetAddr(0x807dfffffffffff).has_value());
 }

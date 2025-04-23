@@ -13,18 +13,6 @@ extern "C" {
 #define PENTAGON_VALUE 0
 
 
-std::ostream& operator<<(std::ostream& os, const std::vector<uint8_t>& vec) {
-    os << "[";
-    for (size_t i = 0; i < vec.size(); ++i) {
-        os << static_cast<int>(vec[i]);
-        if (i < vec.size() - 1) {
-            os << ", ";
-        }
-    }
-    os << "]";
-    return os;
-}
-
 void initNeighbors(AddrIdxBiMap allocd, const AddrIdx &origin) {
   	H3Index out[MAX_NEIGHBORS];
   	if (gridDisk(origin.idx, 1, out) != E_SUCCESS) {
@@ -35,11 +23,8 @@ void initNeighbors(AddrIdxBiMap allocd, const AddrIdx &origin) {
     std::vector<AddrIdx> addrIdxArray;
 
     for (const unsigned long h3 : out) {
-        if (h3 == origin.idx) {
-            continue;
-        }
         // Invalid index or hex already mapped with an address.
-        if (h3 == PENTAGON_VALUE || allocd.tryGetAddr(h3)) {
+        if (h3 == PENTAGON_VALUE || h3 == origin.idx || allocd.tryGetAddr(h3).has_value()) {
             continue;
         }
 
@@ -53,19 +38,19 @@ void initNeighbors(AddrIdxBiMap allocd, const AddrIdx &origin) {
         newAddr.push(&output);
 
         // Address already allocated.
-        if (allocd.tryGetIdx(newAddr)) {
+        if (allocd.tryGetIdx(newAddr).has_value()) {
             continue;
         }
 
-        allocd.insert(h3, newAddr);
+        std::cout << "Mapping Idx: " << h3 << std::endl;
+
+        allocd.insert({h3, newAddr});
         addrIdxArray.push_back({h3, newAddr});
     }
 
     for (const AddrIdx& val : addrIdxArray) {
         initNeighbors(allocd, val);
     }
-
-    std::cout <<"Finished a grid" << std::endl;
 }
 
 void init(const LatLng ref, const int res) {
@@ -78,7 +63,7 @@ void init(const LatLng ref, const int res) {
     }
 
     const Address addr(false);
-    allocd.insert(idx, addr);
+    allocd.insert({idx, addr});
     initNeighbors(allocd, {idx, addr});
 }
 

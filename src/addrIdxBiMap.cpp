@@ -5,9 +5,9 @@
 
 AddrIdxBiMap::AddrIdxBiMap() = default;
 
-void AddrIdxBiMap::insert(const H3Index& idx, const Address& addr) {
-    indexToAddress.insert_or_assign(idx, addr);
-    addressToIndex.insert_or_assign(addr, idx);
+void AddrIdxBiMap::insert(const AddrIdx& addrIdx) {
+    indexToAddress.insert_or_assign(addrIdx.idx, addrIdx.addr);
+    addressToIndex.insert_or_assign(addrIdx.addr, addrIdx.idx);
 }
 
 H3Index AddrIdxBiMap::getIdx(const Address& addr) {
