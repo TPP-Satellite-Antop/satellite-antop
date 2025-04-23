@@ -12,8 +12,7 @@ extern "C" {
 #define MAX_NEIGHBORS 7 //including itself
 #define PENTAGON_VALUE 0
 
-
-void initNeighbors(AddrIdxBiMap allocd, const AddrIdx &origin) {
+void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx &origin) {
   	H3Index out[MAX_NEIGHBORS];
   	if (gridDisk(origin.idx, 1, out) != E_SUCCESS) {
    		std::cerr << Errors::getNeighborsSearchError(origin.idx) << std::endl;
@@ -41,8 +40,6 @@ void initNeighbors(AddrIdxBiMap allocd, const AddrIdx &origin) {
         if (allocd.tryGetIdx(newAddr).has_value()) {
             continue;
         }
-
-        std::cout << "Mapping Idx: " << h3 << std::endl;
 
         allocd.insert({h3, newAddr});
         addrIdxArray.push_back({h3, newAddr});
