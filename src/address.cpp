@@ -65,7 +65,7 @@ bool Address::operator==(const Address& other) const {
         longest = this->copy();
     }
 
-    for (size_t i = 0; i < size; i++) {
+    for (size_t i = 0; i < shortestLen; i++) {
         if ((i % 2 == 1 && (_data[i] & RIGHT_MASK) != (other._data[i] & RIGHT_MASK)) ||
             (i % 2 == 0 && (_data[i] & LEFT_MASK) != (other._data[i] & LEFT_MASK))) {
             std::cout << "First return false: " << i << std::endl;
