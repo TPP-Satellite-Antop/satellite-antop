@@ -17,7 +17,6 @@ TEST(AddressTest, DeepCopyAddress) {
     ASSERT_NE(address1.data(), address2.data());
     ASSERT_EQ(address1.data(), std::vector<uint8_t>{IJ_AXES_DIGIT});
     ASSERT_EQ(address2.data(), std::vector<uint8_t>{IJ_AXES_DIGIT + (IJ_AXES_DIGIT << 3)});
-
 }
 
 TEST(AddressTest, PushOneCoordToEmptyAddress) {
@@ -45,10 +44,9 @@ TEST(AddressTest, PushSomeCoordToEmptyAddress) {
 
 TEST(AddressTest, InitNeighborsWithGridDisk) {
     H3Index idx = 0x807dfffffffffff;
-    int res = 0;
 
     H3Index out[6];
-    if (gridDisk(idx, res, out) != E_SUCCESS) {
+    if (constexpr int res = 0; gridDisk(idx, res, out) != E_SUCCESS) {
         FAIL() << "gridDisk failed!";
     }
 

@@ -9,12 +9,15 @@ extern "C" {
     #include "h3lib/include/localij.h"
 }
 
-#define MAX_NEIGHBORS 7 //including itself
+#define MAX_NEIGHBORS 7
 #define PENTAGON_VALUE 0
+#define DISTANCE 1
+
+int count = 0;
 
 void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx &origin) {
-  	H3Index out[MAX_NEIGHBORS];
-  	if (gridDisk(origin.idx, 1, out) != E_SUCCESS) {
+    H3Index out[MAX_NEIGHBORS];
+  	if (gridDisk(origin.idx, DISTANCE, out) != E_SUCCESS) {
    		std::cerr << Errors::getNeighborsSearchError(origin.idx) << std::endl;
     	return;
   	}
@@ -38,11 +41,13 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx &origin) {
 
         // Address already allocated.
         if (allocd.tryGetIdx(newAddr).has_value()) {
+            std::cout << "Addressed allocd for: " << h3 << std::endl;
             continue;
         }
 
         allocd.insert({h3, newAddr});
         addrIdxArray.push_back({h3, newAddr});
+        count += 1;
     }
 
     for (const AddrIdx& val : addrIdxArray) {
@@ -59,8 +64,10 @@ void init(const LatLng ref, const int res) {
         return;
     }
 
+    count += 1;
     const Address addr(false);
     allocd.insert({idx, addr});
     initNeighbors(allocd, {idx, addr});
+    std::cout << "Number of addresses: " << count << std::endl;
 }
 

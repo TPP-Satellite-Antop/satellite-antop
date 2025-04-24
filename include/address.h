@@ -2,14 +2,14 @@
 #define ADDRESS_H
 
 #include <vector>
-#include <cstdint>
+
 extern "C" {
     #include "h3lib/include/coordijk.h"
 }
 
 class Address {
     std::vector<uint8_t> _data;
-    size_t size = 0;
+    size_t _size = 0;
     size_t len = 0;
     bool prime{};
 
@@ -22,6 +22,8 @@ public:
     std::vector<uint8_t> data();
 
     bool operator<(const Address &other) const;
+
+    bool operator==(const Address &other) const;
 };
 
 #endif //ADDRESS_H
