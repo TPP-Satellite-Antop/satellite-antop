@@ -15,7 +15,7 @@ extern "C" {
 
 int count = 0;
 
-void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx &origin) {
+void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
     std::cout << "Initializing neighbors for: " << origin.idx << std::endl;
 
     H3Index out[MAX_NEIGHBORS];
@@ -45,7 +45,7 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx &origin) {
 
         // Address already allocated.
         if (allocd.tryGetIdx(newAddr).has_value()) {
-            std::cout << "Addressed allocd for: " << h3 << std::endl;
+            //std::cout << "Address already allocd for: " << h3 << std::endl;
             continue;
         }
 
@@ -54,7 +54,7 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx &origin) {
         count += 1;
     }
 
-    for (const AddrIdx& val : addrIdxArray) {
+    for (const AddrIdx &val : addrIdxArray) {
         initNeighbors(allocd, val);
     }
 }
@@ -73,6 +73,12 @@ void init(const LatLng ref, const int res) {
     count += 1;
     const Address addr(false);
     allocd.insert({idx, addr});
+    /*for (const auto vec = allocd.getAddr(idx).data(); unsigned char i : vec) {
+        std::cout << i << " ";
+    }*/
+
+    std::cout << "Origin: " << allocd.getAddr(idx) << std::endl;
+
     initNeighbors(allocd, {idx, addr});
     std::cout << "Number of addresses: " << count << std::endl;
 }

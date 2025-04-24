@@ -2,6 +2,7 @@
 #define ADDRESS_H
 
 #include <vector>
+#include <ostream>
 
 extern "C" {
     #include "h3lib/include/coordijk.h"
@@ -24,6 +25,8 @@ public:
     bool operator<(const Address &other) const;
 
     bool operator==(const Address &other) const;
+
+    friend std::ostream& operator<<(std::ostream& os, const Address& addr);
 
     [[nodiscard]] size_t hash() const;
 };

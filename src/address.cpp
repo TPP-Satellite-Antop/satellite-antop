@@ -21,7 +21,7 @@ Address Address::copy() const {
 
 void Address::push(const CoordIJK *coord) {
     const uint8_t direction = _unitIjkToDigit(coord);
-    if (direction >= INVALID_DIGIT) {
+    if (direction >= INVALID_DIGIT || direction == CENTER_DIGIT) {
         return;
     }
 
@@ -68,20 +68,17 @@ bool Address::operator==(const Address& other) const {
     for (size_t i = 0; i < shortestLen; i++) {
         if ((i % 2 == 1 && (_data[i] & RIGHT_MASK) != (other._data[i] & RIGHT_MASK)) ||
             (i % 2 == 0 && (_data[i] & LEFT_MASK) != (other._data[i] & LEFT_MASK))) {
-            std::cout << "First return false: " << i << std::endl;
             return false;
         }
     }
 
     const std::vector<uint8_t> data = longest.data();
     if (shortestLen != longestLen && size % 2 == 1 && (data[shortestLen - 1] & LEFT_MASK) != 0) {
-        std::cout << "Second return false" << std::endl;
         return false;
     }
 
     for (size_t i = shortestLen; i < longestLen; i++) {
         if (data[i] != 0) {
-            std::cout << "Third return false: " << i << std::endl;
             return false;
         }
     }
@@ -91,10 +88,31 @@ bool Address::operator==(const Address& other) const {
 
 size_t Address::hash() const {
     size_t result = std::hash<bool>{}(prime);
+    result = (result * 31) + std::hash<size_t>{}(_size);
+    result = (result * 31) + std::hash<size_t>{}(_len);
     for (const uint8_t byte : _data) {
         result = (result * 31) + std::hash<uint8_t>{}(byte);
     }
-    result = (result * 31) + std::hash<size_t>{}(_size);
-    result = (result * 31) + std::hash<size_t>{}(_len);
+
     return result;
 }
+
+
+
+std::ostream& operator<<(std::ostream& os, const Address& addr) {
+    os << "Address(prime=" << std::boolalpha << addr.prime
+       << ", size=" << addr._size
+       << ", len=" << addr._len
+       << ", data=[";
+
+    for (size_t i = 0; i < addr._data.size(); ++i) {
+        os << static_cast<int>(addr._data[i]);  // Cast to int to print numeric value instead of char
+        if (i < addr._data.size() - 1) {
+            os << ", ";
+        }
+    }
+    os << "])";
+
+    return os;
+}
+

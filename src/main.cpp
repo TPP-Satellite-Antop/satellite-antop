@@ -20,9 +20,8 @@ void aux_func(H3Index origin, H3Index h3) {
 }
 
 int main() {
-    // Example: Convert a latitude/longitude to an H3 cell index
-    const LatLng coord = {0, 0};  // San Francisco
-    const int resolution = 1;  // H3 resolution (0-15, 0 coarsest, 15 finest)
+    constexpr LatLng coord = {0, 0};
+    constexpr int resolution = 0;
 
     /*H3Index cell;
     // Call H3 function: latLngToCell

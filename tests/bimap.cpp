@@ -18,6 +18,20 @@ TEST(AddrIdxBiMapTest, InsertAndRetrieve) {
     ASSERT_EQ(bimap.getAddr(idx).data(), addr.data());
 }
 
+TEST(AddrIdxBiMapTest, InsertAndRetrieveOrigin) {
+    AddrIdxBiMap bimap;
+    constexpr H3Index idx = 0;
+    constexpr CoordIJK coord{0, 0, 0};
+
+    Address addr(false);
+    addr.push(&coord);
+
+    bimap.insert({idx, Address(false)});
+
+    ASSERT_TRUE(bimap.tryGetIdx(addr).has_value());
+}
+
+
 TEST(AddrIdxBiMapTest, TryRetrieve) {
     AddrIdxBiMap bimap;
     constexpr H3Index idx = 0x807dfffffffffff;
