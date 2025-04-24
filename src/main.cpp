@@ -2,6 +2,7 @@
 #include <iomanip>
 
 #include "antop.h"
+#include "address.h"
 
 extern "C" {
     #include "h3lib/include/h3Index.h"
@@ -20,8 +21,8 @@ void aux_func(H3Index origin, H3Index h3) {
 
 int main() {
     // Example: Convert a latitude/longitude to an H3 cell index
-    LatLng coord = {0, 0};  // San Francisco
-    int resolution = 0;  // H3 resolution (0-15, 0 coarsest, 15 finest)
+    //LatLng coord = {0, 0};  // San Francisco
+    //int resolution = 1;  // H3 resolution (0-15, 0 coarsest, 15 finest)
 
     /*H3Index cell;
     // Call H3 function: latLngToCell
@@ -49,7 +50,19 @@ int main() {
     aux_func(0x80a9fffffffffff, 0x8081fffffffffff);
     aux_func(0x80a5fffffffffff, 0x8081fffffffffff);*/
 
-    init(coord, resolution);
+    Address address(false);
+    constexpr CoordIJK coord1{1, 1, 0};
+    constexpr CoordIJK coord2{0, 1, 0};
+    constexpr CoordIJK coord3{1, 1, 0};
+
+    address.push(&coord1);
+    address.push(&coord2);
+    address.push(&coord3);
+
+    address == address;
+
+
+    //init(coord, resolution);
 
 
     return 0;

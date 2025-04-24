@@ -10,7 +10,7 @@ extern "C" {
 class Address {
     std::vector<uint8_t> _data;
     size_t _size = 0;
-    size_t len = 0;
+    size_t _len = 0;
     bool prime{};
 
 public:
@@ -22,7 +22,9 @@ public:
     std::vector<uint8_t> data();
 
     bool operator<(const Address &other) const;
+
     bool operator==(const Address &other) const;
+
     [[nodiscard]] size_t hash() const;
 };
 

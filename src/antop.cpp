@@ -16,6 +16,8 @@ extern "C" {
 int count = 0;
 
 void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx &origin) {
+    std::cout << "Initializing neighbors for: " << origin.idx << std::endl;
+
     H3Index out[MAX_NEIGHBORS];
   	if (gridDisk(origin.idx, DISTANCE, out) != E_SUCCESS) {
    		std::cerr << Errors::getNeighborsSearchError(origin.idx) << std::endl;
@@ -35,6 +37,8 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx &origin) {
             std::cerr << "Error converting coordinate to H3 index: " << e << std::endl;
             continue;
         }
+
+        std::cout << "Output " << origin.idx << " to " << h3 << ": (" << output.i << ", " << output.j << ", " <<output.k << ")" << std::endl;
 
         Address newAddr = origin.addr.copy();
         newAddr.push(&output);
@@ -63,6 +67,8 @@ void init(const LatLng ref, const int res) {
         std::cerr << Errors::COORD_CONVERTING_ERROR << std::endl;
         return;
     }
+
+    std::cout << "Origin: " << idx << std::endl;
 
     count += 1;
     const Address addr(false);
