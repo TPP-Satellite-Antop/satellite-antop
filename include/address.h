@@ -22,8 +22,15 @@ public:
     std::vector<uint8_t> data();
 
     bool operator<(const Address &other) const;
-
     bool operator==(const Address &other) const;
+    [[nodiscard]] size_t hash() const;
+};
+
+template<>
+struct std::hash<Address> {
+    size_t operator()(const Address& addr) const noexcept {
+        return addr.hash();
+    }
 };
 
 #endif //ADDRESS_H

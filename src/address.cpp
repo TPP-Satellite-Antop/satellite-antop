@@ -43,32 +43,24 @@ bool Address::operator<(const Address& other) const {
     return _data < other._data;
 }
 
-
-
-namespace std {
-    template<>
-    struct hash<Address> {
-        size_t operator()(Address const& a) const noexcept {
-            // start with a seed
-            size_t seed = 0;
-
-            // helper to mix one value into the seed
-            auto hash_combine = [&](auto const& v) {
-                // from boost::hash_combine
-                seed ^= std::hash<std::decay_t<decltype(v)>>{}(v)
-                      + 0x9e3779b97f4a7c15ULL
-                      + (seed << 6)
-                      + (seed >> 2);
-            };
-
-            // mix the bytes
-            std::vector<uint8_t> data = a.data();
-            for (const uint8_t v : data) {
-                hash_combine(v);
-            }
-
-            return seed;
+bool Address::operator==(const Address& other) const {
+    if (prime != other.prime || _size != other._size || len != other.len){
+        return false;
+    }
+    for (size_t i = 0; i < len; i++) {
+        if (_data[i] != other._data[i]) {
+            return false;
         }
-    };
+    }
+    return true;
 }
 
+size_t Address::hash() const {
+    size_t result = std::hash<bool>{}(prime);
+    for (const uint8_t byte : _data) {
+        result = (result * 31) + std::hash<uint8_t>{}(byte);
+    }
+    result = (result * 31) + std::hash<size_t>{}(_size);
+    result = (result * 31) + std::hash<size_t>{}(len);
+    return result;
+}

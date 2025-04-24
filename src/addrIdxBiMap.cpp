@@ -37,17 +37,3 @@ std::optional<Address> AddrIdxBiMap::tryGetAddr(const H3Index& idx) const {
     }
     return std::nullopt;
 }
-
-bool Address::operator==(const Address& other) const {
-    if (prime != other.prime || _size != other._size || len != other.len) {
-        return false;
-    }
-
-    for (size_t i = 0; i < len; i++) {
-        if (_data[i] != other._data[i]) {
-            return false;
-        }
-    }
-
-    return true;
-}
