@@ -1,5 +1,5 @@
 #include "address.h"
-
+#include <bitset>
 #include <iostream>
 #include <bits/ostream.tcc>
 
@@ -9,10 +9,10 @@
 Address::Address() = default;
 
 Address::Address(const bool prime)
-    : prime(prime) {}
+    : _prime(prime) {}
 
 Address Address::copy() const {
-    Address addr(this->prime);
+    Address addr(prime());
     addr._data = this->_data;
     addr._size = this->_size;
     addr._len = this->_len;
@@ -21,7 +21,7 @@ Address Address::copy() const {
 
 void Address::push(const CoordIJK *coord) {
     const uint8_t direction = _unitIjkToDigit(coord);
-    if (direction >= INVALID_DIGIT || direction == CENTER_DIGIT) {
+    if (direction >= INVALID_DIGIT) {
         return;
     }
 
@@ -39,9 +39,13 @@ std::vector<uint8_t> Address::data() {
     return _data;
 }
 
+bool Address::prime() const {
+    return _prime;
+}
+
 bool Address::operator<(const Address& other) const {
-    if (prime != other.prime)
-        return prime < other.prime;
+    if (prime() != other.prime())
+        return prime() < other.prime();
     if (_size != other._size)
         return _size < other._size;
     if (_len != other._len)
@@ -50,7 +54,7 @@ bool Address::operator<(const Address& other) const {
 }
 
 bool Address::operator==(const Address& other) const {
-    if (prime != other.prime){
+    if (prime() != other.prime()){
         return false;
     }
 
@@ -87,7 +91,7 @@ bool Address::operator==(const Address& other) const {
 }
 
 size_t Address::hash() const {
-    size_t result = std::hash<bool>{}(prime);
+    size_t result = std::hash<bool>{}(prime());
     result = (result * 31) + std::hash<size_t>{}(_size);
     result = (result * 31) + std::hash<size_t>{}(_len);
     for (const uint8_t byte : _data) {
@@ -100,16 +104,10 @@ size_t Address::hash() const {
 
 
 std::ostream& operator<<(std::ostream& os, const Address& addr) {
-    os << "Address(prime=" << std::boolalpha << addr.prime
-       << ", size=" << addr._size
-       << ", len=" << addr._len
-       << ", data=[";
+    os << "[";
 
     for (size_t i = 0; i < addr._data.size(); ++i) {
-        os << static_cast<int>(addr._data[i]);  // Cast to int to print numeric value instead of char
-        if (i < addr._data.size() - 1) {
-            os << ", ";
-        }
+        os << std::bitset<8>(addr._data[i]);  // Cast to int to print numeric value instead of char
     }
     os << "])";
 

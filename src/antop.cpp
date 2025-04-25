@@ -14,9 +14,10 @@ extern "C" {
 #define DISTANCE 1
 
 int count = 0;
+int countPrime = 0;
 
 void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
-    std::cout << "Initializing neighbors for: " << origin.idx << std::endl;
+    //std::cout << "Initializing neighbors for: " << origin.idx << std::endl;
 
     H3Index out[MAX_NEIGHBORS];
   	if (gridDisk(origin.idx, DISTANCE, out) != E_SUCCESS) {
@@ -38,20 +39,28 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
             continue;
         }
 
-        std::cout << "Output " << origin.idx << " to " << h3 << ": (" << output.i << ", " << output.j << ", " <<output.k << ")" << std::endl;
+        if (origin.addr.prime()) {
+            _ijkRotate60cw(&output);
+        }
+
+        //std::cout << "Output " << origin.idx << " to " << h3 << ": (" << output.i << ", " << output.j << ", " <<output.k << ")" << std::endl;
 
         Address newAddr = origin.addr.copy();
         newAddr.push(&output);
 
         // Address already allocated.
         if (allocd.tryGetIdx(newAddr).has_value()) {
-            //std::cout << "Address already allocd for: " << h3 << std::endl;
+            std::cout << "Address already allocd for: " << h3 << std::endl;
             continue;
         }
 
+        std::cout << "Address " << std::hex << h3 << ": " << newAddr << std::endl;
         allocd.insert({h3, newAddr});
         addrIdxArray.push_back({h3, newAddr});
-        count += 1;
+        if (origin.addr.prime())
+            countPrime += 1;
+        else
+            count += 1;
     }
 
     for (const AddrIdx &val : addrIdxArray) {
@@ -61,6 +70,7 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
 
 void init(const LatLng ref, const int res) {
     AddrIdxBiMap allocd;
+    AddrIdxBiMap allocdPrime;
 
     H3Index idx;
     if (latLngToCell(&ref, res, &idx) != E_SUCCESS) {
@@ -68,18 +78,23 @@ void init(const LatLng ref, const int res) {
         return;
     }
 
-    std::cout << "Origin: " << idx << std::endl;
+    CoordIJK output;
+    if (const H3Error e = cellToLocalIjk(idx, idx, &output); e != 0) {
+        std::cerr << "Error converting coordinate to H3 index: " << e << std::endl;
+    }
 
     count += 1;
+    countPrime += 1;
     const Address addr(false);
+    const Address addrPrime(true);
+
     allocd.insert({idx, addr});
-    /*for (const auto vec = allocd.getAddr(idx).data(); unsigned char i : vec) {
-        std::cout << i << " ";
-    }*/
+    allocdPrime.insert({idx, addrPrime});
 
-    std::cout << "Origin: " << allocd.getAddr(idx) << std::endl;
-
+    std::cout << "Address " << std::hex << idx << ": " << addr << std::endl;
     initNeighbors(allocd, {idx, addr});
-    std::cout << "Number of addresses: " << count << std::endl;
+    std::cout << "Address " << std::hex << idx << ": " << addrPrime << std::endl;
+    initNeighbors(allocdPrime, {idx, addrPrime});
+    std::cout << "Number of addresses: " << count << " - " << countPrime << std::endl;
 }
 

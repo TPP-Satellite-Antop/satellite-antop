@@ -12,7 +12,7 @@ class Address {
     std::vector<uint8_t> _data;
     size_t _size = 0;
     size_t _len = 0;
-    bool prime{};
+    bool _prime{};
 
 public:
     Address();
@@ -21,6 +21,7 @@ public:
     [[nodiscard]] Address copy() const;
     void push(const CoordIJK *coord);
     std::vector<uint8_t> data();
+    bool prime() const;
 
     bool operator<(const Address &other) const;
 
