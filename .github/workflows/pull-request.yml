@@ -1,5 +1,3 @@
-# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
-# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
 name: Code Coverage
 
 on:
@@ -8,7 +6,6 @@ on:
   pull_request: {}
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
 
 jobs:
@@ -18,21 +15,30 @@ jobs:
       BUILD_TYPE: Release
     steps:
       - uses: actions/checkout@v4
+      - name: Install prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y software-properties-common
 
-      - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: '3.20.x'
-
-      - name: Install GCC 13
+      - name: Add GCC PPA
         run: |
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
           sudo apt-get update
-          sudo apt-get install -y gcc-13 g++-13
+
+      - name: Install GCC 13
+        run: sudo apt-get install -y gcc-13 g++-13
+
+      - name: Verify compilers
+        run: |
+          which gcc-13 && gcc-13 --version
+          which g++-13 && g++-13 --version
 
       - name: Configure CMake
+        shell: bash
         run: |
-          CC=gcc-13 CXX=g++-13 cmake -S . -B build \
+          export CC=gcc-13
+          export CXX=g++-13
+          cmake -S . -B build \
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_CXX_STANDARD_REQUIRED=ON \
@@ -40,8 +46,8 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS="--coverage"
 
       - name: Build
-        run: cmake --build build --config ${{env.BUILD_TYPE}}
+        run: cmake --build build --config ${{ env.BUILD_TYPE }}
 
       - name: Test
         working-directory: build
-        run: ctest -C ${{env.BUILD_TYPE}}
+        run: ctest -C ${{ env.BUILD_TYPE }}
