@@ -1,53 +1,25 @@
-name: Code Coverage
+name: Dockerized Tests
 
 on:
   push:
     branches: [ "main", "develop" ]
   pull_request: {}
 
-env:
-  BUILD_TYPE: Release
-
 jobs:
-  build:
+  docker-test:
     runs-on: ubuntu-latest
-    env:
-      BUILD_TYPE: Release
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Install prerequisites
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build test image
         run: |
-          sudo apt-get update
-          sudo apt-get install -y software-properties-common
+          docker build \
+            --file Dockerfile.test \
+            --tag satellite-antop-test:latest \
+            .
 
-      - name: Add GCC PPA
+      - name: Run tests in Docker
         run: |
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-          sudo apt-get update
-
-      - name: Install GCC 13
-        run: sudo apt-get install -y gcc-13 g++-13
-
-      - name: Verify compilers
-        run: |
-          which gcc-13 && gcc-13 --version
-          which g++-13 && g++-13 --version
-
-      - name: Configure CMake
-        shell: bash
-        run: |
-          cmake -S . -B build \
-            -DCMAKE_C_COMPILER=gcc-13 \
-            -DCMAKE_CXX_COMPILER=g++-13 \
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-            -DCMAKE_CXX_STANDARD=23 \
-            -DCMAKE_CXX_STANDARD_REQUIRED=ON \
-            -DCMAKE_CXX_FLAGS="--coverage" \
-            -DCMAKE_EXE_LINKER_FLAGS="--coverage"
-
-      - name: Build
-        run: cmake --build build --config ${{ env.BUILD_TYPE }}
-
-      - name: Test
-        working-directory: build
-        run: ctest -C ${{ env.BUILD_TYPE }}
+          docker run --rm satellite-antop-test:latest

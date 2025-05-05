@@ -21,4 +21,8 @@ cmake ..
 make
 ctest
 ```
-
+## Running tests with docker
+```sh
+docker build -t satellite-antop-test . -f Dockerfile.test 
+docker run satellite-antop-test:latest
+```
