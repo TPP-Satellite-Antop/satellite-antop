@@ -36,9 +36,9 @@ jobs:
       - name: Configure CMake
         shell: bash
         run: |
-          export CC=gcc-13
-          export CXX=g++-13
           cmake -S . -B build \
+            -DCMAKE_C_COMPILER=gcc-13 \
+            -DCMAKE_CXX_COMPILER=g++-13 \
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_CXX_STANDARD_REQUIRED=ON \
