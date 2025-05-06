@@ -17,8 +17,6 @@ int count = 0;
 int countPrime = 0;
 
 void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
-    //std::cout << "Initializing neighbors for: " << origin.idx << std::endl;
-
     H3Index out[MAX_NEIGHBORS];
   	if (gridDisk(origin.idx, DISTANCE, out) != E_SUCCESS) {
    		std::cerr << Errors::getNeighborsSearchError(origin.idx) << std::endl;
@@ -43,8 +41,6 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
             _ijkRotate60cw(&output);
         }
 
-        //std::cout << "Output " << origin.idx << " to " << h3 << ": (" << output.i << ", " << output.j << ", " <<output.k << ")" << std::endl;
-
         Address newAddr = origin.addr.copy();
         newAddr.push(&output);
 
@@ -54,7 +50,6 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
             continue;
         }
 
-        std::cout << "Address " << std::hex << h3 << ": " << newAddr << std::endl;
         allocd.insert({h3, newAddr});
         addrIdxArray.push_back({h3, newAddr});
         if (origin.addr.prime())
@@ -91,9 +86,7 @@ void init(const LatLng ref, const int res) {
     allocd.insert({idx, addr});
     allocdPrime.insert({idx, addrPrime});
 
-    std::cout << "Address " << std::hex << idx << ": " << addr << std::endl;
     initNeighbors(allocd, {idx, addr});
-    std::cout << "Address " << std::hex << idx << ": " << addrPrime << std::endl;
     initNeighbors(allocdPrime, {idx, addrPrime});
     std::cout << "Number of addresses: " << count << " - " << countPrime << std::endl;
 }
