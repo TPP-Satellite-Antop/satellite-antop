@@ -92,25 +92,22 @@ bool Address::operator==(const Address& other) const {
 
 size_t Address::hash() const {
     size_t result = std::hash<bool>{}(prime());
-    result = (result * 31) + std::hash<size_t>{}(_size);
-    result = (result * 31) + std::hash<size_t>{}(_len);
     for (const uint8_t byte : _data) {
-        result = (result * 31) + std::hash<uint8_t>{}(byte);
+        if (byte != 0) {
+            result = (result * 31) + std::hash<uint8_t>{}(byte);
+        }
     }
 
     return result;
 }
 
-
-
 std::ostream& operator<<(std::ostream& os, const Address& addr) {
     os << "[";
 
-    for (size_t i = 0; i < addr._data.size(); ++i) {
-        os << std::bitset<8>(addr._data[i]);  // Cast to int to print numeric value instead of char
+    for (const unsigned char i : addr._data) {
+        os << std::bitset<8>(i);  // Cast to int to print numeric value instead of char
     }
     os << "])";
 
     return os;
 }
-
