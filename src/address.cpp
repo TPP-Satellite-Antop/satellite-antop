@@ -19,6 +19,21 @@ Address Address::copy() const {
     return addr;
 }
 
+/**
+ * Adds a coordinate to the Address instance, encoding it as a direction
+ * and updating the internal data structure to accommodate the new entry.
+ *
+ * Behavior:
+ * - Converts the given coordinate into a direction value.
+ * - If the direction value is invalid (>= `INVALID_DIGIT`), the method performs no operation.
+ * - Encodes the direction into an internal compact array `_data`:
+ *   - For even-sized data, the direction is appended as a new element.
+ *   - For odd-sized data, the direction is packed into the last element of `_data`
+ *     by shifting the direction value left by 3 bits and adding it to the element.
+ * - Updates the internal `_size` and `_len` variables to reflect the added coordinate.
+ *
+ * @param coord A pointer to a `CoordIJK` structure representing the coordinate to be added to the Address.
+ */
 void Address::push(const CoordIJK *coord) {
     const uint8_t direction = _unitIjkToDigit(coord);
     if (direction >= INVALID_DIGIT) {
