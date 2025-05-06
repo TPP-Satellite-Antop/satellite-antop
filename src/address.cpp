@@ -53,35 +53,35 @@ bool Address::operator<(const Address& other) const {
     return _data < other._data;
 }
 
+/**
+ * Compares the current Address instance with another Address instance to determine equality.
+ * The equality is evaluated based on several conditions involving both prime properties and data contents.
+ *
+ * Conditions for equality:
+ * - Both Address instances must have the same prime property.
+ * - Each corresponding element in the data vector of both instances must be equal.
+ * - If the lengths of the Address data differ, extra elements in the longer data must be 0.
+ *
+ * @param other The other Address instance to compare with.
+ * @return True if the two Address instances are considered equal, false otherwise.
+ */
 bool Address::operator==(const Address& other) const {
     if (prime() != other.prime()){
         return false;
     }
 
-    size_t size = _size;
-    size_t shortestLen = _len;
-    size_t longestLen = other._len;
-    Address longest = other.copy();
-    if (size > other._size) {
-        size = other._size;
-        shortestLen = other._len;
-        longestLen = _len;
-        longest = this->copy();
-    }
+    const size_t shortest = _len < other._len ? _len : other._len;
+    const size_t longest = _len >= other._len ? _len : other._len;
 
-    for (size_t i = 0; i < shortestLen; i++) {
-        if ((i % 2 == 1 && (_data[i] & RIGHT_MASK) != (other._data[i] & RIGHT_MASK)) ||
-            (i % 2 == 0 && (_data[i] & LEFT_MASK) != (other._data[i] & LEFT_MASK))) {
+    for (size_t i = 0; i < shortest; i++) {
+        if (_data[i] != other._data[i]) {
             return false;
         }
     }
 
-    const std::vector<uint8_t> data = longest.data();
-    if (shortestLen != longestLen && size % 2 == 1 && (data[shortestLen - 1] & LEFT_MASK) != 0) {
-        return false;
-    }
+    const std::vector<uint8_t> data = _len == longest ? this->_data : other._data;
 
-    for (size_t i = shortestLen; i < longestLen; i++) {
+    for (size_t i = shortest; i < longest; i++) {
         if (data[i] != 0) {
             return false;
         }
