@@ -7,6 +7,7 @@
 
 extern "C" {
     #include "h3lib/include/localij.h"
+    #include "h3lib/include/coordijk.h"
 }
 
 #define MAX_NEIGHBORS 7
@@ -25,6 +26,16 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
 
     std::vector<AddrIdx> addrIdxArray;
 
+    CoordIJK originOutput;
+    if (const H3Error e = cellToLocalIjk(origin.idx, origin.idx, &originOutput); e != 0) {
+        std::cerr << "Error converting coordinate to H3 index: " << e << std::endl;
+        return;
+    }
+
+    /*if (originOutput.i == 0 && originOutput.j == 0 && originOutput.k == 0) {
+        std::cout << origin.idx << ": [" << originOutput.i << ", " << originOutput.j << ", " << originOutput.k << "]" << std::endl;
+    }*/
+
     for (const unsigned long h3 : out) {
         // Invalid index or hex already mapped with an address.
         if (h3 == PENTAGON_VALUE || h3 == origin.idx || allocd.tryGetAddr(h3).has_value()) {
@@ -37,6 +48,13 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
             continue;
         }
 
+        output.i -= originOutput.i;
+        output.j -= originOutput.j;
+        output.k -= originOutput.k;
+        _ijkNormalize(&output);
+
+        //std::cout << "Output: [" << output.i << ", " << output.j << ", " << output.k << "]" << std::endl;
+
         if (origin.addr.prime()) {
             _ijkRotate60cw(&output);
         }
@@ -46,7 +64,7 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
 
         // Address already allocated.
         if (allocd.tryGetIdx(newAddr).has_value()) {
-            std::cout << "Address already allocd for: " << h3 << std::endl;
+            //std::cout << "Address already allocd for: " << h3 << std::endl;
             continue;
         }
 
@@ -73,9 +91,16 @@ void init(const LatLng ref, const int res) {
         return;
     }
 
-    CoordIJK output;
-    if (const H3Error e = cellToLocalIjk(idx, idx, &output); e != 0) {
-        std::cerr << "Error converting coordinate to H3 index: " << e << std::endl;
+    if (res == 1) {
+        idx = 0x81463ffffffffff;
+    } else if (res == 2) {
+        idx = 0x824607fffffffff;
+    } else if (res == 3) {
+        idx = 0x834600fffffffff;
+    } else if (res == 4) {
+        idx = 0x8446001ffffffff;
+    } else if (res == 5) {
+        idx = 0x85460003fffffff;
     }
 
     count += 1;
@@ -86,8 +111,10 @@ void init(const LatLng ref, const int res) {
     allocd.insert({idx, addr});
     allocdPrime.insert({idx, addrPrime});
 
+    std::cout << "Address " << std::hex << idx << ": " << addr << std::endl;
     initNeighbors(allocd, {idx, addr});
-    initNeighbors(allocdPrime, {idx, addrPrime});
+    //std::cout << "Address " << std::hex << idx << ": " << addrPrime << std::endl;
+    //initNeighbors(allocdPrime, {idx, addrPrime});
     std::cout << "Number of addresses: " << count << " - " << countPrime << std::endl;
 }
 
