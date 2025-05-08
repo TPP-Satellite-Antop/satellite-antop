@@ -32,10 +32,6 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
         return;
     }
 
-    /*if (originOutput.i == 0 && originOutput.j == 0 && originOutput.k == 0) {
-        std::cout << origin.idx << ": [" << originOutput.i << ", " << originOutput.j << ", " << originOutput.k << "]" << std::endl;
-    }*/
-
     for (const unsigned long h3 : out) {
         // Invalid index or hex already mapped with an address.
         if (h3 == PENTAGON_VALUE || h3 == origin.idx || allocd.tryGetAddr(h3).has_value()) {
@@ -53,8 +49,6 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
         output.k -= originOutput.k;
         _ijkNormalize(&output);
 
-        //std::cout << "Output: [" << output.i << ", " << output.j << ", " << output.k << "]" << std::endl;
-
         if (origin.addr.prime()) {
             _ijkRotate60cw(&output);
         }
@@ -64,7 +58,6 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
 
         // Address already allocated.
         if (allocd.tryGetIdx(newAddr).has_value()) {
-            //std::cout << "Address already allocd for: " << h3 << std::endl;
             continue;
         }
 
@@ -81,6 +74,26 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
     }
 }
 
+H3Index getOriginForResolution(const int res) {
+    if (res == 1) {
+        return  0x81463ffffffffff;
+    }
+    if (res == 2) {
+        return 0x824607fffffffff;
+    }
+    if (res == 3) {
+        return 0x834600fffffffff;
+    }
+    if (res == 4) {
+        return 0x8446001ffffffff;
+    }
+    if (res == 5) {
+        return 0x85460003fffffff;
+    }
+
+    throw std::out_of_range{Errors::RESOLUTION_NOT_SUPPORTED};
+}
+
 void init(const LatLng ref, const int res) {
     AddrIdxBiMap allocd;
     AddrIdxBiMap allocdPrime;
@@ -91,17 +104,7 @@ void init(const LatLng ref, const int res) {
         return;
     }
 
-    if (res == 1) {
-        idx = 0x81463ffffffffff;
-    } else if (res == 2) {
-        idx = 0x824607fffffffff;
-    } else if (res == 3) {
-        idx = 0x834600fffffffff;
-    } else if (res == 4) {
-        idx = 0x8446001ffffffff;
-    } else if (res == 5) {
-        idx = 0x85460003fffffff;
-    }
+    idx = getOriginForResolution(res);
 
     count += 1;
     countPrime += 1;
@@ -113,8 +116,7 @@ void init(const LatLng ref, const int res) {
 
     std::cout << "Address " << std::hex << idx << ": " << addr << std::endl;
     initNeighbors(allocd, {idx, addr});
-    //std::cout << "Address " << std::hex << idx << ": " << addrPrime << std::endl;
-    //initNeighbors(allocdPrime, {idx, addrPrime});
+
     std::cout << "Number of addresses: " << count << " - " << countPrime << std::endl;
 }
 

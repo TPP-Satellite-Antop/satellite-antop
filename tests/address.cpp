@@ -42,26 +42,7 @@ TEST(AddressTest, PushSomeCoordToEmptyAddress) {
 
     ASSERT_EQ(address.data(), exp);
 }
-/*
-TEST(AddressTest, InitNeighborsWithGridDisk) {
-    H3Index idx = 0x807dfffffffffff;
 
-    H3Index out[6];
-    if (constexpr int res = 0; gridDisk(idx, res, out) != E_SUCCESS) {
-        FAIL() << "gridDisk failed!";
-    }
-
-    bool foundValidNeighbor = false;
-    for (const unsigned long i : out) {
-        if (i != 0) {  // Non-zero values indicate valid neighbors (no pentagons)
-            foundValidNeighbor = true;
-            break;
-        }
-    }
-
-    ASSERT_TRUE(foundValidNeighbor);
-}
-*/
 TEST(AddressTest, EmptyHardEqualOperator) {
     ASSERT_TRUE(Address(false) == Address(false));
 }
