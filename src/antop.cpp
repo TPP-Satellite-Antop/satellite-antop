@@ -98,13 +98,15 @@ void init(const LatLng ref, const int res) {
     AddrIdxBiMap allocd;
     AddrIdxBiMap allocdPrime;
 
-    H3Index idx;
+    H3Index idx = 0;
     if (latLngToCell(&ref, res, &idx) != E_SUCCESS) {
         std::cerr << Errors::COORD_CONVERTING_ERROR << std::endl;
         return;
     }
 
-    idx = getOriginForResolution(res);
+    if (idx == 0) {
+        idx = getOriginForResolution(res);
+    }
 
     count += 1;
     countPrime += 1;
