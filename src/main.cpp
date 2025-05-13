@@ -10,7 +10,7 @@ extern "C" {
 
 int main() {
     constexpr LatLng coord = {-10, 0};
-    constexpr int resolution = 2;
+    constexpr int resolution = 5;
 
     init(coord, resolution);
 
