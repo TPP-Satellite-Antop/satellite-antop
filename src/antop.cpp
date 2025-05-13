@@ -75,23 +75,20 @@ void initNeighbors(AddrIdxBiMap& allocd, const AddrIdx& origin) {
 }
 
 H3Index getOriginForResolution(const int res) {
-    if (res == 1) {
-        return  0x81463ffffffffff;
+    switch (res) {
+        case 1:
+            return  0x81463ffffffffff;
+        case 2:
+            return 0x824607fffffffff;
+        case 3:
+            return 0x834600fffffffff;
+        case 4:
+            return 0x8446001ffffffff;
+        case 5:
+            return 0x85460003fffffff;
+        default:
+            throw std::out_of_range{Errors::RESOLUTION_NOT_SUPPORTED};
     }
-    if (res == 2) {
-        return 0x824607fffffffff;
-    }
-    if (res == 3) {
-        return 0x834600fffffffff;
-    }
-    if (res == 4) {
-        return 0x8446001ffffffff;
-    }
-    if (res == 5) {
-        return 0x85460003fffffff;
-    }
-
-    throw std::out_of_range{Errors::RESOLUTION_NOT_SUPPORTED};
 }
 
 void init(const LatLng ref, const int res) {
