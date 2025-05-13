@@ -1,0 +1,25 @@
+name: Dockerized Tests
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request: {}
+
+jobs:
+  docker-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build test image
+        run: |
+          docker build \
+            --file Dockerfile.test \
+            --tag satellite-antop-test:latest \
+            .
+
+      - name: Run tests in Docker
+        run: |
+          docker run --rm satellite-antop-test:latest

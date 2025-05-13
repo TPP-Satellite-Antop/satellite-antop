@@ -24,4 +24,4 @@ COPY . .
 # Build the project using CMake
 RUN cmake -S . -B build && cmake --build build
 
-CMD ["./build/SatelliteAntop"]
+CMD ["cmake", "--build", "build", "--target", "test"]

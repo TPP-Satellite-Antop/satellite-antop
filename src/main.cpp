@@ -1,6 +1,18 @@
 #include <iostream>
+#include <iomanip>
 
-int main(int argc, char** argv) {
-    std::cout << "Hello, world! \n";
+#include "antop.h"
+#include "address.h"
+
+extern "C" {
+    #include "h3lib/include/h3Index.h"
+}
+
+int main() {
+    constexpr LatLng coord = {-10, 0};
+    constexpr int resolution = 2;
+
+    init(coord, resolution);
+
     return 0;
 }

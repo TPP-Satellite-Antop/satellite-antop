@@ -1,15 +1,28 @@
 # Satellite Antop
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-## Building
+## Building with Docker
 
-Run the following command in order to generate the build system inside the build directory:
+Build the image
 ```sh
-cmake -S cmake -B build
+docker build -t satellite-antop .
 ```
 
-Then, simply run the following command in order to compile the project:
-
+Run the image
 ```sh
-cmake --build build
+docker run satellite-antop:latest
+```
+
+## Running tests locally
+```sh
+mkdir build
+cd build
+cmake ..
+make
+ctest
+```
+## Running tests with docker
+```sh
+docker build -t satellite-antop-test . -f Dockerfile.test 
+docker run satellite-antop-test:latest
 ```

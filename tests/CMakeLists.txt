@@ -1,20 +1,14 @@
-cmake_policy(SET CMP0135 NEW)
+cmake_minimum_required(VERSION 3.20)
 
-include(FetchContent)
 include(GoogleTest)
+include(Sanitizer)
+add_sanitizer_flags()
 
-FetchContent_Declare(
-        googletest
-        URL https://github.com/google/googletest/archive/refs/heads/main.zip
-)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(TEST_MAIN SatelliteAntopTest)
+set(TEST_SOURCES example.cpp address.cpp bimap.cpp)
 
-set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+add_executable(${TEST_MAIN} ${TEST_SOURCES})
+target_link_libraries(${TEST_MAIN} PUBLIC ${LIBRARY_NAME} GTest::gtest_main)
 
-add_executable(SatelliteAntopTest example.cpp)
-
-target_link_libraries(SatelliteAntopTest PRIVATE
-        GTest::gtest_main
-)
-
-gtest_discover_tests(SatelliteAntopTest)
+gtest_discover_tests(${TEST_MAIN})
