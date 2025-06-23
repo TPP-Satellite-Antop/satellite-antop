@@ -15,7 +15,7 @@ TEST(AddrIdxBiMapTest, InsertAndRetrieve) {
     bimap.insert({idx, addr});
 
     ASSERT_EQ(bimap.getIdx(addr), idx);
-    ASSERT_EQ(bimap.getAddr(idx).data(), addr.data());
+    ASSERT_EQ(bimap.getAddr(idx).coord(), addr.coord());
 }
 
 TEST(AddrIdxBiMapTest, TryRetrieve) {
@@ -32,7 +32,7 @@ TEST(AddrIdxBiMapTest, TryRetrieve) {
     ASSERT_TRUE(optIdx.has_value());
     ASSERT_TRUE(optAddr.has_value());
     ASSERT_EQ(optIdx.value(), idx);
-    ASSERT_EQ(optAddr.value().data(), addr.data());
+    ASSERT_EQ(optAddr.value().coord(), addr.coord());
 }
 
 TEST(AddrIdxBiMapTest, EmptyTryRetrieve) {

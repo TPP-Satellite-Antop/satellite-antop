@@ -14,9 +14,9 @@ TEST(AddressTest, DeepCopyAddress) {
     Address address2 = address1.copy();
     address2.push(&coord);
 
-    ASSERT_NE(address1.data(), address2.data());
-    ASSERT_EQ(address1.data(), std::vector<uint8_t>{IJ_AXES_DIGIT});
-    ASSERT_EQ(address2.data(), std::vector<uint8_t>{IJ_AXES_DIGIT + (IJ_AXES_DIGIT << 3)});
+    ASSERT_NE(address1.coord(), address2.coord());
+    ASSERT_EQ(address1.coord(), Coord(CoordIJK(1,1,0)));
+    ASSERT_EQ(address2.coord(), Coord(CoordIJK(2,2,0)));
 }
 
 TEST(AddressTest, PushOneCoordToEmptyAddress) {
@@ -25,7 +25,7 @@ TEST(AddressTest, PushOneCoordToEmptyAddress) {
 
     address.push(&coord);
 
-    ASSERT_EQ(address.data(), std::vector<uint8_t>{IJ_AXES_DIGIT});
+    ASSERT_EQ(address.coord(), Coord(CoordIJK(1,1,0)));
 }
 
 TEST(AddressTest, PushSomeCoordToEmptyAddress) {
@@ -38,9 +38,7 @@ TEST(AddressTest, PushSomeCoordToEmptyAddress) {
     address.push(&coord2);
     address.push(&coord3);
 
-    const auto exp = std::vector<uint8_t>{IJ_AXES_DIGIT + (J_AXES_DIGIT << 3), IJ_AXES_DIGIT};
-
-    ASSERT_EQ(address.data(), exp);
+    ASSERT_EQ(address.coord(), Coord(CoordIJK(2,3,0)));
 }
 
 TEST(AddressTest, EmptyHardEqualOperator) {
