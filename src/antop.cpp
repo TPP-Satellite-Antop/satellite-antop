@@ -113,7 +113,6 @@ void init(const LatLng ref, const int res) {
     allocd.insert({idx, addr});
     allocdPrime.insert({idx, addrPrime});
 
-    std::cout << "Address " << std::hex << idx << ": " << addr << std::endl;
     initNeighbors(allocd, {idx, addr});
 
     std::cout << "Number of addresses: " << count << " - " << countPrime << std::endl;

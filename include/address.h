@@ -4,14 +4,14 @@
 #include <vector>
 #include <ostream>
 
+#include "coord.h"
+
 extern "C" {
     #include "h3lib/include/coordijk.h"
 }
 
 class Address {
-    std::vector<uint8_t> _data;
-    size_t _size = 0;
-    size_t _len = 0;
+    Coord _coord;
     bool _prime{};
 
 public:
@@ -19,15 +19,11 @@ public:
     explicit Address(bool prime);
 
     [[nodiscard]] Address copy() const;
+    [[nodiscard]] bool prime() const;
+    [[nodiscard]] Coord coord() const;
     void push(const CoordIJK *coord);
-    std::vector<uint8_t> data();
-    bool prime() const;
-
-    bool operator<(const Address &other) const;
 
     bool operator==(const Address &other) const;
-
-    friend std::ostream& operator<<(std::ostream& os, const Address& addr);
 
     [[nodiscard]] size_t hash() const;
 };
