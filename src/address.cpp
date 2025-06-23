@@ -47,17 +47,6 @@ Coord Address::coord() const {
     return _coord;
 }
 
-/*
-bool Address::operator<(const Address& other) const {
-    if (prime() != other.prime())
-        return prime() < other.prime();
-    if (_size != other._size)
-        return _size < other._size;
-    if (_len != other._len)
-        return _len < other._len;
-    return _data < other._data;
-}
-*/
 /**
  * Compares the current Address instance with another Address instance to determine equality.
  * The equality is evaluated based on several conditions involving both prime properties and data contents.
