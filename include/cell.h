@@ -1,17 +1,17 @@
-#ifndef HEX_H
-#define HEX_H
+#ifndef CELL_H
+#define CELL_H
 
 #include "address.h"
 
-class Hex {
+class Cell {
 
     private:
         Address baseAddr;
         Address primeAddr;
 
     public:
-        Hex();
+        Cell();
 
 };
 
-#endif //HEX_H
+#endif //CELL_H
