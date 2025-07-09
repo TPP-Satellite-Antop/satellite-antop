@@ -100,7 +100,7 @@ bool Address::operator<(const Address& addr) const {
  * - Each corresponding element in the data vector of both instances must be equal.
  * - If the lengths of the Address data differ, extra elements in the longer data must be 0.
  *
- * @param other The other Address instance to compare with.
+ * @param addr The other Address instance to compare with.
  * @return True if the two Address instances are considered equal, false otherwise.
  */
 bool Address::operator==(const Address& addr) const {
