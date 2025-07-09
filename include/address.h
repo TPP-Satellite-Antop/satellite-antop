@@ -20,6 +20,9 @@ public:
 
     [[nodiscard]] Address copy() const;
     void push(const CoordIJK *coord);
+
+    int distanceTo(const Address &addr) const;
+
     std::vector<uint8_t> data();
     bool prime() const;
 

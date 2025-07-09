@@ -2,10 +2,10 @@
 #define ANTOP_H
 
 #include <map>
-#include "hex.h"
+#include "cell.h"
 
 class Antop {
-    std::map<H3Index, Hex> hexes;
+    std::map<H3Index, Cell> hexes;
 
 public:
     Antop();

@@ -82,7 +82,7 @@ void initNeighbours(AddrIdxBiMap& allocd, AddrIdx origin) {
 H3Index getOriginForResolution(const int res) {
     switch (res) {
         case 1:
-            return  0x81463ffffffffff;
+            return 0x81463ffffffffff;
         case 2:
             return 0x824607fffffffff;
         case 3:

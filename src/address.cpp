@@ -1,6 +1,7 @@
 #include "address.h"
 #include <bitset>
 #include <iostream>
+#include <util.h>
 #include <bits/ostream.tcc>
 
 #define RIGHT_MASK 0b0000111
@@ -50,6 +51,28 @@ void Address::push(const CoordIJK *coord) {
     _size++;
 }
 
+int Address::distanceTo(const Address &addr) const {
+    if (prime() != addr.prime()) {
+        return std::numeric_limits<int>::max();
+    }
+
+    const size_t shortest = _len < addr._len ? _len : addr._len;
+    const size_t longest = _len >= addr._len ? _len : addr._len;
+
+    int dist = 0;
+    for (size_t i = 0; i < shortest; i++) {
+        dist += hammingDistance(_data[i], addr._data[i]);
+    }
+
+    const std::vector<uint8_t> data = _len == longest ? this->_data : addr._data;
+
+    for (size_t i = shortest; i < longest; i++) {
+        dist += hammingDistance(data[i], 0);
+    }
+
+    return dist;
+}
+
 std::vector<uint8_t> Address::data() {
     return _data;
 }
@@ -58,14 +81,14 @@ bool Address::prime() const {
     return _prime;
 }
 
-bool Address::operator<(const Address& other) const {
-    if (prime() != other.prime())
-        return prime() < other.prime();
-    if (_size != other._size)
-        return _size < other._size;
-    if (_len != other._len)
-        return _len < other._len;
-    return _data < other._data;
+bool Address::operator<(const Address& addr) const {
+    if (prime() != addr.prime())
+        return prime() < addr.prime();
+    if (_size != addr._size)
+        return _size < addr._size;
+    if (_len != addr._len)
+        return _len < addr._len;
+    return _data < addr._data;
 }
 
 /**
@@ -80,21 +103,21 @@ bool Address::operator<(const Address& other) const {
  * @param other The other Address instance to compare with.
  * @return True if the two Address instances are considered equal, false otherwise.
  */
-bool Address::operator==(const Address& other) const {
-    if (prime() != other.prime()){
+bool Address::operator==(const Address& addr) const {
+    if (prime() != addr.prime()){
         return false;
     }
 
-    const size_t shortest = _len < other._len ? _len : other._len;
-    const size_t longest = _len >= other._len ? _len : other._len;
+    const size_t shortest = _len < addr._len ? _len : addr._len;
+    const size_t longest = _len >= addr._len ? _len : addr._len;
 
     for (size_t i = 0; i < shortest; i++) {
-        if (_data[i] != other._data[i]) {
+        if (_data[i] != addr._data[i]) {
             return false;
         }
     }
 
-    const std::vector<uint8_t> data = _len == longest ? this->_data : other._data;
+    const std::vector<uint8_t> data = _len == longest ? this->_data : addr._data;
 
     for (size_t i = shortest; i < longest; i++) {
         if (data[i] != 0) {

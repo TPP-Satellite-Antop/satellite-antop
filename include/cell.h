@@ -4,13 +4,12 @@
 #include "address.h"
 
 class Cell {
-
-    private:
-        Address baseAddr;
-        Address primeAddr;
+    std::vector<Address> addresses;
 
     public:
         Cell();
+        void addAddress(const Address& address);
+        int distanceTo(const Cell* cell);
 
 };
 
