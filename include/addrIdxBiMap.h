@@ -13,9 +13,10 @@ struct AddrIdx {
 };
 
 class AddrIdxBiMap {
+public:
     std::unordered_map<H3Index, Address> indexToAddress;
     std::unordered_map<Address, H3Index> addressToIndex;
-public:
+
     AddrIdxBiMap();
     void insert(const AddrIdx& addrIdx);
     H3Index getIdx(const Address &addr);

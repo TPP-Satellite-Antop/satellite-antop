@@ -96,6 +96,23 @@ H3Index getOriginForResolution(const int res) {
     }
 }
 
+
+int neighbours(const AddrIdxBiMap& allocd) {
+    int neighbourCount = 0;
+    for (const auto& [addr1, idx1] : allocd.addressToIndex) {
+        for (const auto& [addr2, idx2] : allocd.addressToIndex) {
+            if (idx1 == idx2) {
+                continue;
+            }
+
+            if (addr1.distanceTo(addr2) == 1) {
+                neighbourCount++;
+            }
+        }
+    }
+    return neighbourCount;
+}
+
 void init(const LatLng ref, const int res) {
     AddrIdxBiMap allocd;
     AddrIdxBiMap allocdPrime;
@@ -118,9 +135,14 @@ void init(const LatLng ref, const int res) {
     allocd.insert({idx, addr});
     allocdPrime.insert({idx, addrPrime});
 
-    std::cout << "Address " << std::hex << idx << ": " << addr << std::endl;
     initNeighbours(allocd, {idx, addr});
+    initNeighbours(allocdPrime, {idx, addrPrime});
 
-    std::cout << "Number of addresses: " << count << " - " << countPrime << std::endl;
+    std::cout << "Number of addresses: " << std::dec << count << " - " << countPrime << std::endl;
+
+    std::cout << "Average neighbours: " << static_cast<float>(neighbours(allocd) + neighbours(allocdPrime)) / static_cast<float>(count) << std::endl;
+
+    count = 0;
+    countPrime = 0;
 }
 

@@ -10,9 +10,12 @@ extern "C" {
 
 int main() {
     constexpr LatLng coord = {-10, 0};
-    constexpr int resolution = 5;
+    //constexpr int resolution = 0;
 
-    init(coord, resolution);
-
+    for (int i = 0; i <= 5; i++) {
+        std::cout << "Resolution: " << i << std::endl;
+        init(coord, i);
+        std::cout << std::endl;
+    }
     return 0;
 }
