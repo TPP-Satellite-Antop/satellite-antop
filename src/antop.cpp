@@ -5,6 +5,7 @@
 #include "address.h"
 #include "addrIdxBiMap.h"
 #include "errors.h"
+#include "resolution.h"
 
 extern "C" {
     #include "h3lib/include/localij.h"
@@ -79,36 +80,18 @@ void initNeighbours(AddrIdxBiMap& allocd, AddrIdx origin) {
     } while (!cells_queue.empty());
 }
 
-H3Index getOriginForResolution(const int res) {
-    switch (res) {
-        case 1:
-            return  0x81463ffffffffff;
-        case 2:
-            return 0x824607fffffffff;
-        case 3:
-            return 0x834600fffffffff;
-        case 4:
-            return 0x8446001ffffffff;
-        case 5:
-            return 0x85460003fffffff;
-        default:
-            throw std::out_of_range{Errors::RESOLUTION_NOT_SUPPORTED};
-    }
-}
+void init(const int satellites) {
+    const int res = getResolution(satellites);
 
-void init(const LatLng ref, const int res) {
     AddrIdxBiMap allocd;
     AddrIdxBiMap allocdPrime;
 
-    H3Index idx = 0;
-    if (latLngToCell(&ref, res, &idx) != E_SUCCESS) {
+    H3Index idx = getOriginForResolution(res);
+    /*TODO delete?
+     *if (latLngToCell(&ref, res, &idx) != E_SUCCESS) {
         std::cerr << Errors::COORD_CONVERTING_ERROR << std::endl;
         return;
-    }
-
-    if (idx == 0) {
-        idx = getOriginForResolution(res);
-    }
+    }*/
 
     count += 1;
     countPrime += 1;

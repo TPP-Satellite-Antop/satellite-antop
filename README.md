@@ -15,11 +15,7 @@ docker run satellite-antop:latest
 
 ## Running tests locally
 ```sh
-mkdir build
-cd build
-cmake ..
-make
-ctest
+mkdir -p build && cd build && cmake .. && make && ctest
 ```
 ## Running tests with docker
 ```sh

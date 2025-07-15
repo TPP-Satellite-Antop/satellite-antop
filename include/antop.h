@@ -11,6 +11,6 @@ public:
     Antop();
 };
 
-void init(LatLng ref, int res);
+void init(int satellites);
 
 #endif //ANTOP_H
