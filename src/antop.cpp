@@ -81,18 +81,10 @@ void initNeighbours(AddrIdxBiMap& allocd, AddrIdx origin) {
 }
 
 void init(const int satellites) {
-    const int res = getResolution(satellites);
-
     AddrIdxBiMap allocd;
     AddrIdxBiMap allocdPrime;
 
-    H3Index idx = getOriginForResolution(res);
-    /*TODO delete?
-     *if (latLngToCell(&ref, res, &idx) != E_SUCCESS) {
-        std::cerr << Errors::COORD_CONVERTING_ERROR << std::endl;
-        return;
-    }*/
-
+    H3Index idx = getOriginForResolution(getResolution(satellites));
     count += 1;
     countPrime += 1;
     const Address addr(false);
