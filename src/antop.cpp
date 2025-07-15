@@ -80,6 +80,7 @@ void initNeighbours(AddrIdxBiMap& allocd, AddrIdx origin) {
     } while (!cells_queue.empty());
 }
 
+//TODO debería también, ubicar los satélites
 void init(const int satellites) {
     AddrIdxBiMap allocd;
     AddrIdxBiMap allocdPrime;

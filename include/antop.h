@@ -13,4 +13,11 @@ public:
 
 void init(int satellites);
 
+/*TODO
+std::string load(H3Index dir);
+std::string getNextHopId(std::string src, std::string dst);
+H3Index getDir(std::string id);
+void turnOff(std::string id);
+*/
+
 #endif //ANTOP_H
