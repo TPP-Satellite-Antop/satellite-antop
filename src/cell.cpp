@@ -6,7 +6,7 @@ void Cell::addAddress(const Address& address) {
     addresses.push_back(address);
 }
 
-int Cell::distanceTo(const Cell* cell) {
+int Cell::distanceTo(const Cell* cell) const {
     int dist = INFINITE;
 
     for (const Address& addr1 : addresses) {

@@ -4,13 +4,12 @@
 #include "address.h"
 
 class Cell {
-    std::vector<Address> addresses;
-
     public:
-        Cell();
-        void addAddress(const Address& address);
-        int distanceTo(const Cell* cell);
+        std::vector<Address> addresses;
 
+        Cell() = default;
+        void addAddress(const Address& address);
+        int distanceTo(const Cell* cell) const;
 };
 
 #endif //CELL_H

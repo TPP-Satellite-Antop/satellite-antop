@@ -10,6 +10,7 @@
 struct AddrIdx {
     H3Index idx{};
     Address addr;
+    Address addrPrime;
 };
 
 class AddrIdxBiMap {

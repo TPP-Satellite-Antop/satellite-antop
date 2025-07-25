@@ -51,6 +51,7 @@ void Address::push(const CoordIJK *coord) {
     _size++;
 }
 
+// ToDo: parallelize hamming distance calc.
 int Address::distanceTo(const Address &addr) const {
     if (prime() != addr.prime()) {
         return std::numeric_limits<int>::max();
