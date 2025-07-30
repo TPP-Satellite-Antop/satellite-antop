@@ -30,10 +30,6 @@ void initNeighbours(std::unordered_map<H3Index, Cell>& cellByIdx, AddrIdx origin
         origin = cells_queue.front();
         cells_queue.pop();
 
-        //std::cout << std::hex << origin.idx << std::endl;
-
-        // Fetch current origin neighbours.
-
         if (gridDisk(origin.idx, DISTANCE, out) != E_SUCCESS) {
             std::cerr << Errors::getNeighborsSearchError(origin.idx) << std::endl;
             return;
@@ -51,14 +47,6 @@ void initNeighbours(std::unordered_map<H3Index, Cell>& cellByIdx, AddrIdx origin
             if (h3 == PENTAGON_VALUE || h3 == origin.idx || cellByIdx.contains(h3)) {
                 continue;
             }
-
-            Cell& cell = cellByIdx[h3];
-
-            /*if (cell.distanceTo(&cellByIdx[origin.idx]) < std::numeric_limits<int>::max()) {
-                continue;
-            }*/
-
-            // ToDo: Check if the cell is already allocated.
 
             CoordIJK output;
             if (const H3Error e = cellToLocalIjk(origin.idx, h3, &output); e != 0) {
@@ -89,6 +77,7 @@ void initNeighbours(std::unordered_map<H3Index, Cell>& cellByIdx, AddrIdx origin
             addresses.insert_or_assign(newAddr, true);
             addresses.insert_or_assign(newAddrPrime, true);
 
+            Cell& cell = cellByIdx[h3];
             cell.addAddress(newAddr);
             cell.addAddress(newAddrPrime);
 
@@ -108,11 +97,15 @@ void initNeighbours(std::unordered_map<H3Index, Cell>& cellByIdx, AddrIdx origin
         }
 
         for (const unsigned long h3 : out) {
-            auto cell2 = cellByIdx[h3];
-            if (h3 == PENTAGON_VALUE || h3 == idx || cell1.distanceTo(&cell2) <= 2) {
+            // Keep these two if clauses separated as it may cause index 0 to be pushed into celByIdx map!
+            if (h3 == PENTAGON_VALUE || h3 == idx) {
                 continue;
             }
 
+            Cell& cell2 = cellByIdx[h3];
+            if (cell1.distanceTo(&cell2) <= 2) {
+                continue;
+            }
 
             CoordIJK output;
             if (const H3Error e = cellToLocalIjk(idx, h3, &output); e != 0) {
@@ -170,7 +163,6 @@ int neighbours(const std::unordered_map<H3Index, Cell>& cellByIdx) {
             }
 
             if (cell1.distanceTo(&cell2) == 1) {
-                //std::cout << std::hex << idx1 << " - " << idx2 << std::endl;
                 neighbourCount++;
             }
         }
@@ -210,7 +202,10 @@ void init(const LatLng ref, const int res) {
     std::cout << "Unique Cells: " << cellByIdx.size() << std::endl;
     std::cout << "Number of addresses: " << std::dec << count << std::endl;
 
-    std::cout << "Average neighbours: " << static_cast<float>(neighbours(cellByIdx) /*+ neighbours(allocdPrime)*/) / static_cast<float>(cellByIdx.size()) << std::endl;
+    const auto n = neighbours(cellByIdx);
+
+    std::cout << "Neighbours: " << n << " - " << cellByIdx.size() << std::endl;
+    std::cout << "Average neighbours: " << static_cast<float>(n) / static_cast<float>(cellByIdx.size()) << std::endl;
 
     count = 0;
 }
