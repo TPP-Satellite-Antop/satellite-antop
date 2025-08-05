@@ -9,83 +9,76 @@ extern "C" {
     #include "h3lib/include/coordijk.h"
 }
 
-void Antop::initNeighbours(AddrIdx origin) {
-    std::unordered_map<Address, bool> addresses;
+H3Error Antop::getNeighborCoordinates(const H3Index origin, const H3Index neighbor, CoordIJK& output) {
+    CoordIJK originOutput;
+    H3Error e = cellToLocalIjk(origin, origin, &originOutput);
+    if (e != 0) return e;
 
-    std::queue<AddrIdx> cells_queue;
-    cells_queue.push(origin);
+    e = cellToLocalIjk(origin, neighbor, &output);
+    if (e != 0) return e;
 
+    output.i -= originOutput.i;
+    output.j -= originOutput.j;
+    output.k -= originOutput.k;
+    
+    return E_SUCCESS;
+}
+
+bool Antop::tryAddAddress(const Address& addr, Cell& cell, std::unordered_map<Address, bool>& addresses) {
+    if (addresses.contains(addr)) return false;
+    addresses.insert_or_assign(addr, true);
+    cell.addAddress(addr);
+    count += 1;
+    return true;
+}
+
+bool Antop::processNeighbor(const H3Index neighborIdx, const AddrIdx& origin, std::unordered_map<Address, bool>& addresses, std::queue<AddrIdx>& cells_queue) {
+    if (neighborIdx == INVALID_IDX || neighborIdx == origin.idx || cellByIdx.contains(neighborIdx)) {
+        return false;
+    }
+
+    CoordIJK output;
+    if (const H3Error e = getNeighborCoordinates(origin.idx, neighborIdx, output); e != 0) {
+        std::cerr << "Error converting coordinate to H3 index: " << e << std::endl;
+        return false;
+    }
+
+    CoordIJK primeOutput = output;
+    _ijkNormalize(&output);
+    _ijkRotate60cw(&primeOutput);
+
+    Address newAddr = origin.addr.copy();
+    Address newAddrPrime = origin.addrPrime.copy();
+
+    newAddr.push(&output);
+    newAddrPrime.push(&primeOutput);
+
+    if (addresses.contains(newAddr) || addresses.contains(newAddrPrime)) {
+        return false;
+    }
+
+    addresses.insert_or_assign(newAddr, true);
+    addresses.insert_or_assign(newAddrPrime, true);
+
+    Cell& cell = cellByIdx[neighborIdx];
+    cell.addAddress(newAddr);
+    cell.addAddress(newAddrPrime);
+
+    cells_queue.push({neighborIdx, newAddr, newAddrPrime});
+    count += 1;
+    return true;
+}
+
+void Antop::processFarNeighbors(std::unordered_map<Address, bool>& addresses) {
     H3Index out[MAX_NEIGHBORS];
-
-    do {
-        origin = cells_queue.front();
-        cells_queue.pop();
-
-        if (gridDisk(origin.idx, DISTANCE, out) != E_SUCCESS) {
-            std::cerr << Errors::getNeighborsSearchError(origin.idx) << std::endl;
-            return;
-        }
-
-        CoordIJK originOutput;
-        if (const H3Error e = cellToLocalIjk(origin.idx, origin.idx, &originOutput); e != 0) {
-            std::cerr << "Error converting coordinate to H3 index: " << e << std::endl;
-            return;
-        }
-
-        for (const unsigned long h3 : out) {
-            if (h3 == PENTAGON_VALUE || h3 == origin.idx || cellByIdx.contains(h3)) {
-                continue;
-            }
-
-            CoordIJK output;
-            if (const H3Error e = cellToLocalIjk(origin.idx, h3, &output); e != 0) {
-                std::cerr << "Error converting coordinate to H3 index: " << e << std::endl;
-                continue;
-            }
-
-            output.i -= originOutput.i;
-            output.j -= originOutput.j;
-            output.k -= originOutput.k;
-
-            CoordIJK primeOutput = output;
-
-            _ijkNormalize(&output);
-            _ijkRotate60cw(&primeOutput);
-
-            Address newAddr = origin.addr.copy();
-            Address newAddrPrime = origin.addrPrime.copy();
-
-            newAddr.push(&output);
-            newAddrPrime.push(&primeOutput);
-
-            if (addresses.contains(newAddr) || addresses.contains(newAddrPrime)) {
-                continue;
-            }
-
-            addresses.insert_or_assign(newAddr, true);
-            addresses.insert_or_assign(newAddrPrime, true);
-
-            Cell& cell = cellByIdx[h3];
-            cell.addAddress(newAddr);
-            cell.addAddress(newAddrPrime);
-
-            cells_queue.push({h3, newAddr, newAddrPrime});
-            count += 1;
-        }
-    } while (!cells_queue.empty());
-
+    
     for (const auto& [idx, cell1] : cellByIdx) {
         if (gridDisk(idx, DISTANCE, out) != E_SUCCESS) {
             exit(2);
         }
 
-        CoordIJK originOutput;
-        if (const H3Error e = cellToLocalIjk(idx, idx, &originOutput); e != 0) {
-            exit(3);
-        }
-
         for (const unsigned long h3 : out) {
-            if (h3 == PENTAGON_VALUE || h3 == idx) {
+            if (h3 == INVALID_IDX || h3 == idx) {
                 continue;
             }
 
@@ -95,13 +88,9 @@ void Antop::initNeighbours(AddrIdx origin) {
             }
 
             CoordIJK output;
-            if (const H3Error e = cellToLocalIjk(idx, h3, &output); e != 0) {
+            if (const H3Error e = getNeighborCoordinates(idx, h3, output); e != 0) {
                 exit(4);
             }
-
-            output.i -= originOutput.i;
-            output.j -= originOutput.j;
-            output.k -= originOutput.k;
 
             for (const auto& addr : cell1.addresses) {
                 auto a = addr.copy();
@@ -112,15 +101,43 @@ void Antop::initNeighbours(AddrIdx origin) {
                 }
 
                 a.push(&output);
-                if (!addresses.contains(a)) {
-                    addresses.insert_or_assign(a, true);
-                    cell2.addAddress(a);
-                    count += 1;
+                if (tryAddAddress(a, cell2, addresses)) {
                     break;
                 }
             }
         }
     }
+}
+
+void Antop::initNeighbours(AddrIdx origin) {
+    std::unordered_map<Address, bool> addresses;
+    std::queue<AddrIdx> cells_queue;
+    cells_queue.push(origin);
+    H3Index neighbours[MAX_NEIGHBORS];
+
+    // Process immediate neighbors
+    while (!cells_queue.empty()) {
+        origin = cells_queue.front();
+        cells_queue.pop();
+
+        if (gridDisk(origin.idx, DISTANCE, neighbours) != E_SUCCESS) {
+            std::cerr << Errors::getNeighborsSearchError(origin.idx) << std::endl;
+            return;
+        }
+
+        CoordIJK originOutput;
+        if (const H3Error e = cellToLocalIjk(origin.idx, origin.idx, &originOutput); e != 0) {
+            std::cerr << "Error converting coordinate to H3 index: " << e << std::endl;
+            return;
+        }
+
+        for (const unsigned long h3 : neighbours) {
+            processNeighbor(h3, origin, addresses, cells_queue);
+        }
+    }
+
+    // Process far neighbors
+    processFarNeighbors(addresses);
 }
 
 H3Index Antop::getOriginForResolution(const int res) {
