@@ -10,11 +10,13 @@ extern "C" {
 
 int main() {
     constexpr LatLng coord = {-10, 0};
+
     //constexpr int resolution = 0;
 
-    for (int i = 0; i <= 2; i++) {
+    for (int i = 0; i <= 1; i++) {
+        Antop antop;
         std::cout << "Resolution: " << i << std::endl;
-        init(coord, i);
+        antop.init(coord, i);
         std::cout << std::endl;
     }
     return 0;

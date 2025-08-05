@@ -1,10 +1,7 @@
 #include <iostream>
 #include <queue>
-
 #include "antop.h"
 #include "address.h"
-#include "addrIdxBiMap.h"
-#include "cell.h"
 #include "errors.h"
 
 extern "C" {
@@ -12,13 +9,7 @@ extern "C" {
     #include "h3lib/include/coordijk.h"
 }
 
-#define MAX_NEIGHBORS 7
-#define PENTAGON_VALUE 0
-#define DISTANCE 1
-
-int count = 0;
-
-void initNeighbours(std::unordered_map<H3Index, Cell>& cellByIdx, AddrIdx origin) {
+void Antop::initNeighbours(AddrIdx origin) {
     std::unordered_map<Address, bool> addresses;
 
     std::queue<AddrIdx> cells_queue;
@@ -35,7 +26,6 @@ void initNeighbours(std::unordered_map<H3Index, Cell>& cellByIdx, AddrIdx origin
             return;
         }
 
-        // Compute IJK coordinates from origin to origin.
         CoordIJK originOutput;
         if (const H3Error e = cellToLocalIjk(origin.idx, origin.idx, &originOutput); e != 0) {
             std::cerr << "Error converting coordinate to H3 index: " << e << std::endl;
@@ -43,7 +33,6 @@ void initNeighbours(std::unordered_map<H3Index, Cell>& cellByIdx, AddrIdx origin
         }
 
         for (const unsigned long h3 : out) {
-            // Invalid index or cell already allocated.
             if (h3 == PENTAGON_VALUE || h3 == origin.idx || cellByIdx.contains(h3)) {
                 continue;
             }
@@ -69,7 +58,6 @@ void initNeighbours(std::unordered_map<H3Index, Cell>& cellByIdx, AddrIdx origin
             newAddr.push(&output);
             newAddrPrime.push(&primeOutput);
 
-            // Address already allocated.
             if (addresses.contains(newAddr) || addresses.contains(newAddrPrime)) {
                 continue;
             }
@@ -97,7 +85,6 @@ void initNeighbours(std::unordered_map<H3Index, Cell>& cellByIdx, AddrIdx origin
         }
 
         for (const unsigned long h3 : out) {
-            // Keep these two if clauses separated as it may cause index 0 to be pushed into celByIdx map!
             if (h3 == PENTAGON_VALUE || h3 == idx) {
                 continue;
             }
@@ -136,7 +123,7 @@ void initNeighbours(std::unordered_map<H3Index, Cell>& cellByIdx, AddrIdx origin
     }
 }
 
-H3Index getOriginForResolution(const int res) {
+H3Index Antop::getOriginForResolution(const int res) {
     switch (res) {
         case 1:
             return 0x81463ffffffffff;
@@ -153,8 +140,7 @@ H3Index getOriginForResolution(const int res) {
     }
 }
 
-
-int neighbours(const std::unordered_map<H3Index, Cell>& cellByIdx) {
+int Antop::neighbours() const {
     int neighbourCount = 0;
     for (const auto& [idx1, cell1] : cellByIdx) {
         for (const auto& [idx2, cell2] : cellByIdx) {
@@ -170,7 +156,7 @@ int neighbours(const std::unordered_map<H3Index, Cell>& cellByIdx) {
     return neighbourCount;
 }
 
-void init(const LatLng ref, const int res) {
+void Antop::init(const LatLng ref, const int res) {
     H3Index idx = 0;
     if (latLngToCell(&ref, res, &idx) != E_SUCCESS) {
         std::cerr << Errors::COORD_CONVERTING_ERROR << std::endl;
@@ -191,34 +177,19 @@ void init(const LatLng ref, const int res) {
     baseCell.addAddress(addr);
     baseCell.addAddress(addrPrime);
 
-    count += 1;
-
-    std::unordered_map<H3Index, Cell> cellByIdx;
+    count = 1;
 
     cellByIdx.insert({idx, baseCell});
 
-    initNeighbours(cellByIdx, {idx, addr, addrPrime});
+    initNeighbours({idx, addr, addrPrime});
 
     std::cout << "Unique Cells: " << cellByIdx.size() << std::endl;
     std::cout << "Number of addresses: " << std::dec << count << std::endl;
 
-    const auto n = neighbours(cellByIdx);
+    const auto n = neighbours();
 
     std::cout << "Neighbours: " << n << " - " << cellByIdx.size() << std::endl;
     std::cout << "Average neighbours: " << static_cast<float>(n) / static_cast<float>(cellByIdx.size()) << std::endl;
 
     count = 0;
 }
-
-
-//
-
-// Addresses --> Boolean    para saber qué direcciones están ya usadas
-// Idxs (H3) --> Cells      para saber qué hexágonos de H3 tienen ya al menos una dirección
-
-
-// Idxs (H3) --> Cells
-// Addresses --> Cells
-// Addresses --> Idxs
-// Cells     --> Idxs (H3)
-
