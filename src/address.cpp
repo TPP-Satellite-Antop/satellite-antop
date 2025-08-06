@@ -57,8 +57,8 @@ int Address::distanceTo(const Address &addr) const {
         return std::numeric_limits<int>::max();
     }
 
-    const size_t shortest = _len < addr._len ? _len : addr._len;
-    const size_t longest = _len >= addr._len ? _len : addr._len;
+    const size_t shortest = std::min(_len, addr._len);
+    const size_t longest = std::max(_len, addr._len);
 
     int dist = 0;
     for (size_t i = 0; i < shortest; i++) {
