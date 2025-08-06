@@ -137,7 +137,7 @@ void Antop::initNeighbours(AddrIdx origin) {
     }
 
     // Process far neighbors
-    processFarNeighbors(addresses);
+    //processFarNeighbors(addresses);
 }
 
 H3Index Antop::getOriginForResolution(const int res) {
