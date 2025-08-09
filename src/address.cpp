@@ -141,12 +141,12 @@ size_t Address::hash() const {
 }
 
 std::ostream& operator<<(std::ostream& os, const Address& addr) {
-    os << "[";
+    os << "{" << addr.prime() << ", [";
 
     for (const unsigned char i : addr._data) {
         os << std::bitset<8>(i);  // Cast to int to print numeric value instead of char
     }
-    os << "])";
+    os << "]}";
 
     return os;
 }

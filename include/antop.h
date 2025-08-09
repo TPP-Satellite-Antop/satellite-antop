@@ -17,11 +17,13 @@ class Antop {
 
     static H3Error getNeighborCoordinates(H3Index origin, H3Index neighbor, CoordIJK &output) ;
 
-    bool tryAddAddress(const Address &addr, Cell &cell, std::unordered_map<Address, bool> &addresses);
+    bool tryAddAddress(const Address &addr, Cell &cell, std::unordered_map<Address, H3Index> &addresses, H3Index idx);
 
-    bool processNeighbor(H3Index neighborIdx, const AddrIdx &origin, std::unordered_map<Address, bool> &addresses, std::queue<AddrIdx> &cells_queue);
+    static bool isNewAddrValid(const AddrIdx& origin, const AddrIdx& newAddrIdx, std::unordered_map<Address, H3Index>& addresses);
 
-    void processFarNeighbors(std::unordered_map<Address, bool> &addresses);
+    bool processNeighbor(H3Index neighborIdx, const AddrIdx &origin, std::unordered_map<Address, H3Index> &addresses, std::queue<AddrIdx> &cells_queue);
+
+    void processFarNeighbors(std::unordered_map<Address, H3Index> &addresses);
 
     void initNeighbours(AddrIdx origin);
     static H3Index getOriginForResolution(int res);
