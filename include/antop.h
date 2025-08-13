@@ -19,7 +19,7 @@ class Antop {
 
     bool tryAddAddress(const Address &addr, Cell &cell, std::unordered_map<Address, H3Index> &addresses, H3Index idx);
 
-    static bool isNewAddrValid(const AddrIdx& origin, const AddrIdx& newAddrIdx, std::unordered_map<Address, H3Index>& addresses);
+    static bool isNewAddrValid(const Address& originAddr, H3Index idx, CoordIJK coord, std::unordered_map<Address, H3Index>& addresses);
 
     bool processNeighbor(H3Index neighborIdx, const AddrIdx &origin, std::unordered_map<Address, H3Index> &addresses, std::queue<AddrIdx> &cells_queue);
 

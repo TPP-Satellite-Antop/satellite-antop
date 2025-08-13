@@ -43,39 +43,29 @@ bool Antop::tryAddAddress(const Address& addr, Cell& cell, std::unordered_map<Ad
     return true;
 }
 
-bool Antop::isNewAddrValid(const AddrIdx& origin, const AddrIdx& newAddrIdx, std::unordered_map<Address, H3Index>& addresses) {
+bool Antop::isNewAddrValid(const Address& originAddr, const H3Index idx, const CoordIJK coord, std::unordered_map<Address, H3Index>& addresses) {
     H3Index neighbours[MAX_NEIGHBORS];
 
-    if (gridDisk(newAddrIdx.idx, DISTANCE, neighbours) != E_SUCCESS) {
-        std::cerr << Errors::getNeighborsSearchError(newAddrIdx.idx) << std::endl;
+    if (gridDisk(idx, DISTANCE, neighbours) != E_SUCCESS) {
+        std::cerr << Errors::getNeighborsSearchError(idx) << std::endl;
         return false;
     }
 
-    for (const auto output : h3NormalizedDirections) {
-        auto potentialNeighbour = origin.addr.copy();
-        auto potentialNeighbourPrime = origin.addrPrime.copy();
-
-        potentialNeighbour.push(&output);
-        potentialNeighbourPrime.push(&output);
-
-        // Would be checking a potential neighbour against the address to validate.
-        if (potentialNeighbour == newAddrIdx.addr || potentialNeighbourPrime == newAddrIdx.addrPrime) {
+    for (const CoordIJK output : h3NormalizedDirections) {
+        if (output.i == coord.i && output.j == coord.j && output.k == coord.k) {
             continue;
         }
 
-        bool aaa = addresses.contains(potentialNeighbour);
-        bool bbb = addresses.contains(potentialNeighbourPrime);
+        Address potentialNeighbour = originAddr.copy();
+        potentialNeighbour.push(&output);
 
-        if (aaa) {
-            if (std::find(neighbours, neighbours + 6, addresses[potentialNeighbour]) != neighbours + 6) {
-                return false;
-            }
+        // Would be checking a potential neighbour against the address to validate.
+        if (potentialNeighbour == originAddr || !addresses.contains(potentialNeighbour)) {
+            continue;
         }
 
-        if (bbb) {
-            if (std::find(neighbours, neighbours + 6, addresses[potentialNeighbourPrime]) != neighbours + 6) {
-                return false;
-            }
+        if (std::find(neighbours, neighbours + 6, addresses[potentialNeighbour]) != neighbours + 6) {
+            return false;
         }
     }
     return true;
@@ -102,7 +92,7 @@ bool Antop::processNeighbor(const H3Index neighborIdx, const AddrIdx& origin, st
     newAddr.push(&output);
     newAddrPrime.push(&primeOutput);
 
-    if (addresses.contains(newAddr) || addresses.contains(newAddrPrime) || !isNewAddrValid(origin, {neighborIdx, newAddr, newAddrPrime}, addresses)) {
+    if (addresses.contains(newAddr) || addresses.contains(newAddrPrime) || !isNewAddrValid(origin.addr, neighborIdx, output, addresses) || !isNewAddrValid(origin.addrPrime, neighborIdx, primeOutput, addresses)) {
         return false;
     }
 
@@ -143,16 +133,20 @@ void Antop::processFarNeighbors(std::unordered_map<Address, H3Index>& addresses)
             }
 
             for (const auto& addr : cell1.addresses) {
-                auto a = addr.copy();
-                if (a.prime()) {
+                if (addr.prime()) {
                     _ijkRotate60cw(&output);
                 } else {
                     _ijkNormalize(&output);
                 }
 
+                auto a = addr.copy();
                 a.push(&output);
 
-                if (!isNewAddrValid({idx, addr, addr}, {h3, a, a}, addresses)) {
+                /*if (h3 == 0x80b7fffffffffff) {
+                    std::cout << "";
+                }*/
+
+                if (!isNewAddrValid(addr, h3, output, addresses)) {
                     continue;
                 }
 
