@@ -52,21 +52,16 @@ bool Antop::isNewAddrValid(const Address& originAddr, const H3Index idx, const C
     }
 
     for (const CoordIJK output : h3NormalizedDirections) {
-        if (output.i == coord.i && output.j == coord.j && output.k == coord.k) {
+        Address auxAddr = originAddr.copy();
+        auxAddr.pop();
+        auxAddr.push(&output);
+        auxAddr.push(&coord);
+
+        if (!addresses.contains(auxAddr))
             continue;
-        }
 
-        Address potentialNeighbour = originAddr.copy();
-        potentialNeighbour.push(&output);
-
-        // Would be checking a potential neighbour against the address to validate.
-        if (potentialNeighbour == originAddr || !addresses.contains(potentialNeighbour)) {
-            continue;
-        }
-
-        if (std::find(neighbours, neighbours + 6, addresses[potentialNeighbour]) != neighbours + 6) {
+        if (std::find(neighbours, neighbours + 6, addresses[auxAddr]) == neighbours + 6)
             return false;
-        }
     }
     return true;
 }
@@ -95,9 +90,6 @@ bool Antop::processNeighbor(const H3Index neighborIdx, const AddrIdx& origin, st
     if (addresses.contains(newAddr) || addresses.contains(newAddrPrime) || !isNewAddrValid(origin.addr, neighborIdx, output, addresses) || !isNewAddrValid(origin.addrPrime, neighborIdx, primeOutput, addresses)) {
         return false;
     }
-
-    if (neighborIdx == 0x80c3fffffffffff || neighborIdx == 0x80effffffffffff || neighborIdx == 0x8071fffffffffff || neighborIdx == 0x800dfffffffffff)
-        std::cout << std::hex << origin.idx << " Origin: " << origin.addr << std::endl;
 
     addresses.insert_or_assign(newAddr, neighborIdx);
     addresses.insert_or_assign(newAddrPrime, neighborIdx);
@@ -189,7 +181,7 @@ void Antop::initNeighbours(AddrIdx origin) {
     }
 
     // Process far neighbors
-    // processFarNeighbors(addresses);
+    processFarNeighbors(addresses);
 }
 
 H3Index Antop::getOriginForResolution(const int res) {
@@ -282,7 +274,7 @@ void Antop::init(const LatLng ref, const int res) {
 
     const auto n = neighbours();
 
-    std::cout << "Neighbours: " << n << " - " << cellByIdx.size() << std::endl;
+    std::cout << std::dec << "Neighbours: " << n << " - " << cellByIdx.size() << std::endl;
     std::cout << "Average neighbours: " << static_cast<float>(n) / static_cast<float>(cellByIdx.size()) << std::endl;
 
     count = 0;
