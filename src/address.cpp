@@ -51,6 +51,21 @@ void Address::push(const CoordIJK *coord) {
     _size++;
 }
 
+void Address::pop() {
+    if (_size == 0) {
+        return;
+    }
+
+    if (_size % 2 == 0) { // The last direction is in the high bits of the last byte
+        _data[_len - 1] &= RIGHT_MASK;
+    } else { // The last direction is alone in the last byte
+        _data.pop_back();
+        _len--;
+    }
+
+    _size--;
+}
+
 // ToDo: parallelize hamming distance calc.
 int Address::distanceTo(const Address &addr) const {
     if (prime() != addr.prime()) {

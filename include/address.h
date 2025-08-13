@@ -20,6 +20,7 @@ public:
 
     [[nodiscard]] Address copy() const;
     void push(const CoordIJK *coord);
+    void pop();
 
     int distanceTo(const Address &addr) const;
 

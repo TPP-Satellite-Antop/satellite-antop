@@ -96,6 +96,9 @@ bool Antop::processNeighbor(const H3Index neighborIdx, const AddrIdx& origin, st
         return false;
     }
 
+    if (neighborIdx == 0x80c3fffffffffff || neighborIdx == 0x80effffffffffff || neighborIdx == 0x8071fffffffffff || neighborIdx == 0x800dfffffffffff)
+        std::cout << std::hex << origin.idx << " Origin: " << origin.addr << std::endl;
+
     addresses.insert_or_assign(newAddr, neighborIdx);
     addresses.insert_or_assign(newAddrPrime, neighborIdx);
 
@@ -186,7 +189,7 @@ void Antop::initNeighbours(AddrIdx origin) {
     }
 
     // Process far neighbors
-    processFarNeighbors(addresses);
+    // processFarNeighbors(addresses);
 }
 
 H3Index Antop::getOriginForResolution(const int res) {
