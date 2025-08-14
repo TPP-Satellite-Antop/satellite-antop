@@ -9,12 +9,13 @@ extern "C" {
 }
 
 class Address {
-    std::vector<uint8_t> _data;
     size_t _size = 0;
     size_t _len = 0;
     bool _prime{};
 
 public:
+    std::vector<uint8_t> _data;
+
     Address();
     explicit Address(bool prime);
 

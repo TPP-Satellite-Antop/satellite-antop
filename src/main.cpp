@@ -13,7 +13,7 @@ int main() {
 
     //constexpr int resolution = 0;
 
-    for (int i = 0; i <= 0; i++) {
+    for (int i = 0; i <= 2; i++) {
         Antop antop;
         std::cout << "Resolution: " << i << std::endl;
         antop.init(coord, i);

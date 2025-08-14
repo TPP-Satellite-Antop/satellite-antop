@@ -43,7 +43,7 @@ bool Antop::tryAddAddress(const Address& addr, Cell& cell, std::unordered_map<Ad
     return true;
 }
 
-bool Antop::isNewAddrValid(const Address& originAddr, const H3Index idx, const CoordIJK coord, std::unordered_map<Address, H3Index>& addresses) {
+bool Antop::isNewAddrValid(const Address& addr, const H3Index idx, std::unordered_map<Address, H3Index>& addresses) {
     H3Index neighbours[MAX_NEIGHBORS];
 
     if (gridDisk(idx, DISTANCE, neighbours) != E_SUCCESS) {
@@ -51,18 +51,24 @@ bool Antop::isNewAddrValid(const Address& originAddr, const H3Index idx, const C
         return false;
     }
 
-    for (const CoordIJK output : h3NormalizedDirections) {
-        Address auxAddr = originAddr.copy();
-        auxAddr.pop();
-        auxAddr.push(&output);
-        auxAddr.push(&coord);
+    auto aux = addr.copy();
 
-        if (!addresses.contains(auxAddr))
-            continue;
+    for (int i = static_cast<int>(aux._data.size()) - 1; i >= 0; i--) {
+        const uint8_t originalByte = aux._data[i];
 
-        if (std::find(neighbours, neighbours + 6, addresses[auxAddr]) == neighbours + 6)
-            return false;
+        for (int bitPos = 0; bitPos < 6; bitPos++) {
+            const uint8_t mask = 1 << bitPos;
+
+            aux._data[i] = originalByte ^ mask;
+
+            if (addresses.contains(aux) && std::find(neighbours, neighbours + 7, addresses[aux]) == neighbours + 7) {
+                return false;
+            }
+
+            aux._data[i] = originalByte;
+        }
     }
+
     return true;
 }
 
@@ -87,7 +93,7 @@ bool Antop::processNeighbor(const H3Index neighborIdx, const AddrIdx& origin, st
     newAddr.push(&output);
     newAddrPrime.push(&primeOutput);
 
-    if (addresses.contains(newAddr) || addresses.contains(newAddrPrime) || !isNewAddrValid(origin.addr, neighborIdx, output, addresses) || !isNewAddrValid(origin.addrPrime, neighborIdx, primeOutput, addresses)) {
+    if (addresses.contains(newAddr) || addresses.contains(newAddrPrime) || !isNewAddrValid(newAddr, neighborIdx, addresses) || !isNewAddrValid(newAddrPrime, neighborIdx, addresses)) {
         return false;
     }
 
@@ -137,11 +143,7 @@ void Antop::processFarNeighbors(std::unordered_map<Address, H3Index>& addresses)
                 auto a = addr.copy();
                 a.push(&output);
 
-                /*if (h3 == 0x80b7fffffffffff) {
-                    std::cout << "";
-                }*/
-
-                if (!isNewAddrValid(addr, h3, output, addresses)) {
+                if (!isNewAddrValid(a, h3, addresses)) {
                     continue;
                 }
 
@@ -181,7 +183,7 @@ void Antop::initNeighbours(AddrIdx origin) {
     }
 
     // Process far neighbors
-    processFarNeighbors(addresses);
+    // processFarNeighbors(addresses);
 }
 
 H3Index Antop::getOriginForResolution(const int res) {
@@ -252,8 +254,6 @@ void Antop::init(const LatLng ref, const int res) {
     if (idx == 0) {
         idx = getOriginForResolution(res);
     }
-
-    std::cout << "Origin: " << std::hex << idx << std::endl;
 
     auto baseCell = Cell();
 
