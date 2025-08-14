@@ -3,21 +3,12 @@
 #include "antop.h"
 #include "address.h"
 #include "errors.h"
+#include "mathExtensions.h"
 
 extern "C" {
     #include "h3lib/include/localij.h"
     #include "h3lib/include/coordijk.h"
 }
-
-constexpr std::array<CoordIJK, 6> h3NormalizedDirections = {{
-    CoordIJK(0, 0, 1),
-    CoordIJK(0, 1, 1),
-    CoordIJK(0, 1, 0),
-    CoordIJK(1, 0, 0),
-    CoordIJK(1, 1, 0),
-    CoordIJK(1, 0, 1)
-}};
-
 
 H3Error Antop::getNeighborCoordinates(const H3Index origin, const H3Index neighbor, CoordIJK& output) {
     CoordIJK originOutput;
@@ -61,7 +52,7 @@ bool Antop::isNewAddrValid(const Address& addr, const H3Index idx, std::unordere
 
             aux._data[i] = originalByte ^ mask;
 
-            if (addresses.contains(aux) && std::find(neighbours, neighbours + 7, addresses[aux]) == neighbours + 7) {
+            if (addresses.contains(aux) && std::find(neighbours, neighbours + MAX_NEIGHBORS, addresses[aux]) == neighbours + MAX_NEIGHBORS) {
                 return false;
             }
 
@@ -183,7 +174,7 @@ void Antop::initNeighbours(AddrIdx origin) {
     }
 
     // Process far neighbors
-    // processFarNeighbors(addresses);
+    processFarNeighbors(addresses);
 }
 
 H3Index Antop::getOriginForResolution(const int res) {

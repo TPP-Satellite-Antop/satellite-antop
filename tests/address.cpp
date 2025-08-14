@@ -43,43 +43,6 @@ TEST(AddressTest, PushSomeCoordToEmptyAddress) {
     ASSERT_EQ(address.data(), exp);
 }
 
-TEST(AddressTest, PopFromEmptyAddress) {
-    Address address{};
-    address.pop();
-    constexpr auto exp = std::vector<uint8_t>{};
-    ASSERT_EQ(address.data(), exp);
-}
-
-TEST(AddressTest, PopFromSingleOutputAddress) {
-    Address address{};
-    constexpr CoordIJK coord{1, 1, 0};
-    address.push(&coord);
-    address.pop();
-    constexpr auto exp = std::vector<uint8_t>{};
-    ASSERT_EQ(address.data(), exp);
-}
-
-TEST(AddressTest, PopFromEvenSizeAddress) {
-    Address address{};
-    constexpr CoordIJK coord{1, 1, 0};
-    address.push(&coord);
-    address.push(&coord);
-    address.pop();
-    const auto exp = std::vector<uint8_t>{IJ_AXES_DIGIT};
-    ASSERT_EQ(address.data(), exp);
-}
-
-TEST(AddressTest, PopFromOddSizeAddress) {
-    Address address{};
-    constexpr CoordIJK coord{1, 1, 0};
-    address.push(&coord);
-    address.push(&coord);
-    address.push(&coord);
-    address.pop();
-    const auto exp = std::vector<uint8_t>{IJ_AXES_DIGIT + (IJ_AXES_DIGIT << 3)};
-    ASSERT_EQ(address.data(), exp);
-}
-
 TEST(AddressTest, EmptyHardEqualOperator) {
     ASSERT_TRUE(Address(false) == Address(false));
 }

@@ -21,12 +21,11 @@ public:
 
     [[nodiscard]] Address copy() const;
     void push(const CoordIJK *coord);
-    void pop();
 
-    int distanceTo(const Address &addr) const;
+    [[nodiscard]] int distanceTo(const Address &addr) const;
 
     std::vector<uint8_t> data();
-    bool prime() const;
+    [[nodiscard]] bool prime() const;
 
     bool operator<(const Address &other) const;
 
