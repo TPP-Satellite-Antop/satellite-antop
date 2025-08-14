@@ -72,22 +72,21 @@ int Address::distanceTo(const Address &addr) const {
         return std::numeric_limits<int>::max();
     }
 
-    const size_t shortest = _len < addr._len ? _len : addr._len;
-    const size_t longest = _len >= addr._len ? _len : addr._len;
-
+    const size_t minLen = std::min(_len, addr._len);
     int dist = 0;
-    for (size_t i = 0; i < shortest; i++) {
+
+    for (size_t i = 0; i < minLen; i++) {
         dist += hammingDistance(_data[i], addr._data[i]);
     }
 
-    const std::vector<uint8_t> data = _len == longest ? this->_data : addr._data;
-
-    for (size_t i = shortest; i < longest; i++) {
-        dist += hammingDistance(data[i], 0);
+    const auto& remData = _len > addr._len ? _data : addr._data;
+    for (size_t i = minLen; i < remData.size(); i++) {
+        dist += hammingDistance(remData[i], 0);
     }
 
     return dist;
 }
+
 
 std::vector<uint8_t> Address::data() {
     return _data;
