@@ -10,6 +10,7 @@
 
 class Antop {
     std::unordered_map<H3Index, Cell> cellByIdx;
+    std::unordered_map<Address, H3Index> addresses;
     int count;
     static constexpr int MAX_NEIGHBORS = 7;
     static constexpr int INVALID_IDX = 0;
@@ -17,13 +18,13 @@ class Antop {
 
     static H3Error getNeighborCoordinates(H3Index origin, H3Index neighbor, CoordIJK &output) ;
 
-    bool tryAddAddress(const Address &addr, Cell &cell, std::unordered_map<Address, H3Index> &addresses, H3Index idx);
+    bool tryAddAddress(const Address &addr, Cell &cell, H3Index idx);
 
-    static bool isNewAddrValid(const Address& originAddr, H3Index idx, std::unordered_map<Address, H3Index>& addresses);
+    static bool isNewAddrValid(const Address& originAddr, H3Index idx);
 
-    void processNeighbor(H3Index neighborIdx, const AddrIdx &origin, std::unordered_map<Address, H3Index> &addresses, std::queue<AddrIdx> &cells_queue);
+    void processNeighbor(H3Index neighborIdx, const AddrIdx &origin, std::queue<AddrIdx> &cells_queue);
 
-    void processFarNeighbors(std::unordered_map<Address, H3Index> &addresses);
+    void processFarNeighbors();
 
     void initNeighbours(AddrIdx origin);
     static H3Index getOriginForResolution(int res);
