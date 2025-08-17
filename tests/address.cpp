@@ -92,3 +92,47 @@ TEST(AddressTest, NotEqualOperatorTwo) {
     ASSERT_FALSE(address1 == address2);
     ASSERT_FALSE(address2 == address1);
 }
+
+TEST(AddressTest, ZeroDistanceTo) {
+    Address address(false);
+    constexpr CoordIJK coord1{0, 1, 1};
+    constexpr CoordIJK coord2{0, 1, 0};
+    constexpr CoordIJK coord3{1, 1, 0};
+    address.push(&coord1);
+    address.push(&coord2);
+    address.push(&coord3);
+
+    ASSERT_EQ(address.distanceTo(address), 0);
+}
+
+TEST(AddressTest, DiffDimensionDistanceTo) {
+    Address address1(false);
+    Address address2(true);
+    constexpr CoordIJK coord1{0, 1, 1};
+    constexpr CoordIJK coord2{0, 1, 0};
+    constexpr CoordIJK coord3{1, 1, 0};
+    address1.push(&coord1);
+    address1.push(&coord2);
+    address1.push(&coord3);
+    address2.push(&coord1);
+    address2.push(&coord2);
+    address2.push(&coord3);
+
+    ASSERT_EQ(address1.distanceTo(address2), std::numeric_limits<int>::max());
+}
+
+TEST(AddressTest, DistanceTo) {
+    Address address1(false);
+    Address address2(false);
+    constexpr CoordIJK coord1{0, 1, 1};
+    constexpr CoordIJK coord2{0, 1, 0};
+    constexpr CoordIJK coord3{1, 1, 0};
+    address1.push(&coord1);
+    address1.push(&coord2);
+    address1.push(&coord3);
+    address2.push(&coord2);
+    address2.push(&coord3);
+    address2.push(&coord1);
+
+    ASSERT_EQ(address1.distanceTo(address2), 4);
+}

@@ -9,19 +9,23 @@ extern "C" {
 }
 
 class Address {
-    std::vector<uint8_t> _data;
     size_t _size = 0;
     size_t _len = 0;
     bool _prime{};
 
 public:
+    std::vector<uint8_t> _data;
+
     Address();
     explicit Address(bool prime);
 
     [[nodiscard]] Address copy() const;
     void push(const CoordIJK *coord);
+
+    [[nodiscard]] int distanceTo(const Address &addr) const;
+
     std::vector<uint8_t> data();
-    bool prime() const;
+    [[nodiscard]] bool prime() const;
 
     bool operator<(const Address &other) const;
 

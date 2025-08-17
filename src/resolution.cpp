@@ -23,7 +23,7 @@ namespace H3ResolutionLimits {
     constexpr int MAX = 5;
 }
 
-H3Index getOriginForResolution(int res) {
+H3Index getOriginForResolution(const int res) {
     switch (res) {
         case H3ResolutionLimits::MIN: return H3Origins::ORIGIN_RES_1;
         case 2: return H3Origins::ORIGIN_RES_2;
