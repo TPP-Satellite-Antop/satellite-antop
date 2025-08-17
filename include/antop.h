@@ -23,9 +23,9 @@ class Antop {
 
     void allocateBaseAddresses(H3Index idx);
 
-    int neighbours() ;
+    int neighbours();
 
-    void allocateAddresses(LatLng ref, int res);
+    void allocateAddresses(int res);
 
 public:
     Antop() = default;

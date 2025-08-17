@@ -191,15 +191,8 @@ int Antop::neighbours() {
     return neighbourCount;
 }
 
-void Antop::allocateAddresses(const LatLng ref, const int res) {
-    H3Index idx = 0;
-    if (latLngToCell(&ref, res, &idx) != E_SUCCESS) {
-        std::cerr << Errors::COORD_CONVERTING_ERROR << std::endl;
-        return;
-    }
-
-    if (idx == 0)
-        idx = getOriginForResolution(res);
+void Antop::allocateAddresses(const int res) {
+    H3Index idx = getOriginForResolution(res);
 
     auto baseCell = Cell();
 
@@ -217,7 +210,7 @@ void Antop::allocateAddresses(const LatLng ref, const int res) {
 
 void Antop::init(const int satellites) {
     int res = getResolution(satellites);
-    allocateAddresses(ref, res);
+    allocateAddresses(res);
 
     std::cout << "Unique Cells: " << std::dec << cellByIdx.size() << std::endl;
     std::cout << "Number of addresses: " << std::dec << addresses.size() << std::endl;
