@@ -3,20 +3,14 @@
 #include "resolution.h"
 #include "errors.h"
 
-namespace H3Origins {
-    constexpr H3Index ORIGIN_RES_0 = 0x8047fffffffffff;
-    constexpr H3Index ORIGIN_RES_1 = 0x81463ffffffffff;
-    constexpr H3Index ORIGIN_RES_2 = 0x824607fffffffff;
-}
-
 namespace H3ResolutionLimits {
     constexpr int MAX = 2;
 }
 
 const std::map<int, H3Index> ORIGIN_BY_RES = {
-    {0, H3Origins::ORIGIN_RES_0},
-    {1, H3Origins::ORIGIN_RES_1},
-    {2, H3Origins::ORIGIN_RES_2},
+    {0, 0x8047fffffffffff},
+    {1, 0x81463ffffffffff},
+    {2, 0x824607fffffffff},
 };
 
 const std::map<int, int> MAX_HEX_BY_RES = {
