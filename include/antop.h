@@ -21,7 +21,7 @@ class Antop {
 
     static bool isNewAddrValid(const Address& originAddr, H3Index idx, std::unordered_map<Address, H3Index>& addresses);
 
-    bool processNeighbor(H3Index neighborIdx, const AddrIdx &origin, std::unordered_map<Address, H3Index> &addresses, std::queue<AddrIdx> &cells_queue);
+    void processNeighbor(H3Index neighborIdx, const AddrIdx &origin, std::unordered_map<Address, H3Index> &addresses, std::queue<AddrIdx> &cells_queue);
 
     void processFarNeighbors(std::unordered_map<Address, H3Index> &addresses);
 

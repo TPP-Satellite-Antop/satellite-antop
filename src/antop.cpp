@@ -63,15 +63,15 @@ bool Antop::isNewAddrValid(const Address& addr, const H3Index idx, std::unordere
     return true;
 }
 
-bool Antop::processNeighbor(const H3Index neighborIdx, const AddrIdx& origin, std::unordered_map<Address, H3Index>& addresses, std::queue<AddrIdx>& cells_queue) {
+void Antop::processNeighbor(const H3Index neighborIdx, const AddrIdx& origin, std::unordered_map<Address, H3Index>& addresses, std::queue<AddrIdx>& cells_queue) {
     if (neighborIdx == INVALID_IDX || neighborIdx == origin.idx || cellByIdx.contains(neighborIdx)) {
-        return false;
+        return;
     }
 
     CoordIJK output;
     if (const H3Error e = getNeighborCoordinates(origin.idx, neighborIdx, output); e != 0) {
         std::cerr << "Error converting coordinate to H3 index: " << e << std::endl;
-        return false;
+        return;
     }
 
     CoordIJK primeOutput = output;
@@ -85,7 +85,7 @@ bool Antop::processNeighbor(const H3Index neighborIdx, const AddrIdx& origin, st
     newAddrPrime.push(&primeOutput);
 
     if (addresses.contains(newAddr) || addresses.contains(newAddrPrime) || !isNewAddrValid(newAddr, neighborIdx, addresses) || !isNewAddrValid(newAddrPrime, neighborIdx, addresses)) {
-        return false;
+        return;
     }
 
     addresses.insert_or_assign(newAddr, neighborIdx);
@@ -98,7 +98,6 @@ bool Antop::processNeighbor(const H3Index neighborIdx, const AddrIdx& origin, st
     cells_queue.push({neighborIdx, newAddr, newAddrPrime});
 
     count += 1;
-    return true;
 }
 
 void Antop::processFarNeighbors(std::unordered_map<Address, H3Index>& addresses) {
@@ -152,7 +151,6 @@ void Antop::initNeighbours(AddrIdx origin) {
     cells_queue.push(origin);
     H3Index neighbours[MAX_NEIGHBORS];
 
-    // Process immediate neighbors
     while (!cells_queue.empty()) {
         origin = cells_queue.front();
         cells_queue.pop();
@@ -173,7 +171,6 @@ void Antop::initNeighbours(AddrIdx origin) {
         }
     }
 
-    // Process far neighbors
     processFarNeighbors(addresses);
 }
 
@@ -219,14 +216,6 @@ int Antop::neighbours() const {
 
                 if (!isNeighbor) {
                     std::cout << "Cell " << std::hex << idx1 << " is not a neighbor of cell " << std::hex << idx2 << std::dec << std::endl;
-
-                    for (const auto& a : cell1.addresses) {
-                        std::cout << std::hex << idx1 << ": " << a << std::endl;
-                    }
-                    for (const auto& a : cell2.addresses) {
-                        std::cout << std::hex << idx2 << ": " << a << std::endl;
-                    }
-                    std::cout << std::endl;
                 }
                 neighbourCount++;
             }
