@@ -22,19 +22,14 @@ CoordIJK Antop::getNeighborCoordinates(const H3Index origin, const H3Index neigh
     output.i -= originOutput.i;
     output.j -= originOutput.j;
     output.k -= originOutput.k;
-    
+    _ijkNormalize(&output); // ToDo: validate if it's even necessary.
+
     return output;
 }
 
-bool Antop::tryAddAddress(const Address& addr, Cell& cell, H3Index idx) {
-    if (addresses.contains(addr))
-        return false;
-    addresses.insert_or_assign(addr, idx);
-    cell.addAddress(addr);
-    return true;
-}
-
 bool Antop::isNewAddrValid(const Address& addr, const H3Index idx) {
+    if (addresses.contains(addr)) return false;
+
     H3Index neighbours[MAX_NEIGHBORS];
 
     if (gridDisk(idx, DISTANCE, neighbours) != E_SUCCESS) {
@@ -68,10 +63,9 @@ void Antop::allocateBaseAddress(const H3Index origin, const H3Index idx, std::qu
         return;
     }
 
-    CoordIJK output = getNeighborCoordinates(origin, idx);
+    const CoordIJK output = getNeighborCoordinates(origin, idx);
     CoordIJK primeOutput = output;
 
-    _ijkNormalize(&output);
     _ijkRotate60cw(&primeOutput);
 
     Address newAddr = cellByIdx[origin].addresses[0].copy();
@@ -80,7 +74,7 @@ void Antop::allocateBaseAddress(const H3Index origin, const H3Index idx, std::qu
     newAddr.push(&output);
     newAddrPrime.push(&primeOutput);
 
-    if (addresses.contains(newAddr) || addresses.contains(newAddrPrime) || !isNewAddrValid(newAddr, idx) || !isNewAddrValid(newAddrPrime, idx)) {
+    if (!isNewAddrValid(newAddr, idx) || !isNewAddrValid(newAddrPrime, idx)) {
         return;
     }
 
@@ -112,23 +106,23 @@ void Antop::allocateSupplementaryAddresses() {
                 continue;
             }
 
-            CoordIJK output = getNeighborCoordinates(idx, h3);
+            const CoordIJK output = getNeighborCoordinates(idx, h3);
 
             for (const auto& addr : cell1.addresses) {
+                CoordIJK auxOutput = output;
                 if (addr.prime()) {
-                    _ijkRotate60cw(&output);
-                } else {
-                    _ijkNormalize(&output);
+                    _ijkRotate60cw(&auxOutput);
                 }
 
-                auto a = addr.copy();
-                a.push(&output);
-
-                if (!isNewAddrValid(a, h3)) {
+                if (const Direction direction = _unitIjkToDigit(&auxOutput); direction != I_AXES_DIGIT && direction != J_AXES_DIGIT && direction != K_AXES_DIGIT)
                     continue;
-                }
 
-                if (tryAddAddress(a, cell2, h3)) {
+                auto newAddr = addr.copy();
+                newAddr.push(&auxOutput);
+
+                if (isNewAddrValid(newAddr, h3)) {
+                    addresses.insert_or_assign(newAddr, h3);
+                    cell2.addAddress(newAddr);
                     break;
                 }
             }
@@ -162,6 +156,7 @@ void Antop::allocateBaseAddresses(H3Index idx) {
     }
 }
 
+// ToDo: remove; we should allow for any cell to be considered origin as long as the output to itself is (0,0,0) which is the case for all face base cells.
 H3Index Antop::getOriginForResolution(const int res) {
     switch (res) {
         case 1:
@@ -179,6 +174,7 @@ H3Index Antop::getOriginForResolution(const int res) {
     }
 }
 
+// ToDo: remove altogether when we are certain the algorithm works flawlessly, or keep as a safeguard to validate under a config flag.
 int Antop::neighbours() {
     int neighbourCount = 0;
     for (const auto& [idx1, cell1] : cellByIdx) {
@@ -231,6 +227,7 @@ void Antop::allocateAddresses(const LatLng ref, const int res) {
     baseCell.addAddress(addrPrime);
 
     cellByIdx.insert({idx, baseCell});
+
     allocateBaseAddresses(idx);
     allocateSupplementaryAddresses();
 }

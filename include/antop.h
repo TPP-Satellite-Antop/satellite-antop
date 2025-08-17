@@ -1,12 +1,10 @@
 #ifndef ANTOP_H
 #define ANTOP_H
 
-#include <map>
 #include <queue>
 #include <unordered_map>
 #include "cell.h"
 #include "latLng.h"
-#include "addrIdxBiMap.h"
 
 class Antop {
     std::unordered_map<H3Index, Cell> cellByIdx;
@@ -16,8 +14,6 @@ class Antop {
     static constexpr int DISTANCE = 1;
 
     static CoordIJK getNeighborCoordinates(H3Index origin, H3Index neighbor) ;
-
-    bool tryAddAddress(const Address &addr, Cell &cell, H3Index idx);
 
     bool isNewAddrValid(const Address& originAddr, H3Index idx);
 
