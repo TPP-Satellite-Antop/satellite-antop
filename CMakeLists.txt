@@ -40,5 +40,11 @@ target_lto(${LIBRARY_NAME})
 target_set_warnings(${EXECUTABLE_NAME})
 target_set_warnings(${LIBRARY_NAME})
 
-
-
+# --- OpenMP support ---
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(${LIBRARY_NAME} PUBLIC OpenMP::OpenMP_CXX)
+    target_link_libraries(${EXECUTABLE_NAME} PUBLIC OpenMP::OpenMP_CXX)
+else()
+    message(FATAL_ERROR "OpenMP not found, building without parallelization")
+endif()

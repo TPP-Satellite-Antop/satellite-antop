@@ -51,7 +51,6 @@ void Address::push(const CoordIJK *coord) {
     _size++;
 }
 
-// ToDo: parallelize hamming distance calc.
 int Address::distanceTo(const Address &addr) const {
     if (prime() != addr.prime()) {
         return std::numeric_limits<int>::max();
@@ -60,11 +59,14 @@ int Address::distanceTo(const Address &addr) const {
     const size_t minLen = std::min(_len, addr._len);
     int dist = 0;
 
+    #pragma omp parallel for reduction(+:dist)
     for (size_t i = 0; i < minLen; i++) {
         dist += hammingDistance(_data[i], addr._data[i]);
     }
 
     const auto& remData = _len > addr._len ? _data : addr._data;
+
+    #pragma omp parallel for reduction(+:dist)
     for (size_t i = minLen; i < remData.size(); i++) {
         dist += hammingDistance(remData[i], 0);
     }
