@@ -13,7 +13,7 @@ class Antop {
     static constexpr int INVALID_IDX = 0;
     static constexpr int DISTANCE = 1;
 
-    static CoordIJK getNeighborCoordinates(H3Index origin, H3Index neighbor) ;
+    static CoordIJK getNeighborCoordinates(H3Index origin, H3Index neighbor);
 
     bool isNewAddrValid(const Address& originAddr, H3Index idx);
 
@@ -22,14 +22,20 @@ class Antop {
     void allocateSupplementaryAddresses();
 
     void allocateBaseAddresses(H3Index idx);
-    static H3Index getOriginForResolution(int res);
-    int neighbours() ;
 
-    void allocateAddresses(LatLng ref, int res);
+    int neighbours();
+
+    void allocateAddresses(int res);
 
 public:
     Antop() = default;
-    void init(LatLng ref, int res);
+    void init(int satellites);
+    /*TODO
+    std::string load(H3Index dir);
+    std::string getNextHopId(std::string src, std::string dst);
+    H3Index getDir(std::string id);
+    void turnOff(std::string id);
+    */
 };
 
 #endif //ANTOP_H

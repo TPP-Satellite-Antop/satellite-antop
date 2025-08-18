@@ -4,6 +4,7 @@
 #include "address.h"
 #include "errors.h"
 #include "mathExtensions.h"
+#include "resolution.h"
 
 extern "C" {
     #include "h3lib/include/localij.h"
@@ -156,24 +157,6 @@ void Antop::allocateBaseAddresses(H3Index idx) {
     }
 }
 
-// ToDo: remove; we should allow for any cell to be considered origin as long as the output to itself is (0,0,0) which is the case for all face base cells.
-H3Index Antop::getOriginForResolution(const int res) {
-    switch (res) {
-        case 1:
-            return 0x81463ffffffffff;
-        case 2:
-            return 0x824607fffffffff;
-        case 3:
-            return 0x834600fffffffff;
-        case 4:
-            return 0x8446001ffffffff;
-        case 5:
-            return 0x85460003fffffff;
-        default:
-            throw std::out_of_range{Errors::RESOLUTION_NOT_SUPPORTED};
-    }
-}
-
 // ToDo: remove altogether when we are certain the algorithm works flawlessly, or keep as a safeguard to validate under a config flag.
 int Antop::neighbours() {
     int neighbourCount = 0;
@@ -208,15 +191,8 @@ int Antop::neighbours() {
     return neighbourCount;
 }
 
-void Antop::allocateAddresses(const LatLng ref, const int res) {
-    H3Index idx = 0;
-    if (latLngToCell(&ref, res, &idx) != E_SUCCESS) {
-        std::cerr << Errors::COORD_CONVERTING_ERROR << std::endl;
-        return;
-    }
-
-    if (idx == 0)
-        idx = getOriginForResolution(res);
+void Antop::allocateAddresses(const int res) {
+    H3Index idx = getOriginForResolution(res);
 
     auto baseCell = Cell();
 
@@ -232,8 +208,9 @@ void Antop::allocateAddresses(const LatLng ref, const int res) {
     allocateSupplementaryAddresses();
 }
 
-void Antop::init(const LatLng ref, const int res) {
-    allocateAddresses(ref, res);
+void Antop::init(const int satellites) {
+    int res = getResolution(satellites);
+    allocateAddresses(res);
 
     std::cout << "Unique Cells: " << std::dec << cellByIdx.size() << std::endl;
     std::cout << "Number of addresses: " << std::dec << addresses.size() << std::endl;
