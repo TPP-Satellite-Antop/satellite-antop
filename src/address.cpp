@@ -3,6 +3,7 @@
 #include <iostream>
 #include <util.h>
 #include <bits/ostream.tcc>
+#include <limits>
 
 #define RIGHT_MASK 0b0000111
 #define LEFT_MASK 0b0011100
