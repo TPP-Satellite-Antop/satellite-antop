@@ -5,6 +5,7 @@
 #include "errors.h"
 #include "mathExtensions.h"
 #include "resolution.h"
+#include "algorithm"
 
 extern "C" {
     #include "h3lib/include/localij.h"

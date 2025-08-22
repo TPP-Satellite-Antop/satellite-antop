@@ -9,7 +9,7 @@
 class Antop {
     std::unordered_map<H3Index, Cell> cellByIdx;
     std::unordered_map<Address, H3Index> addresses;
-    static constexpr uint64_t MAX_NEIGHBORS = 7;
+    static constexpr int MAX_NEIGHBORS = 7;
     static constexpr int INVALID_IDX = 0;
     static constexpr int DISTANCE = 1;
 
