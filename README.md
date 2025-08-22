@@ -13,6 +13,11 @@ Run the image
 docker run satellite-antop:latest
 ```
 
+### Building locally
+```sh
+./build-local.sh
+```
+
 ## Running tests locally
 ```sh
 mkdir -p build && cd build && cmake .. && make && ctest
