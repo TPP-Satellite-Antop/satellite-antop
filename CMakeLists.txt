@@ -29,7 +29,7 @@ FetchContent_Declare(h3 GIT_REPOSITORY https://github.com/uber/h3.git GIT_TAG v4
 FetchContent_MakeAvailable(h3)
 
 add_library(${LIBRARY_NAME} src/util.cpp src/address.cpp src/cell.cpp src/antop.cpp src/resolution.cpp)
-target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_INCLUDE_DIR} ${h3_SOURCE_DIR}/src)
+target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_INCLUDE_DIR} ${h3_SOURCE_DIR}/src ${h3_SOURCE_DIR}/src/h3lib/lib)
 target_link_libraries(${LIBRARY_NAME} PUBLIC h3)
 
 add_executable(${EXECUTABLE_NAME} src/main.cpp)
