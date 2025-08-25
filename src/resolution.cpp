@@ -1,5 +1,5 @@
 #include <map>
-#include <stdexcept>
+
 #include "resolution.h"
 #include "errors.h"
 
@@ -13,12 +13,6 @@ const std::map<int, H3Index> ORIGIN_BY_RES = {
     {2, 0x824607fffffffff},
 };
 
-const std::map<int, int> MAX_HEX_BY_RES = {
-    {0, 122},
-    {1, 842},
-    {2, 5882},
-};
-
 H3Index getOriginForResolution(const int res) {
     const auto it = ORIGIN_BY_RES.find(res);
     if (it == ORIGIN_BY_RES.end())
@@ -27,7 +21,7 @@ H3Index getOriginForResolution(const int res) {
 }
 
 int getResolution(const int satellites) {
-    for (auto const& [res, max] : MAX_HEX_BY_RES) {
+    for (auto const& [res, max] : CELLS_BY_RESOLUTION) {
         if (satellites <= max)
             return res;
     }

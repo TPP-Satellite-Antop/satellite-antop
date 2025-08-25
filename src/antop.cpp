@@ -207,11 +207,8 @@ void Antop::init(const int satellites) {
     const int res = getResolution(satellites);
     allocateAddresses(res);
 
+    std::cout << "Resolution: " << std::dec << res << std::endl;
     std::cout << "Unique Cells: " << std::dec << cellByIdx.size() << std::endl;
     std::cout << "Number of addresses: " << std::dec << addresses.size() << std::endl;
-
-    const auto n = neighbours();
-
-    std::cout << std::dec << "Neighbours: " << n << " - " << cellByIdx.size() << std::endl;
-    std::cout << "Average neighbours: " << static_cast<float>(n) / static_cast<float>(cellByIdx.size()) << std::endl;
+    std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION.at(res) - 12) * 6 + 60 - neighbours() << std::endl << std::endl;
 }

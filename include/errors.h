@@ -1,6 +1,7 @@
 #ifndef ERRORS_H
 #define ERRORS_H
 
+#include <stdexcept>
 #include <string>
 
 namespace Errors {
