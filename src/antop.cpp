@@ -8,8 +8,8 @@
 #include "algorithm"
 
 extern "C" {
-    #include "h3lib/include/localij.h"
-    #include "h3lib/include/coordijk.h"
+    #include "localij.h"
+    #include "coordijk.h"
 }
 
 CoordIJK Antop::getNeighborCoordinates(const H3Index origin, const H3Index neighbor) {

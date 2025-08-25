@@ -1,0 +1,46 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 747B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 1.7s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 143B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/debian:trixie-slim@sha256:c85a2732e97694ea77237c61304b3bb410e0e961dd6ee945997a06c788c545bb
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 86.75MB 0.4s done
+#5 DONE 0.4s
+
+#6 [2/5] RUN apt-get update &&     apt-get install -y         gcc         g++         cmake         make         libtool         git         doxygen         wget &&     wget https://github.com/Kitware/CMake/releases/download/v3.21.1/cmake-3.21.1-linux-x86_64.tar.gz &&     tar -xzvf cmake-3.21.1-linux-x86_64.tar.gz &&     mv cmake-3.21.1-linux-x86_64 /opt/cmake &&     ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake &&     rm -rf cmake-3.21.1-linux-x86_64.tar.gz
+#6 CACHED
+
+#7 [3/5] WORKDIR /app
+#7 CACHED
+
+#8 [4/5] COPY . .
+#8 DONE 0.3s
+
+#9 [5/5] RUN cmake -S . -B build && cmake --build build
+#9 0.257 -- The C compiler identification is GNU 14.2.0
+#9 0.295 -- The CXX compiler identification is GNU 14.2.0
+#9 0.300 -- Detecting C compiler ABI info
+#9 0.335 -- Detecting C compiler ABI info - done
+#9 0.340 -- Check for working C compiler: /usr/bin/cc - skipped
+#9 0.340 -- Detecting C compile features
+#9 0.341 -- Detecting C compile features - done
+#9 0.343 -- Detecting CXX compiler ABI info
+#9 0.384 -- Detecting CXX compiler ABI info - done
+#9 0.389 -- Check for working CXX compiler: /usr/bin/c++ - skipped
+#9 0.390 -- Detecting CXX compile features
+#9 0.390 -- Detecting CXX compile features - done
+#9 0.391 -- Sanitizer enabled
+#9 CANCELED
+ERROR: failed to build: failed to solve: Canceled: context canceled
+make: *** [Makefile:5: build] Error 130
