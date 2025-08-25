@@ -22,7 +22,7 @@ const std::map<int, int> MAX_HEX_BY_RES = {
 H3Index getOriginForResolution(const int res) {
     const auto it = ORIGIN_BY_RES.find(res);
     if (it == ORIGIN_BY_RES.end())
-        throw std::out_of_range{Errors::RESOLUTION_NOT_SUPPORTED};
+        throw Errors::RESOLUTION_NOT_SUPPORTED;
     return it->second;
 }
 

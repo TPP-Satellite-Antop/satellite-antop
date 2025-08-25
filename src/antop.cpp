@@ -3,9 +3,7 @@
 #include "antop.h"
 #include "address.h"
 #include "errors.h"
-#include "mathExtensions.h"
 #include "resolution.h"
-#include "algorithm"
 
 extern "C" {
     #include "h3lib/include/localij.h"
@@ -16,10 +14,10 @@ CoordIJK Antop::getNeighborCoordinates(const H3Index origin, const H3Index neigh
     CoordIJK output, originOutput;
 
     H3Error e = cellToLocalIjk(origin, origin, &originOutput);
-    if (e != E_SUCCESS) throw std::runtime_error("Failed to convert origin cell to local coordinates: H3Error " + std::to_string(e));
+    if (e != E_SUCCESS) throw Errors::localCoordIJK(e, origin, origin);
 
     e = cellToLocalIjk(origin, neighbor, &output);
-    if (e != E_SUCCESS) throw std::runtime_error("Failed to convert neighbor cell to local coordinates: H3Error " + std::to_string(e));
+    if (e != E_SUCCESS) throw Errors::localCoordIJK(e, origin, neighbor);
 
     output.i -= originOutput.i;
     output.j -= originOutput.j;
@@ -34,9 +32,8 @@ bool Antop::isNewAddrValid(const Address& addr, const H3Index idx) {
 
     H3Index neighbours[MAX_NEIGHBORS];
 
-    if (gridDisk(idx, DISTANCE, neighbours) != E_SUCCESS) {
-        std::cerr << Errors::getNeighborsSearchError(idx) << std::endl;
-        return false;
+    if (const H3Error err = gridDisk(idx, DISTANCE, neighbours); err != E_SUCCESS) {
+        throw std::runtime_error(Errors::fetchNeighbors(err, idx));
     }
 
     auto aux = addr.copy();
@@ -94,8 +91,8 @@ void Antop::allocateSupplementaryAddresses() {
     H3Index out[MAX_NEIGHBORS];
     
     for (const auto& [idx, cell1] : cellByIdx) {
-        if (gridDisk(idx, DISTANCE, out) != E_SUCCESS) {
-            exit(2);
+        if (const H3Error err = gridDisk(idx, DISTANCE, out); err != E_SUCCESS) {
+            throw Errors::fetchNeighbors(err, idx);
         }
 
         for (const unsigned long h3 : out) {
@@ -141,15 +138,13 @@ void Antop::allocateBaseAddresses(H3Index idx) {
         idx = cells_queue.front();
         cells_queue.pop();
 
-        if (gridDisk(idx, DISTANCE, neighbours) != E_SUCCESS) {
-            std::cerr << Errors::getNeighborsSearchError(idx) << std::endl;
-            return;
+        if (const H3Error err = gridDisk(idx, DISTANCE, neighbours); err != E_SUCCESS) {
+            throw Errors::fetchNeighbors(err, idx);
         }
 
         CoordIJK originOutput;
-        if (const H3Error e = cellToLocalIjk(idx, idx, &originOutput); e != 0) {
-            std::cerr << "Error converting coordinate to H3 index: " << e << std::endl;
-            return;
+        if (const H3Error err = cellToLocalIjk(idx, idx, &originOutput); err != E_SUCCESS) {
+            throw Errors::localCoordIJK(err, idx, idx);
         }
 
         for (const unsigned long h3 : neighbours) {
@@ -163,9 +158,8 @@ int Antop::neighbours() {
     int neighbourCount = 0;
     for (const auto& [idx1, cell1] : cellByIdx) {
         H3Index neighbours[MAX_NEIGHBORS];
-        if (gridDisk(idx1, DISTANCE, neighbours) != E_SUCCESS) {
-            std::cerr << Errors::getNeighborsSearchError(idx1) << std::endl;
-            return 0;
+        if (const H3Error err = gridDisk(idx1, DISTANCE, neighbours); err != E_SUCCESS) {
+            throw Errors::fetchNeighbors(err, idx1);
         }
 
         for (const auto& [idx2, cell2] : cellByIdx) {
@@ -183,7 +177,7 @@ int Antop::neighbours() {
                 }
 
                 if (!isNeighbor) {
-                    std::cout << "Cell " << std::hex << idx1 << " is not a neighbor of cell " << std::hex << idx2 << std::dec << std::endl;
+                    std::cerr << "Cell " << std::hex << idx1 << " is not a neighbor of cell " << std::hex << idx2 << std::dec << std::endl;
                 }
                 neighbourCount++;
             }
@@ -210,7 +204,7 @@ void Antop::allocateAddresses(const int res) {
 }
 
 void Antop::init(const int satellites) {
-    int res = getResolution(satellites);
+    const int res = getResolution(satellites);
     allocateAddresses(res);
 
     std::cout << "Unique Cells: " << std::dec << cellByIdx.size() << std::endl;
