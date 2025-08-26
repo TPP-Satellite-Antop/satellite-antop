@@ -5,7 +5,7 @@
 #include <ostream>
 
 extern "C" {
-    #include "h3lib/include/coordijk.h"
+    #include "coordijk.h"
 }
 
 class Address {
