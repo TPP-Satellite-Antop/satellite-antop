@@ -4,6 +4,7 @@
 #include "address.h"
 #include "errors.h"
 #include "resolution.h"
+#include <algorithm>
 
 extern "C" {
     #include "localij.h"
