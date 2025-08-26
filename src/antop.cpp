@@ -33,7 +33,7 @@ bool Antop::isNewAddrValid(const Address& addr, const H3Index idx) {
     H3Index neighbours[MAX_NEIGHBORS];
 
     if (const H3Error err = gridDisk(idx, DISTANCE, neighbours); err != E_SUCCESS) {
-        throw std::runtime_error(Errors::fetchNeighbors(err, idx));
+        throw Errors::fetchNeighbors(err, idx);
     }
 
     auto aux = addr.copy();

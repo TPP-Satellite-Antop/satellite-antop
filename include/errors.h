@@ -11,7 +11,7 @@ namespace Errors {
 	}
 
 	inline auto localCoordIJK(const H3Error status, const H3Index origin, const H3Index idx) {
-		return std::runtime_error("failed to local IJK coordinates from " + std::to_string(origin) + " to " + std::to_string(idx) + " (code " + std::to_string(status) + ").");
+		return std::runtime_error("failed to compute local IJK coordinates from " + std::to_string(origin) + " to " + std::to_string(idx) + " (code " + std::to_string(status) + ").");
 	}
 }
 
