@@ -17,6 +17,11 @@ docker run satellite-antop:latest
 ```sh
 ./build-local.sh
 ```
+And then run with
+```sh
+cd build
+./SatelliteAntop
+```
 
 ## Running tests locally
 ```sh
