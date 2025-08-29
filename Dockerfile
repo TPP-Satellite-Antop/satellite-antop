@@ -22,6 +22,6 @@ WORKDIR /app
 COPY . .
 
 # Build the project using CMake
-RUN cmake -S . -B build && cmake --build build
+RUN cmake -S . -B build -DENABLE_SANITIZERS=ON && cmake --build build
 
 CMD ["./build/SatelliteAntop"]
