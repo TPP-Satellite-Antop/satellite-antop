@@ -32,3 +32,8 @@ mkdir -p build && cd build && cmake .. && make && ctest
 docker build -t satellite-antop-test . -f Dockerfile.test 
 docker run satellite-antop-test:latest
 ```
+
+### Building the library for dtnsim
+```sh
+./lib-build.sh
+```
