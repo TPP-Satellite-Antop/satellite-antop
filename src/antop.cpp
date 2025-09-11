@@ -212,3 +212,29 @@ void Antop::init(const int satellites) {
     std::cout << "Number of addresses: " << std::dec << addresses.size() << std::endl;
     std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION.at(res) - 12) * 6 + 60 - neighbours() << std::endl << std::endl;
 }
+
+// ToDo:
+// - Validate that lastHop != nextHop to avoid cycles.
+// - Validate that there's a satellite in nextHop. If not, find next best route. To do this I'm thinking of using a Heap to have a priority queue and, while the best option
+//   does not have a satellite, the next best gets popped. Worst case scenario, the message gets returned to the lastHop. If this were Go, I would use a channel to communicate
+//   between DTNSim to let ANTop know whether the proposed nextHop is valid or not.
+H3Index Antop::getNextHopId(const H3Index src, const H3Index dst) {
+    H3Index neighbours[MAX_NEIGHBORS];
+    if (const H3Error err = gridDisk(src, DISTANCE, neighbours); err != E_SUCCESS)
+        throw Errors::fetchNeighbors(err, src);
+
+    int minDist = std::numeric_limits<int>::max();
+    H3Index nextHop = INVALID_IDX;
+
+    for (const H3Index neighbour : neighbours) {
+        if (neighbour == src || cellByIdx.at(src).distanceTo(&cellByIdx.at(neighbour)) > 1)
+            continue;
+
+        if (const int dist = cellByIdx.at(neighbour).distanceTo(&cellByIdx.at(dst)); dist < minDist) {
+            minDist = dist;
+            nextHop = neighbour;
+        }
+    }
+
+    return nextHop;
+}

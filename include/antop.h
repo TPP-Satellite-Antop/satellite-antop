@@ -30,9 +30,9 @@ class Antop {
 public:
     Antop() = default;
     void init(int satellites);
+    H3Index getNextHopId(H3Index src, H3Index dst);
     /*TODO
     std::string load(H3Index dir);
-    std::string getNextHopId(std::string src, std::string dst);
     H3Index getDir(std::string id);
     */
 };
