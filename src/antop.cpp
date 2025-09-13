@@ -211,25 +211,39 @@ void Antop::init(const int satellites) {
 }
 
 // ToDo:
-// - Validate that lastHop != nextHop to avoid cycles.
-// - Validate that there's a satellite in nextHop. If not, find next best route. To do this I'm thinking of using a Heap to have a priority queue and, while the best option
-//   does not have a satellite, the next best gets popped. Worst case scenario, the message gets returned to the lastHop. If this were Go, I would use a channel to communicate
-//   between DTNSim to let ANTop know whether the proposed nextHop is valid or not.
-H3Index Antop::getNextHopId(const H3Index src, const H3Index dst) const {
+// - Test heap.
+// - Update dst to include information about the packet (such as number of hops thus far).
+// - There's a "small" edge case that will break this routing algorithm. Let's say cell A receives a packet and the shortest routes to its destination are through either
+//   cell B or cell C. Cell A then forwards it to cell B, but it turns out that cell B has no option but to return the packet to cell A due to missing satellites. Now,
+//   cell A holds the same packet but lastHop has been updated to cell B. Naturally, it then forwards it to cell C, but cell C experiences the same shortcoming as cell B.
+//   Cell A receives the same packet for a third time, but this time lastHop has been updated to cell C. Therefore, cell A will once again try its luck with cell B, turning
+//   this into an endless loop, until the packet is lost due to the number of hops.
+H3Index Antop::getNextHopId(const H3Index src, const H3Index dst, const H3Index lastHop, bool isDstValid(H3Index idx)) const {
     const std::vector<H3Index> neighbors = neighborsByIdx.at(src);
 
-    int minDist = std::numeric_limits<int>::max();
-    H3Index nextHop = INVALID_IDX;
+    std::priority_queue<
+        std::pair<int, H3Index>,
+        std::vector<std::pair<int, H3Index>>,
+        std::greater<>
+    > heap;
 
     for (const H3Index neighbor : neighbors) {
-        if (neighbor == src || cellByIdx.at(src).distanceTo(&cellByIdx.at(neighbor)) > DISTANCE)
+        if (neighbor == src) // I'm trusting that neighborGraph is correctly built. If not, this won't work as intended.
             continue;
 
-        if (const int dist = cellByIdx.at(neighbor).distanceTo(&cellByIdx.at(dst)); dist < minDist) {
-            minDist = dist;
-            nextHop = neighbor;
-        }
+        int key = std::numeric_limits<int>::max();
+        if (neighbor != lastHop)
+            key = cellByIdx.at(neighbor).distanceTo(&cellByIdx.at(dst));
+
+        heap.emplace(key, neighbor);
     }
+
+    H3Index nextHop = INVALID_IDX;
+    do {
+        if (heap.empty())
+            throw Errors::unreachableDestination(src, dst);
+        nextHop = heap.top().second;
+    } while (!isDstValid(nextHop));
 
     return nextHop;
 }
