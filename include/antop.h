@@ -31,7 +31,7 @@ class Antop {
     void allocateAddresses(int res);
 
 public:
-    Antop() = default;
+    Antop() = default; // ToDo: replace default to custom constructor. This constructor should reserve memory for all three maps to remove rehashing altogether.
     void init(int satellites);
     H3Index getNextHopId(H3Index src, H3Index dst, H3Index lastHop, bool isDstValid(H3Index idx)) const;
     /*TODO
