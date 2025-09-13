@@ -1,5 +1,6 @@
 #include <iostream>
 #include <queue>
+#include <ranges>
 #include "antop.h"
 #include "address.h"
 #include "errors.h"
@@ -10,7 +11,7 @@ extern "C" {
     #include "coordijk.h"
 }
 
-CoordIJK Antop::getNeighborCoordinates(const H3Index origin, const H3Index neighbor) {
+CoordIJK getNeighborCoordinates(const H3Index origin, const H3Index neighbor) {
     CoordIJK output, originOutput;
 
     H3Error e = cellToLocalIjk(origin, origin, &originOutput);
@@ -27,16 +28,18 @@ CoordIJK Antop::getNeighborCoordinates(const H3Index origin, const H3Index neigh
     return output;
 }
 
+std::array<H3Index, MAX_NEIGHBORS> getNeighbors(const H3Index idx) {
+    std::array<H3Index, MAX_NEIGHBORS> neighbors{};
+    if (const H3Error err = gridDisk(idx, DISTANCE, neighbors.data()); err != E_SUCCESS)
+        throw Errors::fetchNeighbors(err, idx);
+    return neighbors;
+}
+
 bool Antop::isNewAddrValid(const Address& addr, const H3Index idx) {
     if (addresses.contains(addr)) return false;
 
-    H3Index neighbours[MAX_NEIGHBORS];
-
-    if (const H3Error err = gridDisk(idx, DISTANCE, neighbours); err != E_SUCCESS) {
-        throw Errors::fetchNeighbors(err, idx);
-    }
-
-    auto aux = addr.copy();
+    std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx);
+    Address aux = addr.copy();
 
     for (int i = static_cast<int>(aux._data.size()) - 1; i >= 0; i--) {
         const uint8_t originalByte = aux._data[i];
@@ -46,9 +49,8 @@ bool Antop::isNewAddrValid(const Address& addr, const H3Index idx) {
 
             aux._data[i] = originalByte ^ mask;
 
-            if (addresses.contains(aux) && std::find(neighbours, neighbours + MAX_NEIGHBORS, addresses[aux]) == neighbours + MAX_NEIGHBORS) {
+            if (addresses.contains(aux) && std::ranges::find(neighbors, addresses[aux]) == neighbors.end())
                 return false;
-            }
 
             aux._data[i] = originalByte;
         }
@@ -57,10 +59,25 @@ bool Antop::isNewAddrValid(const Address& addr, const H3Index idx) {
     return true;
 }
 
-void Antop::allocateBaseAddress(const H3Index origin, const H3Index idx, std::queue<H3Index>& cells_queue) {
-    if (idx == INVALID_IDX || idx == origin || cellByIdx.contains(idx)) {
-        return;
+void Antop::buildNeighborGraph() {
+    std::unordered_map<H3Index, std::unordered_set<H3Index>> neighborsSetByIdx{};
+
+    for (const auto &idx: cellByIdx | std::views::keys) {
+        for (const std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx); const H3Index neighbor : neighbors) {
+            if (neighbor != idx && cellByIdx[idx].distanceTo(&cellByIdx[neighbor]) == 1) {
+                neighborsSetByIdx[idx].insert(neighbor);
+                neighborsSetByIdx[neighbor].insert(idx);
+            }
+        }
     }
+
+    for (const auto& [key, set] : neighborsSetByIdx)
+        neighborsByIdx.insert({key, std::vector(set.begin(), set.end())});
+}
+
+void Antop::allocateBaseAddress(const H3Index origin, const H3Index idx, std::queue<H3Index>& cells_queue) {
+    if (idx == INVALID_IDX || idx == origin || cellByIdx.contains(idx))
+        return;
 
     const CoordIJK output = getNeighborCoordinates(origin, idx);
     CoordIJK primeOutput = output;
@@ -73,9 +90,7 @@ void Antop::allocateBaseAddress(const H3Index origin, const H3Index idx, std::qu
     newAddr.push(&output);
     newAddrPrime.push(&primeOutput);
 
-    if (!isNewAddrValid(newAddr, idx) || !isNewAddrValid(newAddrPrime, idx)) {
-        return;
-    }
+    if (!isNewAddrValid(newAddr, idx) || !isNewAddrValid(newAddrPrime, idx)) return;
 
     addresses.insert_or_assign(newAddr, idx);
     addresses.insert_or_assign(newAddrPrime, idx);
@@ -83,35 +98,25 @@ void Antop::allocateBaseAddress(const H3Index origin, const H3Index idx, std::qu
     Cell& cell = cellByIdx[idx];
     cell.addAddress(newAddr);
     cell.addAddress(newAddrPrime);
-
     cells_queue.push(idx);
 }
 
 void Antop::allocateSupplementaryAddresses() {
-    H3Index out[MAX_NEIGHBORS];
-    
     for (const auto& [idx, cell1] : cellByIdx) {
-        if (const H3Error err = gridDisk(idx, DISTANCE, out); err != E_SUCCESS) {
-            throw Errors::fetchNeighbors(err, idx);
-        }
-
-        for (const unsigned long h3 : out) {
-            if (h3 == INVALID_IDX || h3 == idx) {
+        for (std::array<H3Index, MAX_NEIGHBORS> out = getNeighbors(idx); const unsigned long h3 : out) {
+            if (h3 == INVALID_IDX || h3 == idx)
                 continue;
-            }
 
             Cell& cell2 = cellByIdx[h3];
-            if (cell1.distanceTo(&cell2) <= 1) {
+            if (cell1.distanceTo(&cell2) <= 1)
                 continue;
-            }
 
             const CoordIJK output = getNeighborCoordinates(idx, h3);
 
             for (const auto& addr : cell1.addresses) {
                 CoordIJK auxOutput = output;
-                if (addr.prime()) {
+                if (addr.prime())
                     _ijkRotate60cw(&auxOutput);
-                }
 
                 if (const Direction direction = _unitIjkToDigit(&auxOutput); direction != I_AXES_DIGIT && direction != J_AXES_DIGIT && direction != K_AXES_DIGIT)
                     continue;
@@ -132,58 +137,48 @@ void Antop::allocateSupplementaryAddresses() {
 void Antop::allocateBaseAddresses(H3Index idx) {
     std::queue<H3Index> cells_queue;
     cells_queue.push(idx);
-    H3Index neighbours[MAX_NEIGHBORS];
 
     while (!cells_queue.empty()) {
         idx = cells_queue.front();
         cells_queue.pop();
 
-        if (const H3Error err = gridDisk(idx, DISTANCE, neighbours); err != E_SUCCESS) {
-            throw Errors::fetchNeighbors(err, idx);
-        }
+        std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx);
 
         CoordIJK originOutput;
-        if (const H3Error err = cellToLocalIjk(idx, idx, &originOutput); err != E_SUCCESS) {
+        if (const H3Error err = cellToLocalIjk(idx, idx, &originOutput); err != E_SUCCESS)
             throw Errors::localCoordIJK(err, idx, idx);
-        }
 
-        for (const unsigned long h3 : neighbours) {
+        for (const unsigned long h3 : neighbors)
             allocateBaseAddress(idx, h3, cells_queue);
-        }
     }
 }
 
-// ToDo: remove altogether when we are certain the algorithm works flawlessly, or keep as a safeguard to validate under a config flag.
-int Antop::neighbours() {
-    int neighbourCount = 0;
+// ToDo: move to tests/antop.cpp.
+int Antop::neighbors() {
+    int neighborCount = 0;
     for (const auto& [idx1, cell1] : cellByIdx) {
-        H3Index neighbours[MAX_NEIGHBORS];
-        if (const H3Error err = gridDisk(idx1, DISTANCE, neighbours); err != E_SUCCESS) {
-            throw Errors::fetchNeighbors(err, idx1);
-        }
+        std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx1);
 
         for (const auto& [idx2, cell2] : cellByIdx) {
-            if (idx1 == idx2) {
+            if (idx1 == idx2)
                 continue;
-            }
 
             if (cell1.distanceTo(&cell2) == 1) {
                 bool isNeighbor = false;
-                for (const auto& neighbor : neighbours) {
+                for (const auto& neighbor : neighbors) {
                     if (neighbor == idx2) {
                         isNeighbor = true;
                         break;
                     }
                 }
 
-                if (!isNeighbor) {
+                if (!isNeighbor)
                     std::cerr << "Cell " << std::hex << idx1 << " is not a neighbor of cell " << std::hex << idx2 << std::dec << std::endl;
-                }
-                neighbourCount++;
+                neighborCount++;
             }
         }
     }
-    return neighbourCount;
+    return neighborCount;
 }
 
 void Antop::allocateAddresses(const int res) {
@@ -201,6 +196,8 @@ void Antop::allocateAddresses(const int res) {
 
     allocateBaseAddresses(idx);
     allocateSupplementaryAddresses();
+
+    buildNeighborGraph();
 }
 
 void Antop::init(const int satellites) {
@@ -210,7 +207,7 @@ void Antop::init(const int satellites) {
     std::cout << "Resolution: " << std::dec << res << std::endl;
     std::cout << "Unique Cells: " << std::dec << cellByIdx.size() << std::endl;
     std::cout << "Number of addresses: " << std::dec << addresses.size() << std::endl;
-    std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION.at(res) - 12) * 6 + 60 - neighbours() << std::endl << std::endl;
+    std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION.at(res) - 12) * 6 + 60 - neighbors() << std::endl << std::endl;
 }
 
 // ToDo:
@@ -219,20 +216,18 @@ void Antop::init(const int satellites) {
 //   does not have a satellite, the next best gets popped. Worst case scenario, the message gets returned to the lastHop. If this were Go, I would use a channel to communicate
 //   between DTNSim to let ANTop know whether the proposed nextHop is valid or not.
 H3Index Antop::getNextHopId(const H3Index src, const H3Index dst) {
-    H3Index neighbours[MAX_NEIGHBORS];
-    if (const H3Error err = gridDisk(src, DISTANCE, neighbours); err != E_SUCCESS)
-        throw Errors::fetchNeighbors(err, src);
+    std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(src);
 
     int minDist = std::numeric_limits<int>::max();
     H3Index nextHop = INVALID_IDX;
 
-    for (const H3Index neighbour : neighbours) {
-        if (neighbour == src || cellByIdx.at(src).distanceTo(&cellByIdx.at(neighbour)) > 1)
+    for (const H3Index neighbor : neighbors) {
+        if (neighbor == src || cellByIdx.at(src).distanceTo(&cellByIdx.at(neighbor)) > 1)
             continue;
 
-        if (const int dist = cellByIdx.at(neighbour).distanceTo(&cellByIdx.at(dst)); dist < minDist) {
+        if (const int dist = cellByIdx.at(neighbor).distanceTo(&cellByIdx.at(dst)); dist < minDist) {
             minDist = dist;
-            nextHop = neighbour;
+            nextHop = neighbor;
         }
     }
 
