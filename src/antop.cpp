@@ -215,14 +215,14 @@ void Antop::init(const int satellites) {
 // - Validate that there's a satellite in nextHop. If not, find next best route. To do this I'm thinking of using a Heap to have a priority queue and, while the best option
 //   does not have a satellite, the next best gets popped. Worst case scenario, the message gets returned to the lastHop. If this were Go, I would use a channel to communicate
 //   between DTNSim to let ANTop know whether the proposed nextHop is valid or not.
-H3Index Antop::getNextHopId(const H3Index src, const H3Index dst) {
-    std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(src);
+H3Index Antop::getNextHopId(const H3Index src, const H3Index dst) const {
+    const std::vector<H3Index> neighbors = neighborsByIdx.at(src);
 
     int minDist = std::numeric_limits<int>::max();
     H3Index nextHop = INVALID_IDX;
 
     for (const H3Index neighbor : neighbors) {
-        if (neighbor == src || cellByIdx.at(src).distanceTo(&cellByIdx.at(neighbor)) > 1)
+        if (neighbor == src || cellByIdx.at(src).distanceTo(&cellByIdx.at(neighbor)) > DISTANCE)
             continue;
 
         if (const int dist = cellByIdx.at(neighbor).distanceTo(&cellByIdx.at(dst)); dist < minDist) {
