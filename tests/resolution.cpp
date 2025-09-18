@@ -13,9 +13,9 @@ TEST(ResolutionTest, GetOriginForInvalidResolutionThrows) {
 }
 
 TEST(ResolutionTest, GetResolutionValidSatellites) {
-    EXPECT_EQ(getResolution(50), 0);
-    EXPECT_EQ(getResolution(122), 0);
-    EXPECT_EQ(getResolution(200), 1);
-    EXPECT_EQ(getResolution(830), 1);
-    EXPECT_EQ(getResolution(5883), 2);
+    EXPECT_EQ(findResolution(50), 0);
+    EXPECT_EQ(findResolution(122), 0);
+    EXPECT_EQ(findResolution(200), 1);
+    EXPECT_EQ(findResolution(830), 1);
+    EXPECT_EQ(findResolution(5883), 2);
 }
