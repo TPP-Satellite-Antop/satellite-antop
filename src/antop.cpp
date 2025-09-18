@@ -37,6 +37,10 @@ std::array<H3Index, MAX_NEIGHBORS> getNeighbors(const H3Index idx) {
     return neighbors;
 }
 
+int Antop::getResolution() const {
+    return resolution;
+}
+
 bool Antop::isNewAddrValid(const Address& addr, const H3Index idx) {
     if (addresses.contains(addr)) return false;
 
@@ -183,8 +187,8 @@ int Antop::neighbors() {
     return neighborCount;
 }
 
-void Antop::allocateAddresses(const int res) {
-    H3Index idx = getOriginForResolution(res);
+void Antop::allocateAddresses() {
+    H3Index idx = getOriginForResolution(resolution);
 
     auto baseCell = Cell();
 
@@ -203,13 +207,13 @@ void Antop::allocateAddresses(const int res) {
 }
 
 void Antop::init(const int satellites) {
-    const int res = getResolution(satellites);
-    allocateAddresses(res);
+    resolution = findResolution(satellites);
+    allocateAddresses();
 
-    std::cout << "Resolution: " << std::dec << res << std::endl;
+    std::cout << "Resolution: " << std::dec << resolution << std::endl;
     std::cout << "Unique Cells: " << std::dec << cellByIdx.size() << std::endl;
     std::cout << "Number of addresses: " << std::dec << addresses.size() << std::endl;
-    std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION.at(res) - 12) * 6 + 60 - neighbors() << std::endl << std::endl;
+    std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION.at(resolution) - 12) * 6 + 60 - neighbors() << std::endl << std::endl;
 }
 
 // ToDo:
