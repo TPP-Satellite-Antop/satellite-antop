@@ -6,6 +6,7 @@
 #include "errors.h"
 #include "resolution.h"
 #include <algorithm>
+#include <limits>
 
 extern "C" {
     #include "localij.h"
