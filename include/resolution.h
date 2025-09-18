@@ -11,6 +11,6 @@ const std::map<int, int> CELLS_BY_RESOLUTION = {
 };
 
 H3Index getOriginForResolution(int res);
-int getResolution(int satellites);
+int findResolution(int satellites);
 
 #endif //RESOLUTION_H

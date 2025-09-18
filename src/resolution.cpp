@@ -20,7 +20,7 @@ H3Index getOriginForResolution(const int res) {
     return it->second;
 }
 
-int getResolution(const int satellites) {
+int findResolution(const int satellites) {
     for (auto const& [res, max] : CELLS_BY_RESOLUTION) {
         if (satellites <= max)
             return res;

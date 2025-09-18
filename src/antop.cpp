@@ -6,6 +6,7 @@
 #include "errors.h"
 #include "resolution.h"
 #include <algorithm>
+#include <functional>
 #include <limits>
 
 extern "C" {
@@ -35,6 +36,10 @@ std::array<H3Index, MAX_NEIGHBORS> getNeighbors(const H3Index idx) {
     if (const H3Error err = gridDisk(idx, DISTANCE, neighbors.data()); err != E_SUCCESS)
         throw Errors::fetchNeighbors(err, idx);
     return neighbors;
+}
+
+int Antop::getResolution() const {
+    return resolution;
 }
 
 bool Antop::isNewAddrValid(const Address& addr, const H3Index idx) {
@@ -183,8 +188,8 @@ int Antop::neighbors() {
     return neighborCount;
 }
 
-void Antop::allocateAddresses(const int res) {
-    H3Index idx = getOriginForResolution(res);
+void Antop::allocateAddresses() {
+    H3Index idx = getOriginForResolution(resolution);
 
     auto baseCell = Cell();
 
@@ -203,13 +208,13 @@ void Antop::allocateAddresses(const int res) {
 }
 
 void Antop::init(const int satellites) {
-    const int res = getResolution(satellites);
-    allocateAddresses(res);
+    resolution = findResolution(satellites);
+    allocateAddresses();
 
-    std::cout << "Resolution: " << std::dec << res << std::endl;
+    std::cout << "Resolution: " << std::dec << resolution << std::endl;
     std::cout << "Unique Cells: " << std::dec << cellByIdx.size() << std::endl;
     std::cout << "Number of addresses: " << std::dec << addresses.size() << std::endl;
-    std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION.at(res) - 12) * 6 + 60 - neighbors() << std::endl << std::endl;
+    std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION.at(resolution) - 12) * 6 + 60 - neighbors() << std::endl << std::endl;
 }
 
 // ToDo:
@@ -220,7 +225,7 @@ void Antop::init(const int satellites) {
 //   cell A holds the same packet but lastHop has been updated to cell B. Naturally, it then forwards it to cell C, but cell C experiences the same shortcoming as cell B.
 //   Cell A receives the same packet for a third time, but this time lastHop has been updated to cell C. Therefore, cell A will once again try its luck with cell B, turning
 //   this into an endless loop, until the packet is lost due to the number of hops.
-H3Index Antop::getNextHopId(const H3Index src, const H3Index dst, const H3Index lastHop, bool isNextHopValid(H3Index idx)) const {
+H3Index Antop::getNextHopId(const H3Index src, const H3Index dst, const H3Index lastHop, const std::function<bool(H3Index)>& isNextHopValid) {
     const std::vector<H3Index> neighbors = neighborsByIdx.at(src);
 
     std::priority_queue<

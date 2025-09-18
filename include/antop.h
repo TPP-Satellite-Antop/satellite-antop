@@ -1,6 +1,7 @@
 #ifndef ANTOP_H
 #define ANTOP_H
 
+#include <functional>
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
@@ -14,6 +15,7 @@ class Antop {
     std::unordered_map<H3Index, std::vector<H3Index>> neighborsByIdx{};
     std::unordered_map<H3Index, Cell> cellByIdx;
     std::unordered_map<Address, H3Index> addresses;
+    int resolution;
     static constexpr int INVALID_IDX = 0;
 
     bool isNewAddrValid(const Address& originAddr, H3Index idx);
@@ -28,12 +30,13 @@ class Antop {
 
     int neighbors();
 
-    void allocateAddresses(int res);
+    void allocateAddresses();
 
 public:
     Antop() = default; // ToDo: replace default to custom constructor. This constructor should reserve memory for all three maps to remove rehashing altogether.
     void init(int satellites);
-    H3Index getNextHopId(H3Index src, H3Index dst, H3Index lastHop, bool isNextHopValid(H3Index idx)) const;
+    int getResolution() const;
+    H3Index getNextHopId(H3Index src, H3Index dst, H3Index lastHop, const std::function<bool(H3Index)> &isNextHopValid);
     /*TODO
     std::string load(H3Index dir);
     H3Index getDir(std::string id);
