@@ -71,7 +71,7 @@ void Antop::buildNeighborGraph() {
 
     for (const auto &idx: cellByIdx | std::views::keys) {
         for (const std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx); const H3Index neighbor : neighbors) {
-            if (neighbor != idx && cellByIdx[idx].distanceTo(&cellByIdx[neighbor]) == 1) {
+            if (neighbor != idx && neighbor != INVALID_IDX && cellByIdx[idx].distanceTo(&cellByIdx[neighbor]) == 1) {
                 neighborsSetByIdx[idx].insert(neighbor);
                 neighborsSetByIdx[neighbor].insert(idx);
             }
