@@ -250,6 +250,7 @@ H3Index Antop::getNextHopId(const H3Index src, const H3Index dst, const H3Index 
         if (heap.empty())
             throw Errors::unreachableDestination(src, dst);
         nextHop = heap.top().second;
+        heap.pop();
     } while (!isNextHopValid(nextHop));
 
     return nextHop;
