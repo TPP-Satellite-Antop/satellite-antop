@@ -219,39 +219,23 @@ void Antop::init(const int satellites) {
 
 // ToDo:
 // - Test heap.
-// - Update dst to include information about the packet (such as number of hops thus far).
 // - There's a "small" edge case that will break this routing algorithm. Let's say cell A receives a packet and the shortest routes to its destination are through either
 //   cell B or cell C. Cell A then forwards it to cell B, but it turns out that cell B has no option but to return the packet to cell A due to missing satellites. Now,
 //   cell A holds the same packet but lastHop has been updated to cell B. Naturally, it then forwards it to cell C, but cell C experiences the same shortcoming as cell B.
 //   Cell A receives the same packet for a third time, but this time lastHop has been updated to cell C. Therefore, cell A will once again try its luck with cell B, turning
 //   this into an endless loop, until the packet is lost due to the number of hops.
-H3Index Antop::getNextHopId(const H3Index src, const H3Index dst, const H3Index lastHop, const std::function<bool(H3Index)>& isNextHopValid) {
-    const std::vector<H3Index> neighbors = neighborsByIdx.at(src);
+std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index dst, const H3Index lastHop) const {
+    std::vector<H3Index> neighbors = neighborsByIdx.at(src);
 
-    std::priority_queue<
-        std::pair<int, H3Index>,
-        std::vector<std::pair<int, H3Index>>,
-        std::greater<>
-    > heap;
+    std::ranges::sort(neighbors, [&](const H3Index a, const H3Index b) {
+        // Last thing we want is for the algorithm to try to return to the lastHop.
+        if (a == lastHop) return false;
+        if (b == lastHop) return true;
 
-    for (const H3Index neighbor : neighbors) {
-        if (neighbor == src) // I'm trusting that neighborGraph is correctly built. If not, this won't work as intended.
-            continue;
+        const int distA = cellByIdx.at(a).distanceTo(&cellByIdx.at(dst));
+        const int distB = cellByIdx.at(b).distanceTo(&cellByIdx.at(dst));
+        return distA < distB;
+    });
 
-        int key = std::numeric_limits<int>::max();
-        if (neighbor != lastHop)
-            key = cellByIdx.at(neighbor).distanceTo(&cellByIdx.at(dst));
-
-        heap.emplace(key, neighbor);
-    }
-
-    H3Index nextHop = INVALID_IDX;
-    do {
-        if (heap.empty())
-            throw Errors::unreachableDestination(src, dst);
-        nextHop = heap.top().second;
-        heap.pop();
-    } while (!isNextHopValid(nextHop));
-
-    return nextHop;
+    return neighbors;
 }
