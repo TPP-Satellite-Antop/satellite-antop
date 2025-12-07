@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <functional>
 #include <limits>
+#include <math.h>
 
 extern "C" {
     #include "localij.h"
@@ -217,14 +218,19 @@ void Antop::init(const int satellites) {
     std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION.at(resolution) - 12) * 6 + 60 - neighbors() << std::endl << std::endl;
 }
 
-// ToDo:
-// - Test heap.
-// - There's a "small" edge case that will break this routing algorithm. Let's say cell A receives a packet and the shortest routes to its destination are through either
-//   cell B or cell C. Cell A then forwards it to cell B, but it turns out that cell B has no option but to return the packet to cell A due to missing satellites. Now,
-//   cell A holds the same packet but lastHop has been updated to cell B. Naturally, it then forwards it to cell C, but cell C experiences the same shortcoming as cell B.
-//   Cell A receives the same packet for a third time, but this time lastHop has been updated to cell C. Therefore, cell A will once again try its luck with cell B, turning
-//   this into an endless loop, until the packet is lost due to the number of hops.
-std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index dst, const H3Index lastHop) const {
+int Antop::distance(const H3Index idx1, const H3Index idx2) {
+    const auto cell = &cellByIdx.at(idx2);
+
+    int distance = cellByIdx.at(idx1).distanceTo(cell);
+
+    for (const H3Index neighbor : neighborsByIdx[idx1]) {
+        distance = std::min(distance, 1+cellByIdx[neighbor].distanceTo(cell));
+    }
+
+    return distance;
+}
+
+std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index dst, const H3Index lastHop) {
     std::vector<H3Index> neighbors = neighborsByIdx.at(src);
 
     std::ranges::sort(neighbors, [&](const H3Index a, const H3Index b) {
@@ -232,8 +238,8 @@ std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index ds
         if (a == lastHop) return false;
         if (b == lastHop) return true;
 
-        const int distA = cellByIdx.at(a).distanceTo(&cellByIdx.at(dst));
-        const int distB = cellByIdx.at(b).distanceTo(&cellByIdx.at(dst));
+        const int distA = distance(a, dst);
+        const int distB = distance(b, dst);
         return distA < distB;
     });
 
