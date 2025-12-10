@@ -69,15 +69,16 @@ H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3
     pairTable[pairTableKey] = storedDistance == 0 ? curDistance : std::min(storedDistance, curDistance);
 
     if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(routingInfoToSrc, curDistance)) {
+        const auto candidates = getNeighbors(cur, dst);
         auto bitmap = MSB_MASK;
         
-        for (const auto candidate : getNeighbors(cur, dst)) {
+        for (const auto candidate : candidates) {
             if (candidate == sender)
                 break;
             bitmap >>= 1;
         }
         
-        routingTable[src] = {sender, 0, curDistance, {}, bitmap}; // ToDo: save actual TTL.
+        routingTable[src] = {sender, 0, curDistance, candidates, bitmap}; // ToDo: save actual TTL.
     }
 
     if (const RoutingInfo routingInfoToDst = routingTable[dst]; routingInfoToDst.nextHop != 0)
