@@ -8,7 +8,7 @@
 #include "antop.h"
 #include <bitset>
 
-const int MAX_VISITED_NEIGHBORS = 6;
+constexpr int NEIGHBORS = 6;
 
 struct PairTableKey {
     H3Index source;
@@ -32,7 +32,8 @@ struct RoutingInfo {
     H3Index nextHop = 0;
     double ttl = 0; // Simulation time until which this entry is valid
     int distance = 0;
-    std::bitset<MAX_VISITED_NEIGHBORS> visitedNeighboursBitmap{0}; // Each bit represents a neighbour. Since a pentagon has up to 5 neighbours, in that case, its last bit must never be used.
+    std::array<H3Index, NEIGHBORS> neighbors = {};
+    std::bitset<NEIGHBORS> visitedBitmap{0}; // Each bit represents a neighbour. Since a pentagon has up to 5 neighbours, in that case, its last bit must never be used.
 };
 
 class RoutingTable {
@@ -42,10 +43,10 @@ class RoutingTable {
     Antop* antop;
 
 public:
-    RoutingTable(Antop* antop);
+    explicit RoutingTable(Antop* antop);
     H3Index findNextHop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int distance);
     H3Index findNewNeighbor(H3Index cur, H3Index dst, H3Index sender);
-    int getAntopResolution();
+    int getAntopResolution() const;
 };
 
 #endif // ANTOPROUTINGTABLE_H

@@ -3,32 +3,27 @@
 #include <iostream>
 #include <ostream>
 
-const int THRESHOLD_DISTANCE = 3;
-const std::bitset<MAX_VISITED_NEIGHBORS> MSB_MASK = {0b100000};
+constexpr int THRESHOLD_DISTANCE = 3;
+constexpr std::bitset<NEIGHBORS> MSB_MASK = {0b100000};
 
 RoutingTable::RoutingTable(Antop* antop) {
     this->antop = antop;
 }
 
-
 // Returns true if the routing info to source should be updated.
-bool shouldUpdateSrcInfo(RoutingInfo &routingInfoToSrc, int curDistance) {
+bool shouldUpdateSrcInfo(const RoutingInfo &routingInfoToSrc, const int curDistance) {
     return routingInfoToSrc.nextHop == 0 || routingInfoToSrc.distance > curDistance;
 }
 
-bool isLoop(int storedDistance, int curDistance) {
+bool isLoop(const int storedDistance, const int curDistance) {
     return storedDistance != 0 && storedDistance + THRESHOLD_DISTANCE < curDistance;
 }
 
-void markVisited(
-    std::bitset<MAX_VISITED_NEIGHBORS>& bitmap,
-    const std::vector<H3Index>& candidates,
-    H3Index visited
-) {
+void flagTargetAsVisited(std::bitset<NEIGHBORS>& bitmap, const std::vector<H3Index>& candidates, const H3Index target) {
     auto curNeighbor = MSB_MASK;
 
-    for (auto candidate : candidates) {
-        if (candidate == visited) {
+    for (const auto candidate : candidates) {
+        if (candidate == target) {
             bitmap |= curNeighbor;
             return;
         }
@@ -38,16 +33,12 @@ void markVisited(
     throw std::runtime_error("Sender not found in candidates");
 }
 
-H3Index findNextUnvisitedNeighbor(
-    std::bitset<MAX_VISITED_NEIGHBORS>& bitmap,
-    const std::vector<H3Index>& candidates,
-    H3Index fallback
-) {
+H3Index findNextUnvisitedNeighbor(std::bitset<NEIGHBORS>& bitmap, const std::vector<H3Index>& candidates, const H3Index fallback) {
     auto curNeighbor = MSB_MASK;
 
-    for (auto candidate : candidates) {
+    for (const auto candidate : candidates) {
         if ((bitmap & curNeighbor).none()) {
-            bitmap |= curNeighbor;   // mark as visited
+            bitmap |= curNeighbor;
             return candidate;
         }
         curNeighbor >>= 1;
@@ -56,52 +47,48 @@ H3Index findNextUnvisitedNeighbor(
     return fallback;
 }
 
-H3Index RoutingTable::findNextHop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int curDistance) {
-    PairTableKey key{src, dst};
-    int storedDistance = pairTable[key];
+H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3Index dst, const H3Index sender, const int curDistance) {
+    const PairTableKey pairTableKey{src, dst};
+    const int storedDistance = pairTable[pairTableKey];
+
     if (isLoop(storedDistance, curDistance)) {
         return sender;
     }
     
-    pairTable[key] = storedDistance == 0 ? curDistance : std::min(storedDistance, curDistance);
-    
-    RoutingInfo routingInfoToSrc = routingTable[src];
-    if (shouldUpdateSrcInfo(routingInfoToSrc, curDistance)) {
-        std::vector<H3Index> candidates = antop->getHopCandidates(cur, dst, 0);
-        __uint8_t senderIdxInCandidates = 128;
+    pairTable[pairTableKey] = storedDistance == 0 ? curDistance : std::min(storedDistance, curDistance);
+
+    if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(routingInfoToSrc, curDistance)) {
+        const std::vector<H3Index> candidates = antop->getHopCandidates(cur, dst, 0);
+        auto senderIdxInCandidates = MSB_MASK;
         
-        for (auto candidate : candidates) {
+        for (const auto candidate : candidates) {
             if (candidate == sender)
-            break;
-            senderIdxInCandidates = senderIdxInCandidates >> 1;
+                break;
+            senderIdxInCandidates >>= 1;
         }
         
-        routingTable[src] = {sender, 0, curDistance, senderIdxInCandidates}; // ToDo: save actual TTL.
+        routingTable[src] = {sender, 0, curDistance, {}, senderIdxInCandidates}; // ToDo: save actual TTL.
     }
-    
-    RoutingInfo routingInfoToDst = routingTable[dst];
-    if (routingInfoToDst.nextHop != 0)
-    return routingInfoToDst.nextHop;
-    
+
+    if (const RoutingInfo routingInfoToDst = routingTable[dst]; routingInfoToDst.nextHop != 0)
+        return routingInfoToDst.nextHop;
     return findNewNeighbor(cur, dst, sender);
 }
 
 H3Index RoutingTable::findNewNeighbor(const H3Index cur, const H3Index dst, const H3Index sender) {
-    auto bitmap = routingTable[dst].visitedNeighboursBitmap;
-    std::vector<H3Index> candidates = antop->getHopCandidates(cur, dst, 0);
+    auto bitmap = routingTable[dst].visitedBitmap;
+    const std::vector<H3Index> candidates = antop->getHopCandidates(cur, dst, 0);
 
-    // Flag sender as visited.
-    markVisited(bitmap, candidates, sender);
+    flagTargetAsVisited(bitmap, candidates, sender);
     
-    // Find next unvisited neighbor fallbacking to sender
-    H3Index nextNeighbor = findNextUnvisitedNeighbor(bitmap, candidates, sender);
+    const H3Index nextNeighbor = findNextUnvisitedNeighbor(bitmap, candidates, sender);
 
     routingTable[dst].nextHop = nextNeighbor;
-    routingTable[dst].visitedNeighboursBitmap = bitmap;
+    routingTable[dst].visitedBitmap = bitmap;
 
     return nextNeighbor;
 }
 
-int RoutingTable::getAntopResolution() {
+int RoutingTable::getAntopResolution() const {
     return this->antop->getResolution();
 }
