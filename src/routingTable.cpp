@@ -6,9 +6,8 @@
 const int THRESHOLD_DISTANCE = 3;
 const std::bitset<MAX_VISITED_NEIGHBORS> MSB_MASK = {0b100000};
 
-RoutingTable::RoutingTable(int nodesNumber) {
-    this->antop = new Antop();
-    this->antop->init(nodesNumber);
+RoutingTable::RoutingTable(Antop* antop) {
+    this->antop = antop;
 }
 
 
