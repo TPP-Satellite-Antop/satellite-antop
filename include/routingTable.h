@@ -43,12 +43,8 @@ class RoutingTable {
 public:
     RoutingTable(int nodesNumber);
     H3Index findNextHop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int distance);
-    int calculateNewDistance(int &storedDistance, int &curDistance);
-    bool shouldUpdateSrcInfo(RoutingInfo &routingInfoToSrc, int curDistance);
-    bool potentialLoop(int storedDistance, int curDistance);
-    const PairTableKey &NewFunction(H3Index src, H3Index dst);
     H3Index findNewNeighbor(H3Index cur, H3Index dst, H3Index sender);
-    Antop getAntopAlgorithm();
+    int getAntopResolution();
 };
 
 #endif // ANTOPROUTINGTABLE_H
