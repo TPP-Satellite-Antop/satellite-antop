@@ -49,6 +49,14 @@ H3Index findNextCandidate(std::bitset<NEIGHBORS>& bitmap, const std::vector<H3In
     return fallback;
 }
 
+std::vector<H3Index> RoutingTable::getNeighbors(const H3Index src, const H3Index dst) {
+    if (auto candidates = routingTable[dst].neighbors; !candidates.empty())
+        return candidates;
+    const auto candidates = antop->getHopCandidates(src, dst, 0);
+    routingTable[dst].neighbors = candidates;
+    return candidates;
+}
+
 // Retrieves a candidate for a packet's next hop.
 H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3Index dst, const H3Index sender, const int curDistance) {
     const PairTableKey pairTableKey{src, dst};
@@ -61,16 +69,15 @@ H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3
     pairTable[pairTableKey] = storedDistance == 0 ? curDistance : std::min(storedDistance, curDistance);
 
     if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(routingInfoToSrc, curDistance)) {
-        const std::vector<H3Index> candidates = antop->getHopCandidates(cur, dst, 0);
-        auto senderIdxInCandidates = MSB_MASK;
+        auto bitmap = MSB_MASK;
         
-        for (const auto candidate : candidates) {
+        for (const auto candidate : getNeighbors(cur, dst)) {
             if (candidate == sender)
                 break;
-            senderIdxInCandidates >>= 1;
+            bitmap >>= 1;
         }
         
-        routingTable[src] = {sender, 0, curDistance, {}, senderIdxInCandidates}; // ToDo: save actual TTL.
+        routingTable[src] = {sender, 0, curDistance, {}, bitmap}; // ToDo: save actual TTL.
     }
 
     if (const RoutingInfo routingInfoToDst = routingTable[dst]; routingInfoToDst.nextHop != 0)
@@ -81,7 +88,7 @@ H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3
 // Retrieves a new candidate for a packet's next hop.
 H3Index RoutingTable::findNewNeighbor(const H3Index cur, const H3Index dst, const H3Index sender) {
     auto bitmap = routingTable[dst].visitedBitmap;
-    const std::vector<H3Index> candidates = antop->getHopCandidates(cur, dst, 0);
+    const std::vector<H3Index> candidates = getNeighbors(cur, dst);
 
     flagTargetAsVisited(bitmap, candidates, sender);
     
