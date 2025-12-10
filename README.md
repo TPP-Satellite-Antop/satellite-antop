@@ -15,7 +15,7 @@ docker run satellite-antop:latest
 
 ### Building locally
 ```sh
-./build-local.sh
+./local-build.sh
 ```
 And then run with
 ```sh
