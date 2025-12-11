@@ -72,7 +72,7 @@ H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3
         const auto candidates = getNeighbors(cur, src);
         std::bitset<NEIGHBORS> bitmap = routingInfoToSrc.visitedBitmap;
 
-        if (const bool ok = flagTargetAsVisited(bitmap, candidates, sender); ok)
+        if (flagTargetAsVisited(bitmap, candidates, sender))
             routingTable[src] = {sender, 0, curDistance, candidates, bitmap}; // ToDo: save actual TTL.
     }
 
