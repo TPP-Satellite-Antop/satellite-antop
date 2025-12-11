@@ -48,12 +48,9 @@ TEST(RoutingTableTest, ReturnToSenderUponLootDetection) {
     RoutingTable routingTable(&antop);
 
     routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1);
-    routingTable.findNextHop(0x804bfffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8041fffffffffff, 2);
-    routingTable.findNextHop(0x8069fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x804bfffffffffff, 3);
-    routingTable.findNextHop(0x804bfffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8041fffffffffff, 4);
-    const auto nextHop = routingTable.findNextHop(0x8069fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x804bfffffffffff, 5);
+    const auto nextHop = routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8065fffffffffff, 10);
 
-    ASSERT_EQ(nextHop, 0x804bfffffffffff);
+    ASSERT_EQ(nextHop, 0x8065fffffffffff);
 }
 
 TEST(RoutingTableTest, FindNewNeighborRotatesCandidates) {
