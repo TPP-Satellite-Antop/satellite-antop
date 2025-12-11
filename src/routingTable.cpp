@@ -19,12 +19,17 @@ bool isLoop(const int storedDistance, const int curDistance) {
     return storedDistance != 0 && storedDistance + THRESHOLD_DISTANCE < curDistance;
 }
 
-// Flags the target index as visited in the bitmap.
-bool flagTargetAsVisited(std::bitset<NEIGHBORS>& bitmap, const std::vector<H3Index>& candidates, const H3Index target) {
+// Flags the target index as visited in the bitmap. Returns true if the routing information towards the packet's source
+// should be updated to flag the provided sender as the next hop. It otherwise returns false if the sender is not a
+// valid next hop.
+bool flagSenderAsVisited(std::bitset<NEIGHBORS>& bitmap, const std::vector<H3Index>& candidates, const H3Index sender) {
+    if (sender == 0)
+        return false;
+
     auto curNeighbor = MSB_MASK;
 
     for (const auto candidate : candidates) {
-        if (candidate == target) {
+        if (candidate == sender) {
             bitmap |= curNeighbor;
             return true;
         }
@@ -62,6 +67,7 @@ H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3
     const PairTableKey pairTableKey{src, dst};
     const int storedDistance = pairTable[pairTableKey];
 
+    // ToDo: maybe let the current node explore other paths before returning to the sender.
     if (isLoop(storedDistance, curDistance)) {
         return sender;
     }
@@ -72,7 +78,7 @@ H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3
         const auto candidates = getNeighbors(cur, src);
         std::bitset<NEIGHBORS> bitmap = routingInfoToSrc.visitedBitmap;
 
-        if (flagTargetAsVisited(bitmap, candidates, sender))
+        if (flagSenderAsVisited(bitmap, candidates, sender))
             routingTable[src] = {sender, 0, curDistance, candidates, bitmap}; // ToDo: save actual TTL.
     }
 
@@ -86,7 +92,7 @@ H3Index RoutingTable::findNewNeighbor(const H3Index cur, const H3Index dst, cons
     auto bitmap = routingTable[dst].visitedBitmap;
     const std::vector<H3Index> candidates = getNeighbors(cur, dst);
 
-    flagTargetAsVisited(bitmap, candidates, sender);
+    flagSenderAsVisited(bitmap, candidates, sender);
     
     const H3Index nextCandidate = findNextCandidate(bitmap, candidates, sender);
 
