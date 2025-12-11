@@ -31,6 +31,13 @@ void flagTargetAsVisited(std::bitset<NEIGHBORS>& bitmap, const std::vector<H3Ind
         curNeighbor >>= 1;
     }
 
+    // Throwing an exception could cause issues with the movement of nodes; e.g.: node A sends a packet to node B and,
+    // while the packet travels, node movement is triggered. The packet receiver would then get a valid packet from a
+    // sender that's not in a neighboring cell, meaning that it would not be found amongst the candidates. Solutions:
+    // - Handle error.
+    // - Simply return.
+    // - Update the function's signature to return a boolean on whether the sender was flagged or not. If it was not
+    //   flagged, it should also not be saved into the routing table next hop column.
     throw std::runtime_error("Sender not found in candidates");
 }
 
@@ -69,15 +76,11 @@ H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3
     pairTable[pairTableKey] = storedDistance == 0 ? curDistance : std::min(storedDistance, curDistance);
 
     if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(routingInfoToSrc, curDistance)) {
-        const auto candidates = getNeighbors(cur, dst);
-        auto bitmap = MSB_MASK;
-        
-        for (const auto candidate : candidates) {
-            if (candidate == sender)
-                break;
-            bitmap >>= 1;
-        }
-        
+        const auto candidates = getNeighbors(cur, src);
+        std::bitset<NEIGHBORS> bitmap = routingInfoToSrc.visitedBitmap;
+
+        flagTargetAsVisited(bitmap, candidates, sender);
+
         routingTable[src] = {sender, 0, curDistance, candidates, bitmap}; // ToDo: save actual TTL.
     }
 
