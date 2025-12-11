@@ -11,4 +11,7 @@ set(TEST_SOURCES example.cpp address.cpp util.cpp resolution.cpp cell.cpp antop.
 add_executable(${TEST_MAIN} ${TEST_SOURCES})
 target_link_libraries(${TEST_MAIN} PUBLIC ${LIBRARY_NAME} GTest::gtest_main)
 
+target_compile_options(${TEST_MAIN} PRIVATE -coverage)
+target_link_options(${TEST_MAIN} PRIVATE -coverage)
+
 gtest_discover_tests(${TEST_MAIN})
