@@ -48,11 +48,6 @@ if(ENABLE_SANITIZERS)
     target_set_warnings(${LIBRARY_NAME})
 endif()
 
-# apply coverage flags to the library target (so consumers inherit)
-target_compile_options(${LIBRARY_NAME} PUBLIC -coverage)
-target_link_options(${LIBRARY_NAME} PUBLIC -coverage)
-
-# and to the main executable as well
 target_compile_options(${EXECUTABLE_NAME} PRIVATE -coverage)
 target_link_options(${EXECUTABLE_NAME} PRIVATE -coverage)
 
