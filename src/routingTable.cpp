@@ -20,25 +20,18 @@ bool isLoop(const int storedDistance, const int curDistance) {
 }
 
 // Flags the target index as visited in the bitmap.
-void flagTargetAsVisited(std::bitset<NEIGHBORS>& bitmap, const std::vector<H3Index>& candidates, const H3Index target) {
+bool flagTargetAsVisited(std::bitset<NEIGHBORS>& bitmap, const std::vector<H3Index>& candidates, const H3Index target) {
     auto curNeighbor = MSB_MASK;
 
     for (const auto candidate : candidates) {
         if (candidate == target) {
             bitmap |= curNeighbor;
-            return;
+            return true;
         }
         curNeighbor >>= 1;
     }
 
-    // Throwing an exception could cause issues with the movement of nodes; e.g.: node A sends a packet to node B and,
-    // while the packet travels, node movement is triggered. The packet receiver would then get a valid packet from a
-    // sender that's not in a neighboring cell, meaning that it would not be found amongst the candidates. Solutions:
-    // - Handle error.
-    // - Simply return.
-    // - Update the function's signature to return a boolean on whether the sender was flagged or not. If it was not
-    //   flagged, it should also not be saved into the routing table next hop column.
-    throw std::runtime_error("Sender not found in candidates");
+    return false;
 }
 
 // Returns the best unvisited candidate. If none is found, findNextCandidate returns the provided fallback.
@@ -79,9 +72,8 @@ H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3
         const auto candidates = getNeighbors(cur, src);
         std::bitset<NEIGHBORS> bitmap = routingInfoToSrc.visitedBitmap;
 
-        flagTargetAsVisited(bitmap, candidates, sender);
-
-        routingTable[src] = {sender, 0, curDistance, candidates, bitmap}; // ToDo: save actual TTL.
+        if (const bool ok = flagTargetAsVisited(bitmap, candidates, sender); ok)
+            routingTable[src] = {sender, 0, curDistance, candidates, bitmap}; // ToDo: save actual TTL.
     }
 
     if (const RoutingInfo routingInfoToDst = routingTable[dst]; routingInfoToDst.nextHop != 0)
