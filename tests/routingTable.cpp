@@ -16,15 +16,12 @@ TEST(RoutingTableTest, Ttl) {
     RoutingTable routingTable(&antop);
 
     routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 1, 1.0);
-    ASSERT_EQ(routingTable.hasRoutingTableExpired(), false);
     ASSERT_EQ(routingTable.getTtl(), 1.0);
 
     routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 1, 1.0);
-    ASSERT_EQ(routingTable.hasRoutingTableExpired(), false);
     ASSERT_EQ(routingTable.getTtl(), 1.0);
 
     routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 1, 2.0);
-    ASSERT_EQ(routingTable.hasRoutingTableExpired(), true);
     ASSERT_EQ(routingTable.getTtl(), 2.0);
 }
 
