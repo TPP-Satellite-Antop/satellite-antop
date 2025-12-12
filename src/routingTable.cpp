@@ -70,9 +70,9 @@ H3Index RoutingTable::findNextHop(
     const H3Index dst,
     const H3Index sender,
     const int curDistance,
-    const double currentTime
+    const double nextPositionUpdate
 ) {
-    this->maybeClearRoutingTable(currentTime);
+    this->maybeClearRoutingTable(nextPositionUpdate);
 
     const PairTableKey pairTableKey{src, dst};
     const int storedDistance = pairTable[pairTableKey];
@@ -94,7 +94,7 @@ H3Index RoutingTable::findNextHop(
 
     if (const RoutingInfo routingInfoToDst = routingTable[dst]; routingInfoToDst.nextHop != 0)
         return routingInfoToDst.nextHop;
-    return findNewNeighbor(cur, dst, sender, currentTime);
+    return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
 }
 
 // Retrieves a new candidate for a packet's next hop.
@@ -102,9 +102,9 @@ H3Index RoutingTable::findNewNeighbor(
     const H3Index cur,
     const H3Index dst,
     const H3Index sender,
-    const double currentTime
+    const double nextPositionUpdate
 ) {
-    this->maybeClearRoutingTable(currentTime);
+    this->maybeClearRoutingTable(nextPositionUpdate);
 
     auto bitmap = routingTable[dst].visitedBitmap;
     const std::vector<H3Index> candidates = getNeighbors(cur, dst);
@@ -123,14 +123,18 @@ int RoutingTable::getAntopResolution() const {
     return this->antop->getResolution();
 }
 
-void RoutingTable::maybeClearRoutingTable(double currentTime) {
-    if (currentTime >= this->ttl) {
+void RoutingTable::maybeClearRoutingTable(double nextPositionUpdate) {
+    if (nextPositionUpdate > this->ttl && this->ttl != 0) {
         this->routingTable.clear();
         this->pairTable.clear();
         this->ttl = EXPIRED;
     }
 }
 
-bool RoutingTable::hasRoutingTableExpired() {
+bool RoutingTable::hasRoutingTableExpired() const {
     return this->ttl == EXPIRED;
+}
+
+double RoutingTable::getTtl() const {
+    return this->ttl;
 }
