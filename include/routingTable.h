@@ -40,6 +40,7 @@ class RoutingTable {
     std::unordered_map<PairTableKey, int> pairTable; // Maps (src,dst) to distance
     Antop* antop;
     double ttl = 0.0;
+    bool hasExpired = false;
 
     std::vector<H3Index> getNeighbors(H3Index src, H3Index dst);
 

@@ -5,7 +5,6 @@
 
 constexpr int THRESHOLD_DISTANCE = 3;
 constexpr std::bitset<NEIGHBORS> MSB_MASK = {0b100000};
-constexpr double EXPIRED = -1.0;
 
 RoutingTable::RoutingTable(Antop* antop) {
     this->antop = antop;
@@ -127,12 +126,13 @@ void RoutingTable::maybeClearRoutingTable(double nextPositionUpdate) {
     if (nextPositionUpdate > this->ttl && this->ttl != 0) {
         this->routingTable.clear();
         this->pairTable.clear();
-        this->ttl = EXPIRED;
+        this->ttl = 0.0;
+        this->hasExpired = true; //TODO hay q resetearlo en algun lado
     }
 }
 
 bool RoutingTable::hasRoutingTableExpired() const {
-    return this->ttl == EXPIRED;
+    return this->hasExpired;
 }
 
 double RoutingTable::getTtl() const {
