@@ -39,10 +39,6 @@ public:
     void init(int satellites);
     int getResolution() const;
     std::vector<H3Index> getHopCandidates(H3Index src, H3Index dst, H3Index lastHop);
-    /*TODO
-    std::string load(H3Index dir);
-    H3Index getDir(std::string id);
-    */
 };
 
 #endif //ANTOP_H
