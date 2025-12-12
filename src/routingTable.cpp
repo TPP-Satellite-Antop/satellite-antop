@@ -124,10 +124,10 @@ int RoutingTable::getAntopResolution() const {
 }
 
 void RoutingTable::maybeClearRoutingTable(double nextPositionUpdate) {
-    if (nextPositionUpdate > this->ttl && this->ttl != 0) {
+    if (nextPositionUpdate > this->ttl) {
         this->routingTable.clear();
         this->pairTable.clear();
-        this->ttl = 0.0;
+        this->ttl = nextPositionUpdate;
     }
 }
 
