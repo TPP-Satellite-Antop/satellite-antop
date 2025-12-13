@@ -48,6 +48,9 @@ if(ENABLE_SANITIZERS)
     target_set_warnings(${LIBRARY_NAME})
 endif()
 
+target_compile_options(${EXECUTABLE_NAME} PRIVATE -coverage)
+target_link_options(${EXECUTABLE_NAME} PRIVATE -coverage)
+
 install(TARGETS ${LIBRARY_NAME} DESTINATION lib)
 install(DIRECTORY ${PROJECT_INCLUDE_DIR}/ DESTINATION include)
 
