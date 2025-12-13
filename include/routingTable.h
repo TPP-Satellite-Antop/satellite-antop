@@ -42,12 +42,12 @@ class RoutingTable {
     double ttl = 0.0;
 
     std::vector<H3Index> getNeighbors(H3Index src, H3Index dst);
+    void maybeClearRoutingTable(double nextPositionUpdate);
 
 public:
     explicit RoutingTable(Antop* antop);
-    H3Index findNextHop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int curDistance, double currentTime);
-    H3Index findNewNeighbor(H3Index cur, H3Index dst, H3Index sender, double currentTime);
-    void maybeClearRoutingTable(double currentTime);
+    H3Index findNextHop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int curDistance, double nextPositionUpdate);
+    H3Index findNewNeighbor(H3Index cur, H3Index dst, H3Index sender, double nextPositionUpdate);
     int getAntopResolution() const;
     double getTtl() const;
 };

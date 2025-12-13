@@ -25,7 +25,6 @@ TEST(RoutingTableTest, Ttl) {
     ASSERT_EQ(routingTable.getTtl(), 2);
 }
 
-
 TEST(RoutingTableTest, SimpleUncachedHop) {
     Antop antop{};
     antop.init(1);
