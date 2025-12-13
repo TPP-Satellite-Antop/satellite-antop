@@ -76,8 +76,6 @@ H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3
         return sender;
     }
 
-    this->loopDetected = false;
-    
     pairTable[pairTableKey] = storedDistance == 0 ? *curDistance : std::min(storedDistance, *curDistance);
 
     if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(routingInfoToSrc, *curDistance)) {
@@ -95,7 +93,6 @@ H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3
 
 // Retrieves a new candidate for a packet's next hop.
 H3Index RoutingTable::findNewNeighbor(const H3Index cur, const H3Index dst, const H3Index sender) {
-    this->loopDetected = false;
     auto bitmap = routingTable[dst].visitedBitmap;
     const std::vector<H3Index> candidates = getNeighbors(cur, dst);
 
