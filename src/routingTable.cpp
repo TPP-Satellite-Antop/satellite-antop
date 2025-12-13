@@ -133,7 +133,3 @@ void RoutingTable::clear(double nextPositionUpdate) {
     this->pairTable.clear();
     this->ttl = nextPositionUpdate;
 }
-
-double RoutingTable::getTtl() const {
-    return this->ttl;
-}

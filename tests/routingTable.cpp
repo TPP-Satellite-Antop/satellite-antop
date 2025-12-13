@@ -15,14 +15,17 @@ TEST(RoutingTableTest, Ttl) {
     antop.init(1);
     RoutingTable routingTable(&antop);
 
-    routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 1, 1.0);
-    ASSERT_EQ(routingTable.getTtl(), 1);
+    auto cur = 0x8041fffffffffff;
+    auto src = 0x8025fffffffffff;
+    auto dst = 0x8069fffffffffff;
+    auto sender = src;
 
-    routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 1, 1.0);
-    ASSERT_EQ(routingTable.getTtl(), 1);
+    auto next = routingTable.findNextHop(cur, src, dst, sender, 1, 1.0);
+    auto cached = routingTable.findNewNeighbor(cur, dst, sender, 1.0);
+    auto afterClear = routingTable.findNewNeighbor(cur, dst, sender, 2.0);
 
-    routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 1, 2.0);
-    ASSERT_EQ(routingTable.getTtl(), 2);
+    ASSERT_TRUE(next != cached);
+    ASSERT_EQ(next, afterClear);
 }
 
 TEST(RoutingTableTest, SimpleUncachedHop) {
