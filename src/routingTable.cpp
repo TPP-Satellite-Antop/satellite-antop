@@ -71,8 +71,8 @@ H3Index RoutingTable::findNextHop(
     const int curDistance,
     const double nextPositionUpdate
 ) {
-    
-    this->maybeClearRoutingTable(nextPositionUpdate);
+    if (this->expired(nextPositionUpdate))
+        this->clear(nextPositionUpdate);
 
     const PairTableKey pairTableKey{src, dst};
     const int storedDistance = pairTable[pairTableKey];
@@ -104,7 +104,8 @@ H3Index RoutingTable::findNewNeighbor(
     const H3Index sender,
     const double nextPositionUpdate
 ) {
-    this->maybeClearRoutingTable(nextPositionUpdate);
+    if (this->expired(nextPositionUpdate))
+        this->clear(nextPositionUpdate);
 
     auto bitmap = routingTable[dst].visitedBitmap;
     const std::vector<H3Index> candidates = getNeighbors(cur, dst);
@@ -123,12 +124,14 @@ int RoutingTable::getAntopResolution() const {
     return this->antop->getResolution();
 }
 
-void RoutingTable::maybeClearRoutingTable(double nextPositionUpdate) {
-    if (nextPositionUpdate > this->ttl) {
-        this->routingTable.clear();
-        this->pairTable.clear();
-        this->ttl = nextPositionUpdate;
-    }
+bool RoutingTable::expired(double nextPositionUpdate) const {
+    return nextPositionUpdate > this->ttl;
+}
+
+void RoutingTable::clear(double nextPositionUpdate) {
+    this->routingTable.clear();
+    this->pairTable.clear();
+    this->ttl = nextPositionUpdate;
 }
 
 double RoutingTable::getTtl() const {

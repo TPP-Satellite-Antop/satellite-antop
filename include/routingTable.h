@@ -42,7 +42,8 @@ class RoutingTable {
     double ttl = 0.0;
 
     std::vector<H3Index> getNeighbors(H3Index src, H3Index dst);
-    void maybeClearRoutingTable(double nextPositionUpdate);
+    void clear(double nextPositionUpdate);
+    bool expired(double nextPositionUpdate) const;
 
 public:
     explicit RoutingTable(Antop* antop);
