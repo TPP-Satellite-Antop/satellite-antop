@@ -62,27 +62,30 @@ std::vector<H3Index> RoutingTable::getNeighbors(const H3Index src, const H3Index
     return candidates;
 }
 
-// Retrieves a candidate for a packet's next hop.
-H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3Index dst, const H3Index sender, const int curDistance) {
+// Retrieves a candidate for a packet's next hop. Sets curDistance to 0 if a loop is detected.
+H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3Index dst, const H3Index sender, int* curDistance) {
+    if (curDistance == nullptr)
+        throw std::invalid_argument("curDistance pointer cannot be null");
+
     const PairTableKey pairTableKey{src, dst};
     const int storedDistance = pairTable[pairTableKey];
 
     // ToDo: maybe let the current node explore other paths before returning to the sender.
-    if (isLoop(storedDistance, curDistance)) {
-        this->loopDetected = true;
+    if (isLoop(storedDistance, *curDistance)) {
+        *curDistance = 0;
         return sender;
     }
 
     this->loopDetected = false;
     
-    pairTable[pairTableKey] = storedDistance == 0 ? curDistance : std::min(storedDistance, curDistance);
+    pairTable[pairTableKey] = storedDistance == 0 ? *curDistance : std::min(storedDistance, *curDistance);
 
-    if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(routingInfoToSrc, curDistance)) {
+    if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(routingInfoToSrc, *curDistance)) {
         const auto candidates = getNeighbors(cur, src);
         std::bitset<NEIGHBORS> bitmap = routingInfoToSrc.visitedBitmap;
 
         if (flagSenderAsVisited(bitmap, candidates, sender))
-            routingTable[src] = {sender, 0, curDistance, candidates, bitmap}; // ToDo: save actual TTL.
+            routingTable[src] = {sender, 0, *curDistance, candidates, bitmap}; // ToDo: save actual TTL.
     }
 
     if (const RoutingInfo routingInfoToDst = routingTable[dst]; routingInfoToDst.nextHop != 0)
