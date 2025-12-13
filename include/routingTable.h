@@ -49,7 +49,6 @@ public:
     H3Index findNextHop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int* curDistance);
     H3Index findNewNeighbor(H3Index cur, H3Index dst, H3Index sender);
     int getAntopResolution() const;
-    bool wasLoopDetected() const;
 };
 
 #endif // ANTOPROUTINGTABLE_H

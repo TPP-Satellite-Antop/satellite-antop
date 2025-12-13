@@ -112,7 +112,3 @@ H3Index RoutingTable::findNewNeighbor(const H3Index cur, const H3Index dst, cons
 int RoutingTable::getAntopResolution() const {
     return this->antop->getResolution();
 }
-
-bool RoutingTable::wasLoopDetected() const {
-    return this->loopDetected;
-}
