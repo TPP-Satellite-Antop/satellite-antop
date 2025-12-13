@@ -69,8 +69,11 @@ H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3
 
     // ToDo: maybe let the current node explore other paths before returning to the sender.
     if (isLoop(storedDistance, curDistance)) {
+        this->loopDetected = true;
         return sender;
     }
+
+    this->loopDetected = false;
     
     pairTable[pairTableKey] = storedDistance == 0 ? curDistance : std::min(storedDistance, curDistance);
 
@@ -89,6 +92,7 @@ H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3
 
 // Retrieves a new candidate for a packet's next hop.
 H3Index RoutingTable::findNewNeighbor(const H3Index cur, const H3Index dst, const H3Index sender) {
+    this->loopDetected = false;
     auto bitmap = routingTable[dst].visitedBitmap;
     const std::vector<H3Index> candidates = getNeighbors(cur, dst);
 
@@ -104,4 +108,8 @@ H3Index RoutingTable::findNewNeighbor(const H3Index cur, const H3Index dst, cons
 
 int RoutingTable::getAntopResolution() const {
     return this->antop->getResolution();
+}
+
+bool RoutingTable::wasLoopDetected() const {
+    return this->loopDetected;
 }

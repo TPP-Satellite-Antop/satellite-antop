@@ -29,6 +29,7 @@ TEST(RoutingTableTest, SimpleCachedHop) {
     const auto nextHop2 = routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 1);
 
     ASSERT_EQ(nextHop1, nextHop2);
+    ASSERT_EQ(routingTable.wasLoopDetected(), false);
 }
 
 TEST(RoutingTableTest, SimpleCachedReturnHop) {
@@ -40,6 +41,7 @@ TEST(RoutingTableTest, SimpleCachedReturnHop) {
     const auto nextHop = routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 1);
 
     ASSERT_EQ(nextHop, 0x8069fffffffffff);
+    ASSERT_EQ(routingTable.wasLoopDetected(), false);
 }
 
 TEST(RoutingTableTest, ReturnToSenderUponLootDetection) {
@@ -51,6 +53,7 @@ TEST(RoutingTableTest, ReturnToSenderUponLootDetection) {
     const auto nextHop = routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8065fffffffffff, 10);
 
     ASSERT_EQ(nextHop, 0x8065fffffffffff);
+    ASSERT_EQ(routingTable.wasLoopDetected(), true);
 }
 
 TEST(RoutingTableTest, FindNewNeighborRotatesCandidates) {
@@ -64,4 +67,5 @@ TEST(RoutingTableTest, FindNewNeighborRotatesCandidates) {
     ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff), 0x8065fffffffffff);
     ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff), 0x804bfffffffffff);
     ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff), 0x8069fffffffffff);
+    ASSERT_EQ(routingTable.wasLoopDetected(), false);
 }
