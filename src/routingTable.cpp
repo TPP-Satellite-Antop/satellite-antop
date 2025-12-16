@@ -128,7 +128,7 @@ bool RoutingTable::expired(double nextPositionUpdate) const {
     return nextPositionUpdate > this->ttl;
 }
 
-void RoutingTable::clear(double nextPositionUpdate) {
+void RoutingTable::clear(const double nextPositionUpdate) {
     this->routingTable.clear();
     this->pairTable.clear();
     this->ttl = nextPositionUpdate;
