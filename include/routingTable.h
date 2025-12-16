@@ -47,7 +47,7 @@ class RoutingTable {
 
 public:
     explicit RoutingTable(Antop* antop);
-    H3Index findNextHop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int curDistance, double nextPositionUpdate);
+    H3Index findNextHop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int *curDistance, double nextPositionUpdate);
     H3Index findNewNeighbor(H3Index cur, H3Index dst, H3Index sender, double nextPositionUpdate);
     int getAntopResolution() const;
 };

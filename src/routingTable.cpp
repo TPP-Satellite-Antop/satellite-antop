@@ -68,9 +68,12 @@ H3Index RoutingTable::findNextHop(
     const H3Index src,
     const H3Index dst,
     const H3Index sender,
-    const int curDistance,
+    int *curDistance,
     const double nextPositionUpdate
 ) {
+    if (curDistance == nullptr)
+    throw std::invalid_argument("curDistance pointer cannot be null");
+
     if (this->expired(nextPositionUpdate))
         this->clear(nextPositionUpdate);
 
@@ -78,18 +81,19 @@ H3Index RoutingTable::findNextHop(
     const int storedDistance = pairTable[pairTableKey];
 
     // ToDo: maybe let the current node explore other paths before returning to the sender.
-    if (isLoop(storedDistance, curDistance)) {
+    if (isLoop(storedDistance, *curDistance)) {
+        *curDistance = 0;
         return sender;
     }
-    
-    pairTable[pairTableKey] = storedDistance == 0 ? curDistance : std::min(storedDistance, curDistance);
 
-    if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(routingInfoToSrc, curDistance)) {
+    pairTable[pairTableKey] = storedDistance == 0 ? *curDistance : std::min(storedDistance, *curDistance);
+
+    if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(routingInfoToSrc, *curDistance)) {
         const auto candidates = getNeighbors(cur, src);
         std::bitset<NEIGHBORS> bitmap = routingInfoToSrc.visitedBitmap;
 
         if (flagSenderAsVisited(bitmap, candidates, sender))
-            routingTable[src] = {sender, curDistance, candidates, bitmap};
+            routingTable[src] = {sender, *curDistance, candidates, bitmap};
     }
 
     if (const RoutingInfo routingInfoToDst = routingTable[dst]; routingInfoToDst.nextHop != 0)

@@ -25,7 +25,7 @@ cd build
 
 ## Running tests locally
 ```sh
-mkdir -p build && cd build && cmake .. && make && ctest
+mkdir -p build && cd build && cmake .. && make && ctest -T Test -T Coverage
 ```
 ## Running tests with docker
 ```sh

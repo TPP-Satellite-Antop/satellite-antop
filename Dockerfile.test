@@ -24,4 +24,4 @@ COPY . .
 # Build the project using CMake
 RUN cmake -S . -B build -DENABLE_SANITIZERS=ON && cmake --build build
 
-CMD ["cmake", "--build", "build", "--target", "test"]
+CMD ["ctest", "-T", "Test", "-T", "Coverage", "--test-dir", "build"]
