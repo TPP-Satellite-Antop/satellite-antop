@@ -10,7 +10,7 @@ TEST(RoutingTableTest, GetResolution) {
     ASSERT_EQ(routingTable.getAntopResolution(), antop.getResolution());
 }
 
-TEST(RoutingTableTest, Ttl) {
+TEST(RoutingTableTest, ExpirationResetsTables) {
     Antop antop{};
     antop.init(1);
     RoutingTable routingTable(&antop);
