@@ -62,7 +62,7 @@ std::vector<H3Index> RoutingTable::getNeighbors(const H3Index src, const H3Index
     return candidates;
 }
 
-// Retrieves a candidate for a packet's next hop. Sets curDistance to 0 if a loop is detected.
+// Retrieves a candidate for a packet's next hop. Sets curDistance to stored distance if a loop is detected.
 H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3Index dst, const H3Index sender, int* curDistance) {
     if (curDistance == nullptr)
         throw std::invalid_argument("curDistance pointer cannot be null");
@@ -72,7 +72,7 @@ H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3
 
     // ToDo: maybe let the current node explore other paths before returning to the sender.
     if (isLoop(storedDistance, *curDistance)) {
-        *curDistance = 0;
+        *curDistance = storedDistance;
         return sender;
     }
 
