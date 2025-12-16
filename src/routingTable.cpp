@@ -124,7 +124,7 @@ int RoutingTable::getAntopResolution() const {
     return this->antop->getResolution();
 }
 
-bool RoutingTable::expired(double nextPositionUpdate) const {
+bool RoutingTable::expired(const double nextPositionUpdate) const {
     return nextPositionUpdate > this->ttl;
 }
 
