@@ -62,10 +62,20 @@ std::vector<H3Index> RoutingTable::getNeighbors(const H3Index src, const H3Index
     return candidates;
 }
 
-// Retrieves a candidate for a packet's next hop. Sets curDistance to stored distance if a loop is detected.
-H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3Index dst, const H3Index sender, int* curDistance) {
+// Retrieves a candidate for a packet's next hop.
+H3Index RoutingTable::findNextHop(
+    const H3Index cur,
+    const H3Index src,
+    const H3Index dst,
+    const H3Index sender,
+    int *curDistance,
+    const double nextPositionUpdate
+) {
     if (curDistance == nullptr)
-        throw std::invalid_argument("curDistance pointer cannot be null");
+    throw std::invalid_argument("curDistance pointer cannot be null");
+
+    if (this->expired(nextPositionUpdate))
+        this->clear(nextPositionUpdate);
 
     const PairTableKey pairTableKey{src, dst};
     const int storedDistance = pairTable[pairTableKey];
@@ -83,16 +93,24 @@ H3Index RoutingTable::findNextHop(const H3Index cur, const H3Index src, const H3
         std::bitset<NEIGHBORS> bitmap = routingInfoToSrc.visitedBitmap;
 
         if (flagSenderAsVisited(bitmap, candidates, sender))
-            routingTable[src] = {sender, 0, *curDistance, candidates, bitmap}; // ToDo: save actual TTL.
+            routingTable[src] = {sender, *curDistance, candidates, bitmap};
     }
 
     if (const RoutingInfo routingInfoToDst = routingTable[dst]; routingInfoToDst.nextHop != 0)
         return routingInfoToDst.nextHop;
-    return findNewNeighbor(cur, dst, sender);
+    return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
 }
 
 // Retrieves a new candidate for a packet's next hop.
-H3Index RoutingTable::findNewNeighbor(const H3Index cur, const H3Index dst, const H3Index sender) {
+H3Index RoutingTable::findNewNeighbor(
+    const H3Index cur,
+    const H3Index dst,
+    const H3Index sender,
+    const double nextPositionUpdate
+) {
+    if (this->expired(nextPositionUpdate))
+        this->clear(nextPositionUpdate);
+
     auto bitmap = routingTable[dst].visitedBitmap;
     const std::vector<H3Index> candidates = getNeighbors(cur, dst);
 
@@ -108,4 +126,14 @@ H3Index RoutingTable::findNewNeighbor(const H3Index cur, const H3Index dst, cons
 
 int RoutingTable::getAntopResolution() const {
     return this->antop->getResolution();
+}
+
+bool RoutingTable::expired(const double nextPositionUpdate) const {
+    return nextPositionUpdate > this->ttl;
+}
+
+void RoutingTable::clear(const double nextPositionUpdate) {
+    this->routingTable.clear();
+    this->pairTable.clear();
+    this->ttl = nextPositionUpdate;
 }

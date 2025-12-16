@@ -30,7 +30,6 @@ template <> struct std::hash<PairTableKey> {
 
 struct RoutingInfo {
     H3Index nextHop = 0;
-    double ttl = 0; // Simulation time until which this entry is valid
     int distance = 0;
     std::vector<H3Index> neighbors = {};
     std::bitset<NEIGHBORS> visitedBitmap{0}; // Each bit represents a neighbour. Since a pentagon has up to 5 neighbours, in that case, its last bit must never be used.
@@ -40,13 +39,16 @@ class RoutingTable {
     std::unordered_map<H3Index, RoutingInfo> routingTable;
     std::unordered_map<PairTableKey, int> pairTable; // Maps (src,dst) to distance
     Antop* antop;
+    double ttl = 0.0;
 
     std::vector<H3Index> getNeighbors(H3Index src, H3Index dst);
+    void clear(double nextPositionUpdate);
+    bool expired(double nextPositionUpdate) const;
 
 public:
     explicit RoutingTable(Antop* antop);
-    H3Index findNextHop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int* curDistance);
-    H3Index findNewNeighbor(H3Index cur, H3Index dst, H3Index sender);
+    H3Index findNextHop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int *curDistance, double nextPositionUpdate);
+    H3Index findNewNeighbor(H3Index cur, H3Index dst, H3Index sender, double nextPositionUpdate);
     int getAntopResolution() const;
 };
 
