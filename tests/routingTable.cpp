@@ -15,15 +15,15 @@ TEST(RoutingTableTest, ExpirationResetsTables) {
     antop.init(1);
     RoutingTable routingTable(&antop);
 
-    auto cur = 0x8041fffffffffff;
-    auto src = 0x8025fffffffffff;
-    auto dst = 0x8069fffffffffff;
-    auto sender = src;
+    const auto cur = 0x8041fffffffffff;
+    const auto src = 0x8025fffffffffff;
+    const auto dst = 0x8069fffffffffff;
+    const auto sender = src;
     auto curDistance = 1;
 
-    auto next = routingTable.findNextHop(cur, src, dst, sender, &curDistance, 1.0);
-    auto cached = routingTable.findNewNeighbor(cur, dst, sender, 1.0);
-    auto afterClear = routingTable.findNewNeighbor(cur, dst, sender, 2.0);
+    const auto next = routingTable.findNextHop(cur, src, dst, sender, &curDistance, 1.0);
+    const auto cached = routingTable.findNewNeighbor(cur, dst, sender, 1.0);
+    const auto afterClear = routingTable.findNewNeighbor(cur, dst, sender, 2.0);
 
     ASSERT_TRUE(next != cached);
     ASSERT_EQ(next, afterClear);
