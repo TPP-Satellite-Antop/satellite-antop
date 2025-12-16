@@ -14,21 +14,25 @@ TEST(RoutingTableTest, SimpleUncachedHop) {
     Antop antop{};
     antop.init(1);
     RoutingTable routingTable(&antop);
+    auto curDistance = 1;
 
-    const auto nextHop = routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 1);
+    const auto nextHop = routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, &curDistance);
 
     ASSERT_EQ(nextHop, 0x8069fffffffffff);
+    ASSERT_EQ(curDistance, 1);
 }
 
 TEST(RoutingTableTest, SimpleCachedHop) {
     Antop antop{};
     antop.init(1);
     RoutingTable routingTable(&antop);
+    auto curDistance = 1;
 
-    const auto nextHop1 = routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 1);
-    const auto nextHop2 = routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 1);
+    const auto nextHop1 = routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, &curDistance);
+    const auto nextHop2 = routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, &curDistance);
 
     ASSERT_EQ(nextHop1, nextHop2);
+    ASSERT_EQ(curDistance, 1);
 }
 
 TEST(RoutingTableTest, SimpleCachedReturnHop) {
@@ -36,21 +40,26 @@ TEST(RoutingTableTest, SimpleCachedReturnHop) {
     antop.init(1);
     RoutingTable routingTable(&antop);
 
-    routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 1);
-    const auto nextHop = routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 1);
+    auto curDistance = 1;
+    routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, &curDistance);
+    const auto nextHop = routingTable.findNextHop(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, &curDistance);
 
     ASSERT_EQ(nextHop, 0x8069fffffffffff);
+    ASSERT_EQ(curDistance, 1);
 }
 
-TEST(RoutingTableTest, ReturnToSenderUponLootDetection) {
+TEST(RoutingTableTest, ReturnToSenderUponLoopDetection) {
     Antop antop{};
     antop.init(1);
     RoutingTable routingTable(&antop);
+    auto curDistance = 1;
 
-    routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1);
-    const auto nextHop = routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8065fffffffffff, 10);
+    routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance);
+    curDistance = 10;
+    const auto nextHop = routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8065fffffffffff, &curDistance);
 
     ASSERT_EQ(nextHop, 0x8065fffffffffff);
+    ASSERT_EQ(curDistance, 0);
 }
 
 TEST(RoutingTableTest, FindNewNeighborRotatesCandidates) {
