@@ -82,7 +82,7 @@ H3Index RoutingTable::findNextHop(
 
     // ToDo: maybe let the current node explore other paths before returning to the sender.
     if (isLoop(storedDistance, *curDistance)) {
-        *curDistance = 0;
+        *curDistance = storedDistance;
         return sender;
     }
 
