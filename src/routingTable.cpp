@@ -114,6 +114,8 @@ H3Index RoutingTable::findNewNeighbor(
     auto bitmap = routingTable[dst].visitedBitmap;
     const std::vector<H3Index> candidates = getNeighbors(cur, dst);
 
+    // ToDo: figure out a better strategy than simply returning the sender. Perhaps not flagging the sender as visited
+    //       could prove useful to make sure that path is only tested once, but while also leaving it as the last option.
     flagSenderAsVisited(bitmap, candidates, sender);
     
     const H3Index nextCandidate = findNextCandidate(bitmap, candidates, sender);
