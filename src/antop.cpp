@@ -230,17 +230,11 @@ int Antop::distance(const H3Index idx1, const H3Index idx2) {
     return distance;
 }
 
-std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index dst, const H3Index lastHop) {
+std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index dst) {
     std::vector<H3Index> neighbors = neighborsByIdx.at(src);
 
     std::ranges::sort(neighbors, [&](const H3Index a, const H3Index b) {
-        // Last thing we want is for the algorithm to try to return to the lastHop.
-        if (a == lastHop) return false;
-        if (b == lastHop) return true;
-
-        const int distA = distance(a, dst);
-        const int distB = distance(b, dst);
-        return distA < distB;
+        return distance(a, dst) < distance(b, dst);
     });
 
     return neighbors;
