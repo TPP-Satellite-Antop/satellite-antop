@@ -117,6 +117,8 @@ H3Index RoutingTable::findNewNeighbor(
     flagSenderAsVisited(bitmap, candidates, sender);
     
     const H3Index nextCandidate = findNextCandidate(bitmap, candidates, sender);
+    if (nextCandidate == 0)
+        return cur;
 
     routingTable[dst].nextHop = nextCandidate;
     routingTable[dst].visitedBitmap = bitmap;
