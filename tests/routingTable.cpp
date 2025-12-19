@@ -99,12 +99,15 @@ TEST(RoutingTableTest, NoNextHopReturnsCurrentIndex) {
     antop.init(1);
     RoutingTable routingTable(&antop);
 
-    routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0, 1);
-    routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0, 1);
-    routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0, 1);
-    routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0, 1);
-    routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0, 1);
-    routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0, 1);
+    constexpr H3Index cur = 0x8041fffffffffff;
+    constexpr H3Index dst = 0x8025fffffffffff;
 
-    ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0, 0), 0x8041fffffffffff);
+    routingTable.findNewNeighbor(cur, dst, 0, 1);
+    routingTable.findNewNeighbor(cur, dst, 0, 1);
+    routingTable.findNewNeighbor(cur, dst, 0, 1);
+    routingTable.findNewNeighbor(cur, dst, 0, 1);
+    routingTable.findNewNeighbor(cur, dst, 0, 1);
+    routingTable.findNewNeighbor(cur, dst, 0, 1);
+
+    ASSERT_EQ(routingTable.findNewNeighbor(cur, dst, 0, 1), 0x8041fffffffffff);
 }
