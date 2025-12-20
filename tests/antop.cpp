@@ -17,7 +17,6 @@ TEST(AntopTest, NeighborRouting) {
         0x80d9fffffffffff,
     };
 
-
     ASSERT_EQ(candidates, exp);
 
     candidates = antop.getHopCandidates(0x80bffffffffffff, 0x800ffffffffffff, candidates[0]);
