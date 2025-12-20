@@ -4,10 +4,14 @@
 #include <map>
 #include <h3api.h>
 
-const std::map<int, int> CELLS_BY_RESOLUTION = {
-    {0, 122},
-    {1, 842},
-    {2, 5882},
+namespace H3ResolutionLimits {
+    constexpr int MAX_SUPPORTED = 3;
+}
+
+constexpr int CELLS_BY_RESOLUTION[H3ResolutionLimits::MAX_SUPPORTED] = {
+    122,
+    842,
+    5882,
 };
 
 H3Index getOriginForResolution(int res);
