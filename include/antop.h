@@ -34,10 +34,10 @@ class Antop {
     int distance(H3Index idx1, H3Index idx2);
 
 public:
-    Antop() = default; // ToDo: replace default to custom constructor. This constructor should reserve memory for all three maps to remove rehashing altogether.
+    Antop() = default; // ToDo: replace default to custom constructor. This constructor should reserve memory for all three maps to avoid unnecessary rehashing.
     void init(int satellites);
     int getResolution() const;
-    std::vector<H3Index> getHopCandidates(H3Index src, H3Index dst, H3Index lastHop);
+    std::vector<H3Index> getHopCandidates(H3Index src, H3Index dst);
 };
 
 #endif //ANTOP_H

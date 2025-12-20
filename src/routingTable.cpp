@@ -59,7 +59,7 @@ H3Index findNextCandidate(std::bitset<NEIGHBORS>& bitmap, const std::vector<H3In
 std::vector<H3Index> RoutingTable::getNeighbors(const H3Index src, const H3Index dst) {
     if (auto candidates = routingTable[dst].neighbors; !candidates.empty())
         return candidates;
-    const auto candidates = antop->getHopCandidates(src, dst, 0);
+    const auto candidates = antop->getHopCandidates(src, dst);
     routingTable[dst].neighbors = candidates;
     return candidates;
 }

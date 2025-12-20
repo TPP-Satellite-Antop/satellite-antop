@@ -216,7 +216,7 @@ void Antop::init(const int satellites) {
     std::cout << "Resolution: " << std::dec << resolution << std::endl;
     std::cout << "Unique Cells: " << std::dec << cellByIdx.size() << std::endl;
     std::cout << "Number of addresses: " << std::dec << addresses.size() << std::endl;
-    std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION.at(resolution) - 12) * 6 + 60 - neighbors() << std::endl << std::endl;
+    std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION[resolution] - 12) * 6 + 60 - neighbors() << std::endl << std::endl;
 }
 
 int Antop::distance(const H3Index idx1, const H3Index idx2) {
@@ -232,17 +232,11 @@ int Antop::distance(const H3Index idx1, const H3Index idx2) {
 }
 
 // Returns src´s neighbors sorted by distance to dst asc
-std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index dst, const H3Index lastHop) {
+std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index dst) {
     std::vector<H3Index> neighbors = neighborsByIdx.at(src);
 
     std::ranges::sort(neighbors, [&](const H3Index a, const H3Index b) {
-        // Last thing we want is for the algorithm to try to return to the lastHop, so it goes at the end.
-        if (a == lastHop) return false;
-        if (b == lastHop) return true;
-
-        const int distA = distance(a, dst);
-        const int distB = distance(b, dst);
-        return distA < distB;
+        return distance(a, dst) < distance(b, dst);
     });
 
     return neighbors;

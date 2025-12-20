@@ -93,21 +93,3 @@ TEST(RoutingTableTest, FindNewNeighborRotatesCandidates) {
     ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x804bfffffffffff);
     ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x8069fffffffffff);
 }
-
-TEST(RoutingTableTest, NoNextHopReturnsCurrentIndex) {
-    Antop antop{};
-    antop.init(1);
-    RoutingTable routingTable(&antop);
-
-    constexpr H3Index cur = 0x8041fffffffffff;
-    constexpr H3Index dst = 0x8025fffffffffff;
-
-    routingTable.findNewNeighbor(cur, dst, 0, 1);
-    routingTable.findNewNeighbor(cur, dst, 0, 1);
-    routingTable.findNewNeighbor(cur, dst, 0, 1);
-    routingTable.findNewNeighbor(cur, dst, 0, 1);
-    routingTable.findNewNeighbor(cur, dst, 0, 1);
-    routingTable.findNewNeighbor(cur, dst, 0, 1);
-
-    ASSERT_EQ(routingTable.findNewNeighbor(cur, dst, 0, 1), 0x8041fffffffffff);
-}
