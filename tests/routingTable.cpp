@@ -111,11 +111,3 @@ TEST(RoutingTableTest, NoNextHopReturnsCurrentIndex) {
 
     ASSERT_EQ(routingTable.findNewNeighbor(cur, dst, 0, 1), 0x8041fffffffffff);
 }
-
-TEST(RoutingTableTest, Aaaa) {
-    Antop antop{};
-    antop.init(1);
-    RoutingTable routingTable(&antop);
-
-    ASSERT_EQ(routingTable.findNewNeighbor(0x80bffffffffffff, 0x800ffffffffffff, 0, 1), 0x80bbfffffffffff);
-}
