@@ -215,7 +215,7 @@ void Antop::init(const int satellites) {
     std::cout << "Resolution: " << std::dec << resolution << std::endl;
     std::cout << "Unique Cells: " << std::dec << cellByIdx.size() << std::endl;
     std::cout << "Number of addresses: " << std::dec << addresses.size() << std::endl;
-    std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION.at(resolution) - 12) * 6 + 60 - neighbors() << std::endl << std::endl;
+    std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION[resolution] - 12) * 6 + 60 - neighbors() << std::endl << std::endl;
 }
 
 int Antop::distance(const H3Index idx1, const H3Index idx2) {
