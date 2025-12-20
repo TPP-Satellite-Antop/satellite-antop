@@ -5,5 +5,30 @@ TEST(AntopTest, NeighborRouting) {
     Antop antop{};
     antop.init(1);
 
-    ASSERT_EQ(antop.getHopCandidates(0x8081fffffffffff, 0x8057fffffffffff, 0)[0], 0x8057fffffffffff);
+    auto candidates = antop.getHopCandidates(0x80bffffffffffff, 0x800ffffffffffff, 0);
+
+    ASSERT_EQ(candidates.size(), 6);
+    std::vector<H3Index> exp = {
+        0x80dbfffffffffff,
+        0x80bbfffffffffff,
+        0x809dfffffffffff,
+        0x80b9fffffffffff,
+        0x809ffffffffffff,
+        0x80d9fffffffffff,
+    };
+
+
+    ASSERT_EQ(candidates, exp);
+
+    candidates = antop.getHopCandidates(0x80bffffffffffff, 0x800ffffffffffff, candidates[0]);
+    exp = {
+        0x80bbfffffffffff,
+        0x809dfffffffffff,
+        0x80b9fffffffffff,
+        0x809ffffffffffff,
+        0x80d9fffffffffff,
+        0x80dbfffffffffff,
+    };
+
+    ASSERT_EQ(candidates, exp);
 }

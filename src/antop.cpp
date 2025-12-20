@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <functional>
 #include <limits>
-#include <math.h>
+#include <unordered_set>
 
 extern "C" {
     #include "localij.h"
@@ -72,7 +72,7 @@ void Antop::buildNeighborGraph() {
 
     for (const auto &idx: cellByIdx | std::views::keys) {
         for (const std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx); const H3Index neighbor : neighbors) {
-            if (neighbor != idx && neighbor != INVALID_IDX && cellByIdx[idx].distanceTo(&cellByIdx[neighbor]) == 1) {
+            if (neighbor != idx && neighbor != INVALID_IDX && cellByIdx[idx].distanceTo(cellByIdx[neighbor]) == 1) {
                 neighborsSetByIdx[idx].insert(neighbor);
                 neighborsSetByIdx[neighbor].insert(idx);
             }
@@ -116,7 +116,7 @@ void Antop::allocateSupplementaryAddresses() {
                 continue;
 
             Cell& cell2 = cellByIdx[h3];
-            if (cell1.distanceTo(&cell2) <= 1)
+            if (cell1.distanceTo(cell2) <= 1)
                 continue;
 
             const CoordIJK output = getNeighborCoordinates(idx, h3);
@@ -171,7 +171,7 @@ int Antop::neighbors() {
             if (idx1 == idx2)
                 continue;
 
-            if (cell1.distanceTo(&cell2) == 1) {
+            if (cell1.distanceTo(cell2) == 1) {
                 bool isNeighbor = false;
                 for (const auto& neighbor : neighbors) {
                     if (neighbor == idx2) {
@@ -219,22 +219,23 @@ void Antop::init(const int satellites) {
 }
 
 int Antop::distance(const H3Index idx1, const H3Index idx2) {
-    const auto cell = &cellByIdx.at(idx2);
+    const auto dstCell = cellByIdx.at(idx2);
 
-    int distance = cellByIdx.at(idx1).distanceTo(cell);
+    int distance = cellByIdx.at(idx1).distanceTo(dstCell);
 
     for (const H3Index neighbor : neighborsByIdx[idx1]) {
-        distance = std::min(distance, 1+cellByIdx[neighbor].distanceTo(cell));
+        distance = std::min(distance, 1+cellByIdx[neighbor].distanceTo(dstCell));
     }
 
     return distance;
 }
 
+// Returns src´s neighbors sorted by distance to dst asc
 std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index dst, const H3Index lastHop) {
     std::vector<H3Index> neighbors = neighborsByIdx.at(src);
 
     std::ranges::sort(neighbors, [&](const H3Index a, const H3Index b) {
-        // Last thing we want is for the algorithm to try to return to the lastHop.
+        // Last thing we want is for the algorithm to try to return to the lastHop, so it goes at the end.
         if (a == lastHop) return false;
         if (b == lastHop) return true;
 
@@ -242,6 +243,22 @@ std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index ds
         const int distB = distance(b, dst);
         return distA < distB;
     });
+
+    // 🔽 Print neighbors with distance to destination
+    std::cout << "Neighbors for src = 0x" << std::hex << src
+              << " (dst = 0x" << dst << "):" << std::dec << std::endl;
+
+    for (const auto& n : neighbors) {
+        std::cout << "  neighbor = 0x"
+                  << std::hex << n
+                  << std::dec
+                  << ", distance = " << distance(n, dst);
+
+        if (n == lastHop)
+            std::cout << " (lastHop)";
+
+        std::cout << std::endl;
+    }
 
     return neighbors;
 }

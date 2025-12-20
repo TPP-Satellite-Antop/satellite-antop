@@ -9,23 +9,14 @@ TEST(AddressTest, DeepCopyAddress) {
     constexpr CoordIJK coord{1, 1, 0};
 
     Address address1(false);
-    address1.push(&coord);
+    address1.push(&coord); // 00000110
 
     Address address2 = address1.copy();
-    address2.push(&coord);
+    address2.push(&coord); // 00110110
 
     ASSERT_NE(address1.data(), address2.data());
     ASSERT_EQ(address1.data(), std::vector<uint8_t>{IJ_AXES_DIGIT});
     ASSERT_EQ(address2.data(), std::vector<uint8_t>{IJ_AXES_DIGIT + (IJ_AXES_DIGIT << 3)});
-}
-
-TEST(AddressTest, PushOneCoordToEmptyAddress) {
-    Address address(false);
-    constexpr CoordIJK coord{1, 1, 0};
-
-    address.push(&coord);
-
-    ASSERT_EQ(address.data(), std::vector<uint8_t>{IJ_AXES_DIGIT});
 }
 
 TEST(AddressTest, PushSomeCoordToEmptyAddress) {
