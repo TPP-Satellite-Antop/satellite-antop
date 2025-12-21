@@ -73,11 +73,11 @@ TEST(RoutingTableTest, ReturnToSenderUponLoopDetection) {
     RoutingTable routingTable(&antop);
     auto curDistance = 1;
 
-    routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, 1);
+    routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x800bfffffffffff, 0x8069fffffffffff, &curDistance, 1);
     curDistance = 10;
-    const auto nextHop = routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8065fffffffffff, &curDistance, 1);
+    const auto nextHop = routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x800bfffffffffff, 0x8065fffffffffff, &curDistance, 1);
 
-    ASSERT_EQ(nextHop, 0x8065fffffffffff);
+    ASSERT_EQ(nextHop, 0x803dfffffffffff);
     ASSERT_EQ(curDistance, 1);
 }
 
