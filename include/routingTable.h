@@ -19,7 +19,7 @@ struct PairTableKey {
     }
 };
 
-// Hash: Allows to use PairTableKey as a key in hash-based containers
+// Hash: Allows using PairTableKey as a key in hash-based containers
 template <> struct std::hash<PairTableKey> {
     std::size_t operator()(const PairTableKey &k) const noexcept {
         const std::size_t h1 = std::hash<H3Index>()(k.source);

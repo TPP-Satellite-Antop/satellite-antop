@@ -52,26 +52,23 @@ void Address::push(const CoordIJK *coord) {
     _size++;
 }
 
+// Calculates hamming distance between this and addr, filling the shortest address with zeros.
 int Address::distanceTo(const Address &addr) const {
     if (prime() != addr.prime()) {
         return std::numeric_limits<int>::max();
     }
 
-    const size_t minLen = std::min(_len, addr._len);
+    const size_t maxLen = std::max(this->_len, addr._len);
     int dist = 0;
 
-    for (size_t i = 0; i < minLen; i++) {
-        dist += hammingDistance(_data[i], addr._data[i]);
-    }
-
-    const auto& remData = _len > addr._len ? _data : addr._data;
-    for (size_t i = minLen; i < remData.size(); i++) {
-        dist += hammingDistance(remData[i], 0);
+    for (size_t i = 0; i < maxLen; ++i) {
+        const auto a = i < _len       ? _data[i]       : 0;
+        const auto b = i < addr._len  ? addr._data[i]  : 0;
+        dist += hammingDistance(a, b);
     }
 
     return dist;
 }
-
 
 std::vector<uint8_t> Address::data() {
     return _data;

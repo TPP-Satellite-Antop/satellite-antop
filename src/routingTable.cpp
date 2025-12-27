@@ -51,6 +51,8 @@ H3Index findNextCandidate(std::bitset<NEIGHBORS>& bitmap, const std::vector<H3In
     return senderVisited ? fallback : sender;
 }
 
+// Attempts to fetch the candidate list from the cache, going from src to dst. If unable to, the candidate list is
+// computed and stored into the cache.
 std::vector<H3Index> RoutingTable::getNeighbors(const H3Index src, const H3Index dst) {
     if (auto candidates = routingTable[dst].neighbors; !candidates.empty())
         return candidates;

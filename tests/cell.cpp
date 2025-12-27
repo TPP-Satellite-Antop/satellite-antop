@@ -5,7 +5,7 @@ TEST(CellTest, EmptyCellsDistance) {
     const Cell cell1;
     const Cell cell2;
 
-    ASSERT_EQ(cell1.distanceTo(&cell2), std::numeric_limits<int>::max());
+    ASSERT_EQ(cell1.distanceTo(cell2), std::numeric_limits<int>::max());
 }
 
 TEST(CellTest, ZeroDistanceToSelf) {
@@ -15,7 +15,7 @@ TEST(CellTest, ZeroDistanceToSelf) {
     address.push(&coord);
     cell.addAddress(address);
 
-    ASSERT_EQ(cell.distanceTo(&cell), 0);
+    ASSERT_EQ(cell.distanceTo(cell), 0);
 }
 
 TEST(CellTest, DifferentDimensionsDistance) {
@@ -31,7 +31,7 @@ TEST(CellTest, DifferentDimensionsDistance) {
     cell1.addAddress(address1);
     cell2.addAddress(address2);
 
-    ASSERT_EQ(cell1.distanceTo(&cell2), std::numeric_limits<int>::max());
+    ASSERT_EQ(cell1.distanceTo(cell2), std::numeric_limits<int>::max());
 }
 
 TEST(CellTest, SingleAddressDistance) {
@@ -55,7 +55,7 @@ TEST(CellTest, SingleAddressDistance) {
     cell1.addAddress(address1);
     cell2.addAddress(address2);
 
-    ASSERT_EQ(cell1.distanceTo(&cell2), 4);
+    ASSERT_EQ(cell1.distanceTo(cell2), 4);
 }
 
 TEST(CellTest, MultipleAddressesMinDistance) {
@@ -89,7 +89,7 @@ TEST(CellTest, MultipleAddressesMinDistance) {
     cell2.addAddress(address2B);
 
     // Should return 0 as it's the minimum distance between any pair of addresses
-    ASSERT_EQ(cell1.distanceTo(&cell2), 0);
+    ASSERT_EQ(cell1.distanceTo(cell2), 0);
 }
 
 TEST(CellTest, AsymmetricDistance) {
@@ -108,5 +108,5 @@ TEST(CellTest, AsymmetricDistance) {
     cell2.addAddress(address2);
 
     // Distance should be the same in both directions
-    ASSERT_EQ(cell1.distanceTo(&cell2), cell2.distanceTo(&cell1));
+    ASSERT_EQ(cell1.distanceTo(cell2), cell2.distanceTo(cell1));
 }
