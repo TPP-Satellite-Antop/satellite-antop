@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 
-constexpr int THRESHOLD_DISTANCE = 3;
+constexpr int THRESHOLD_DISTANCE = 0;
 constexpr std::bitset<NEIGHBORS> MSB_MASK = {0b100000};
 
 RoutingTable::RoutingTable(Antop* antop) {
@@ -15,7 +15,7 @@ bool shouldUpdateSrcInfo(const H3Index sender, const RoutingInfo &routingInfoToS
 }
 
 bool isLoop(const int storedDistance, const int curDistance) {
-    return storedDistance != 0 && storedDistance + THRESHOLD_DISTANCE < curDistance;
+    return storedDistance + THRESHOLD_DISTANCE < curDistance;
 }
 
 // Flags the target index as visited in the bitmap. Returns true if the routing information towards the packet's source
@@ -76,24 +76,27 @@ H3Index RoutingTable::findNextHop(
     if (this->expired(nextPositionUpdate))
         this->clear(nextPositionUpdate);
 
-    const PairTableKey pairTableKey{src, dst};
-    const int storedDistance = pairTable[pairTableKey];
+    if (src != 0) {
+        const PairTableKey pairTableKey{src, dst};
+        int storedDistance = *curDistance;
+        if (const auto it = pairTable.find(pairTableKey); it != pairTable.end())
+            storedDistance = it->second;
 
-    // ToDo: maybe let the current node explore other paths before returning to the sender.
-    if (isLoop(storedDistance, *curDistance)) {
-        *curDistance = storedDistance;
-        return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
-    }
+        if (isLoop(storedDistance, *curDistance)) {
+            *curDistance = storedDistance;
+            return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
+        }
 
-    pairTable[pairTableKey] = storedDistance == 0 ? *curDistance : std::min(storedDistance, *curDistance);
+        pairTable[pairTableKey] = storedDistance == 0 ? *curDistance : std::min(storedDistance, *curDistance);
 
-    if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(sender, routingInfoToSrc, *curDistance)) {
-        const auto candidates = getNeighbors(cur, src);
-        std::bitset<NEIGHBORS> bitmap = routingInfoToSrc.visitedBitmap;
+        if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(sender, routingInfoToSrc, *curDistance)) {
+            const auto candidates = getNeighbors(cur, src);
+            std::bitset<NEIGHBORS> bitmap = routingInfoToSrc.visitedBitmap;
 
-        flagSenderAsVisited(bitmap, candidates, sender);
+            flagSenderAsVisited(bitmap, candidates, sender);
 
-        routingTable[src] = {sender, *curDistance, candidates, bitmap};
+            routingTable[src] = {sender, *curDistance, candidates, bitmap};
+        }
     }
 
     if (const RoutingInfo routingInfoToDst = routingTable[dst]; routingInfoToDst.nextHop != 0)
