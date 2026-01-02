@@ -232,9 +232,17 @@ int Antop::distance(const H3Index idx1, const H3Index idx2) {
 
 std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index dst) {
     std::vector<H3Index> neighbors = neighborsByIdx.at(src);
+    const int curDistance = distance(src, dst);
 
     std::ranges::sort(neighbors, [&](const H3Index a, const H3Index b) {
-        return distance(a, dst) < distance(b, dst);
+        const int distanceA = distance(a, dst);
+        const int distanceB = distance(b, dst);
+
+        if (distanceA + 3 <= curDistance && distanceB + 3 > curDistance)
+            return false;
+        if (distanceA + 3 > curDistance && distanceB + 3 <= curDistance)
+            return true;
+        return distanceA < distance(b, dst);
     });
 
     return neighbors;
