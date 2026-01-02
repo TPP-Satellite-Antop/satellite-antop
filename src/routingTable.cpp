@@ -1,7 +1,6 @@
 #include "routingTable.h"
 #include <vector>
 #include <iostream>
-#include <ostream>
 
 constexpr int THRESHOLD_DISTANCE = 3;
 constexpr std::bitset<NEIGHBORS> MSB_MASK = {0b100000};
@@ -70,7 +69,7 @@ H3Index RoutingTable::findNextHop(
     const double nextPositionUpdate
 ) {
     if (curDistance == nullptr)
-    throw std::invalid_argument("curDistance pointer cannot be null");
+        throw std::invalid_argument("curDistance pointer cannot be null");
 
     if (this->expired(nextPositionUpdate))
         this->clear(nextPositionUpdate);
