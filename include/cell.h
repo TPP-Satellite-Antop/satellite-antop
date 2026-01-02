@@ -9,7 +9,7 @@ class Cell {
 
         Cell() = default;
         void addAddress(const Address& address);
-        int distanceTo(const Cell* cell) const;
+        [[nodiscard]] int distanceTo(const Cell& cell) const;
 };
 
 #endif //CELL_H

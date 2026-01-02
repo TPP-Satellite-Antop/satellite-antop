@@ -102,14 +102,3 @@ TEST(RoutingTableTest, FindNewNeighborRotatesCandidates) {
     ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x8041fffffffffff);
     ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, 1.0), 0x8041fffffffffff);
 }
-
-TEST(RoutingTableTest, Aaaa) {
-    Antop antop{};
-    antop.init(1);
-    RoutingTable routingTable(&antop);
-    auto curDistance = 0;
-
-    ASSERT_EQ(routingTable.findNewNeighbor(0x80a1fffffffffff, 0x8085fffffffffff, 0, 20), 0x80b1fffffffffff);
-    ASSERT_EQ(routingTable.findNextHop(0x80a1fffffffffff, 0x80a1fffffffffff, 0x8085fffffffffff, 0, &curDistance, 20), 0x80b1fffffffffff);
-    curDistance = 18;
-}

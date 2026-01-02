@@ -8,28 +8,29 @@
 #include <algorithm>
 #include <functional>
 #include <limits>
-#include <math.h>
+#include <unordered_set>
 
 extern "C" {
     #include "localij.h"
     #include "coordijk.h"
 }
 
+// Returns IJK coordinates according to the origin
 CoordIJK getNeighborCoordinates(const H3Index origin, const H3Index neighbor) {
-    CoordIJK output, originOutput;
+    CoordIJK offset, originOffset;
 
-    H3Error e = cellToLocalIjk(origin, origin, &originOutput);
+    H3Error e = cellToLocalIjk(origin, origin, &originOffset);
     if (e != E_SUCCESS) throw Errors::localCoordIJK(e, origin, origin);
 
-    e = cellToLocalIjk(origin, neighbor, &output);
+    e = cellToLocalIjk(origin, neighbor, &offset);
     if (e != E_SUCCESS) throw Errors::localCoordIJK(e, origin, neighbor);
 
-    output.i -= originOutput.i;
-    output.j -= originOutput.j;
-    output.k -= originOutput.k;
-    _ijkNormalize(&output); // ToDo: validate if it's even necessary.
+    offset.i -= originOffset.i;
+    offset.j -= originOffset.j;
+    offset.k -= originOffset.k;
+    _ijkNormalize(&originOffset); // ToDo: validate if it's even necessary.
 
-    return output;
+    return offset;
 }
 
 std::array<H3Index, MAX_NEIGHBORS> getNeighbors(const H3Index idx) {
@@ -72,7 +73,7 @@ void Antop::buildNeighborGraph() {
 
     for (const auto &idx: cellByIdx | std::views::keys) {
         for (const std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx); const H3Index neighbor : neighbors) {
-            if (neighbor != idx && neighbor != INVALID_IDX && cellByIdx[idx].distanceTo(&cellByIdx[neighbor]) == 1) {
+            if (neighbor != idx && neighbor != INVALID_IDX && cellByIdx[idx].distanceTo(cellByIdx[neighbor]) == 1) {
                 neighborsSetByIdx[idx].insert(neighbor);
                 neighborsSetByIdx[neighbor].insert(idx);
             }
@@ -87,16 +88,16 @@ void Antop::allocateBaseAddress(const H3Index origin, const H3Index idx, std::qu
     if (idx == INVALID_IDX || idx == origin || cellByIdx.contains(idx))
         return;
 
-    const CoordIJK output = getNeighborCoordinates(origin, idx);
-    CoordIJK primeOutput = output;
+    const CoordIJK ijkOffset = getNeighborCoordinates(origin, idx);
+    CoordIJK primeIjkOffset = ijkOffset;
 
-    _ijkRotate60cw(&primeOutput);
+    _ijkRotate60cw(&primeIjkOffset);
 
     Address newAddr = cellByIdx[origin].addresses[0].copy();
     Address newAddrPrime = cellByIdx[origin].addresses[1].copy();
 
-    newAddr.push(&output);
-    newAddrPrime.push(&primeOutput);
+    newAddr.push(&ijkOffset);
+    newAddrPrime.push(&primeIjkOffset);
 
     if (!isNewAddrValid(newAddr, idx) || !isNewAddrValid(newAddrPrime, idx)) return;
 
@@ -116,7 +117,7 @@ void Antop::allocateSupplementaryAddresses() {
                 continue;
 
             Cell& cell2 = cellByIdx[h3];
-            if (cell1.distanceTo(&cell2) <= 1)
+            if (cell1.distanceTo(cell2) <= 1)
                 continue;
 
             const CoordIJK output = getNeighborCoordinates(idx, h3);
@@ -171,7 +172,7 @@ int Antop::neighbors() {
             if (idx1 == idx2)
                 continue;
 
-            if (cell1.distanceTo(&cell2) == 1) {
+            if (cell1.distanceTo(cell2) == 1) {
                 bool isNeighbor = false;
                 for (const auto& neighbor : neighbors) {
                     if (neighbor == idx2) {
@@ -192,15 +193,15 @@ int Antop::neighbors() {
 void Antop::allocateAddresses() {
     H3Index idx = getOriginForResolution(resolution);
 
-    auto baseCell = Cell();
+    auto originCell = Cell();
 
     const Address addr(false);
     const Address addrPrime(true);
 
-    baseCell.addAddress(addr);
-    baseCell.addAddress(addrPrime);
+    originCell.addAddress(addr);
+    originCell.addAddress(addrPrime);
 
-    cellByIdx.insert({idx, baseCell});
+    cellByIdx.insert({idx, originCell});
 
     allocateBaseAddresses(idx);
     allocateSupplementaryAddresses();
@@ -219,17 +220,18 @@ void Antop::init(const int satellites) {
 }
 
 int Antop::distance(const H3Index idx1, const H3Index idx2) {
-    const auto cell = &cellByIdx.at(idx2);
+    const auto dstCell = cellByIdx.at(idx2);
 
-    int distance = cellByIdx.at(idx1).distanceTo(cell);
+    int distance = cellByIdx.at(idx1).distanceTo(dstCell);
 
     for (const H3Index neighbor : neighborsByIdx[idx1]) {
-        distance = std::min(distance, 1+cellByIdx[neighbor].distanceTo(cell));
+        distance = std::min(distance, 1+cellByIdx[neighbor].distanceTo(dstCell));
     }
 
     return distance;
 }
 
+// Returns src´s neighbors sorted by distance to dst asc
 std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index dst) {
     std::vector<H3Index> neighbors = neighborsByIdx.at(src);
 
