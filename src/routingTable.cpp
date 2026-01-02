@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 
-constexpr int THRESHOLD_DISTANCE = 3;
+constexpr int THRESHOLD_DISTANCE = 0;
 constexpr std::bitset<NEIGHBORS> MSB_MASK = {0b100000};
 
 RoutingTable::RoutingTable(Antop* antop) {
