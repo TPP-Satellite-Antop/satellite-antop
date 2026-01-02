@@ -15,7 +15,7 @@ bool shouldUpdateSrcInfo(const H3Index sender, const RoutingInfo &routingInfoToS
 }
 
 bool isLoop(const int storedDistance, const int curDistance) {
-    return storedDistance != 0 && storedDistance + THRESHOLD_DISTANCE < curDistance;
+    return storedDistance + THRESHOLD_DISTANCE < curDistance;
 }
 
 // Flags the target index as visited in the bitmap. Returns true if the routing information towards the packet's source
@@ -76,9 +76,10 @@ H3Index RoutingTable::findNextHop(
 
     if (src != 0) {
         const PairTableKey pairTableKey{src, dst};
-        const int storedDistance = pairTable[pairTableKey];
+        int storedDistance = *curDistance;
+        if (const auto it = pairTable.find(pairTableKey); it != pairTable.end())
+            storedDistance = it->second;
 
-        // ToDo: maybe let the current node explore other paths before returning to the sender.
         if (isLoop(storedDistance, *curDistance)) {
             *curDistance = storedDistance;
             return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
