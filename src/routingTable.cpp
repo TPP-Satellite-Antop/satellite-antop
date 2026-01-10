@@ -10,8 +10,10 @@ RoutingTable::RoutingTable(Antop* antop) {
 }
 
 // Returns true if the routing information for a given destination should be upserted.
-bool shouldUpdateSrcInfo(const H3Index sender, const RoutingInfo &routingInfoToSrc, const int curDistance) {
-    return sender != 0 && (routingInfoToSrc.nextHop == 0 || routingInfoToSrc.distance > curDistance);
+bool shouldUpdateSrcInfo(const H3Index sender, const RoutingInfo &routingInfoToSrc, const int curDistance, const std::vector<H3Index>& neighbors) {
+    return sender != 0
+        && (routingInfoToSrc.nextHop == 0 || routingInfoToSrc.distance > curDistance)
+        && std::ranges::find(neighbors, sender) != neighbors.end();
 }
 
 bool isLoop(const int storedDistance, const int curDistance) {
@@ -35,7 +37,7 @@ void flagSenderAsVisited(std::bitset<NEIGHBORS>& bitmap, const std::vector<H3Ind
 
 // Returns the best unvisited candidate. If none is found, findNextCandidate returns the provided fallback.
 H3Index findNextCandidate(std::bitset<NEIGHBORS>& bitmap, const std::vector<H3Index>& candidates, const H3Index sender, const H3Index fallback) {
-    auto senderVisited = true; // In case sender is invalid and cannot be found in the candidates, return fallback.
+    auto senderVisited = true; // In case the sender is invalid and cannot be found in the candidates, return fallback.
     auto curNeighbor = MSB_MASK;
 
     for (const auto candidate : candidates) {
@@ -89,8 +91,9 @@ H3Index RoutingTable::findNextHop(
 
         pairTable[pairTableKey] = storedDistance == 0 ? *curDistance : std::min(storedDistance, *curDistance);
 
-        if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(sender, routingInfoToSrc, *curDistance)) {
-            const auto candidates = getNeighbors(cur, src);
+        const auto candidates = getNeighbors(cur, src);
+
+        if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(sender, routingInfoToSrc, *curDistance, candidates)) {
             std::bitset<NEIGHBORS> bitmap = routingInfoToSrc.visitedBitmap;
 
             flagSenderAsVisited(bitmap, candidates, sender);
