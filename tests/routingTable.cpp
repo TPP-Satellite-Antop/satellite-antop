@@ -102,3 +102,17 @@ TEST(RoutingTableTest, FindNewNeighborRotatesCandidates) {
     ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x8041fffffffffff);
     ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, 1.0), 0x8041fffffffffff);
 }
+
+TEST(RoutingTableTest, PreviousUpdateBundleDoesNotCreateInvalidCacheRecord) {
+    Antop antop{};
+    antop.init(1);
+    RoutingTable routingTable(&antop);
+    auto curDistance = 2;
+
+    // Bundle is initially routed to find if any paths are currently available.
+    ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8095fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, 10), 0x8025fffffffffff);
+    // While the bundle awaited for its turn to be transmitted, a mobility update occurred.
+    ASSERT_EQ(routingTable.findNextHop(0x8031fffffffffff, 0x8095fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, 20), 0x8025fffffffffff);
+    // Inverse route does not suggest routing through a now invalid route.
+    ASSERT_NE(routingTable.findNextHop(0x8031fffffffffff, 0x8025fffffffffff, 0x8095fffffffffff, 0x8025fffffffffff, &curDistance, 20), 0x8069fffffffffff);
+}
