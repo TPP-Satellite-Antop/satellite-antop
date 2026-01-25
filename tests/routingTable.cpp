@@ -133,24 +133,3 @@ TEST(RoutingTableTest, BundleSpreeGetRoutedToSameNextHopUponLoopDetection) {
     ASSERT_EQ(curDistance2, 1);
     ASSERT_EQ(nextHop1, nextHop2);
 }
-/*
-TEST(RoutingTableTest, CacheGetsUpdatedUponLoopDetection) {
-    Antop antop{};
-    antop.init(1);
-    RoutingTable routingTable(&antop);
-    auto curDistance = 2;
-    auto curDistanceLoop = 5;
-
-    routingTable.findNextHop(0x8069fffffffffff, 0x80b9fffffffffff, 0x800bfffffffffff, 0x8095fffffffffff, &curDistance, 1);
-    // Loop 1
-    const auto nextHop1 = routingTable.findNextHop(0x8069fffffffffff, 0x80b9fffffffffff, 0x800bfffffffffff, 0x804bfffffffffff, &curDistanceLoop, 1);
-    // Non-loop bundle (same route as the original one)
-    const auto nextHop2 = routingTable.findNextHop(0x8069fffffffffff, 0x80b9fffffffffff, 0x800bfffffffffff, 0x8095fffffffffff, &curDistance, 1);
-
-    // After the loop detection, both bundles should be routed to the same address, which must be different from the already tried ones.
-    ASSERT_EQ(nextHop1, nextHop2);
-    ASSERT_NE(nextHop1, 0x804bfffffffffff);
-    ASSERT_NE(nextHop2, 0x804bffffffffff);
-    ASSERT_NE(nextHop1, 0x8041fffffffffff);
-    ASSERT_NE(nextHop2, 0x8041fffffffffff);
-}*/
