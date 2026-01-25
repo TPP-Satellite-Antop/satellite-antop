@@ -86,6 +86,8 @@ H3Index RoutingTable::findNextHop(
 
         if (isLoop(storedDistance, *curDistance)) {
             *curDistance = storedDistance;
+            // Break the loop by returning to sender, and search for a new route to avoid routing new bundles through the loop.
+            findNewNeighbor(cur, dst, sender, nextPositionUpdate);
             return sender;
         }
 
