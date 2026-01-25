@@ -77,7 +77,7 @@ TEST(RoutingTableTest, ReturnToSenderUponLoopDetection) {
     curDistance = 10;
     const auto nextHop = routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x800bfffffffffff, 0x8065fffffffffff, &curDistance, 1);
 
-    ASSERT_EQ(nextHop, 0x803dfffffffffff);
+    ASSERT_EQ(nextHop, 0x8065fffffffffff);
     ASSERT_EQ(curDistance, 1);
 }
 
@@ -115,4 +115,21 @@ TEST(RoutingTableTest, PreviousUpdateBundleDoesNotCreateInvalidCacheRecord) {
     ASSERT_EQ(routingTable.findNextHop(0x8031fffffffffff, 0x8095fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, 20), 0x8025fffffffffff);
     // Inverse route does not suggest routing through a now invalid route.
     ASSERT_NE(routingTable.findNextHop(0x8031fffffffffff, 0x8025fffffffffff, 0x8095fffffffffff, 0x8025fffffffffff, &curDistance, 20), 0x8069fffffffffff);
+}
+
+TEST(RoutingTableTest, BundleSpreeGetRoutedToSameNextHopUponLoopDetection) {
+    Antop antop{};
+    antop.init(1);
+    RoutingTable routingTable(&antop);
+    auto curDistance = 1;
+    auto curDistance1 = 10;
+    auto curDistance2 = 10;
+
+    routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x800bfffffffffff, 0x8069fffffffffff, &curDistance, 1);
+    const auto nextHop1 = routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x800bfffffffffff, 0x8065fffffffffff, &curDistance1, 1);
+    const auto nextHop2 = routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x800bfffffffffff, 0x8065fffffffffff, &curDistance2, 1);
+
+    ASSERT_EQ(curDistance1, 1);
+    ASSERT_EQ(curDistance2, 1);
+    ASSERT_EQ(nextHop1, nextHop2);
 }

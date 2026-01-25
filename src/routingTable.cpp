@@ -86,7 +86,7 @@ H3Index RoutingTable::findNextHop(
 
         if (isLoop(storedDistance, *curDistance)) {
             *curDistance = storedDistance;
-            return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
+            return sender;
         }
 
         pairTable[pairTableKey] = storedDistance == 0 ? *curDistance : std::min(storedDistance, *curDistance);
