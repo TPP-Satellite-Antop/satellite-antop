@@ -86,6 +86,7 @@ H3Index RoutingTable::findNextHop(
 
         if (isLoop(storedDistance, *curDistance)) {
             *curDistance = storedDistance;
+            return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
             return sender;
             // Invalidate cache and break the loop by returning to sender.
             // ToDo: it might be worthwhile to update the cache to route through sender instead of invalidating it.
