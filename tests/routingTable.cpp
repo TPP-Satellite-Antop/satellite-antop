@@ -148,3 +148,30 @@ TEST(RoutingTableTest, NewNeighborSearchIsNotTriggeredUponResolvedLoopDetection)
     ASSERT_EQ(loopEpochA, 1);
     ASSERT_EQ(loopEpochB, 1);
 }
+
+TEST(RoutingTableTest, LoopResolvedRemotelyDoesNotTriggerNewNeighborSearch) {
+    Antop antop{};
+    antop.init(1);
+    RoutingTable routingTable(&antop);
+    auto curDistanceA = 1;
+    auto curDistanceB = 1;
+    auto loopEpochA = 0;
+    auto loopEpochB = 0;
+
+    routingTable.findNextHop(0x8045fffffffffff, 0x80a5fffffffffff, 0x8095fffffffffff, 0x8067fffffffffff, &curDistanceA, &loopEpochA, 1);
+    routingTable.findNextHop(0x8045fffffffffff, 0x80a5fffffffffff, 0x8095fffffffffff, 0x8067fffffffffff, &curDistanceB, &loopEpochB, 1);
+    curDistanceA = 10;
+    curDistanceB = 10;
+    // Loop resolved remotely.
+    loopEpochA++;
+    loopEpochB++;
+    const auto nextHopA = routingTable.findNextHop(0x8045fffffffffff, 0x80a5fffffffffff, 0x8095fffffffffff, 0x8067fffffffffff, &curDistanceA, &loopEpochA, 1);
+    const auto nextHopB = routingTable.findNextHop(0x8045fffffffffff, 0x80a5fffffffffff, 0x8095fffffffffff, 0x8067fffffffffff, &curDistanceB, &loopEpochB, 1);
+
+    ASSERT_EQ(nextHopA, 0x8049FFFFFFFFFFF);
+    ASSERT_EQ(nextHopB, 0x8049FFFFFFFFFFF);
+    ASSERT_EQ(curDistanceA, 1);
+    ASSERT_EQ(curDistanceB, 1);
+    ASSERT_EQ(loopEpochA, 1);
+    ASSERT_EQ(loopEpochB, 1);
+}

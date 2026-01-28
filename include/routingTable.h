@@ -29,8 +29,9 @@ template <> struct std::hash<PairTableKey> {
 };
 
 struct PairTableInfo {
-    int distance;
-    int loopEpoch;
+    int distance = 0;
+    int loopEpoch = 0;
+    int lastResolvedLoopEpoch = -1;
 };
 
 struct RoutingInfo {

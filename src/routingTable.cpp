@@ -118,17 +118,21 @@ H3Index RoutingTable::handleLoop(
 ) {
     const PairTableKey key{src, dst};
 
-    if (*bundleLoopEpoch < pairTable[key].loopEpoch) { // Bundle's loop has already been resolved locally.
+    if (*bundleLoopEpoch < pairTable[key].loopEpoch) { // Loop has already been resolved locally.
         *bundleLoopEpoch = pairTable[key].loopEpoch;
         return routingTable[dst].nextHop;
     }
 
-    if (*bundleLoopEpoch == pairTable[key].loopEpoch) { // Bundle's loop has not been resolved locally
+    if (*bundleLoopEpoch == pairTable[key].loopEpoch) { // Loop may not been resolved locally
+        if (*bundleLoopEpoch == pairTable[key].lastResolvedLoopEpoch) // Loop has been resolved locally.
+            return routingTable[dst].nextHop;
+
         (*bundleLoopEpoch)++;
         pairTable[key].loopEpoch++;
-    } else { // Bundle's loop has been resolved remotely. Update local state. ToDo: test.
+    } else // Loop has been resolved remotely. Update local state. ToDo: test.
         pairTable[key].loopEpoch = *bundleLoopEpoch;
-    }
+
+    pairTable[key].lastResolvedLoopEpoch = *bundleLoopEpoch;
 
     return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
 }
