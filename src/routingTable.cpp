@@ -117,7 +117,7 @@ H3Index RoutingTable::handleLoop(
     const double nextPositionUpdate
 ) {
     const PairTableKey key{src, dst};
-    std::cout << "Resolving loop: " << *bundleLoopEpoch << " /// " << pairTable[key].loopEpoch << " /// " << pairTable[key].lastResolvedLoopEpoch << std::endl;
+    std::cout << "Resolving loop: " << std::dec << *bundleLoopEpoch << " /// " << pairTable[key].loopEpoch << " /// " << pairTable[key].lastResolvedLoopEpoch << std::endl;
 
     if (*bundleLoopEpoch < pairTable[key].loopEpoch) { // Loop has already been resolved locally.
         *bundleLoopEpoch = pairTable[key].loopEpoch;
