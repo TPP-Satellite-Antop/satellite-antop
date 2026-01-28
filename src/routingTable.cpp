@@ -70,6 +70,7 @@ H3Index RoutingTable::findNextHop(
     const H3Index dst,
     const H3Index sender,
     int *curDistance,
+    int *bundleLoopEpoch,
     const double nextPositionUpdate
 ) {
     if (curDistance == nullptr)
@@ -82,20 +83,14 @@ H3Index RoutingTable::findNextHop(
         const PairTableKey pairTableKey{src, dst};
         int storedDistance = *curDistance;
         if (const auto it = pairTable.find(pairTableKey); it != pairTable.end())
-            storedDistance = it->second;
+            storedDistance = it->second.distance;
 
         if (isLoop(storedDistance, *curDistance)) {
             *curDistance = storedDistance;
-            return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
-            return sender;
-            // Invalidate cache and break the loop by returning to sender.
-            // ToDo: it might be worthwhile to update the cache to route through sender instead of invalidating it.
-            return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
-            //routingTable[dst].nextHop = 0;
-            return sender;
+            return handleLoop(cur, src, dst, sender, bundleLoopEpoch, nextPositionUpdate);
         }
 
-        pairTable[pairTableKey] = storedDistance == 0 ? *curDistance : std::min(storedDistance, *curDistance);
+        pairTable[pairTableKey].distance = storedDistance == 0 ? *curDistance : std::min(storedDistance, *curDistance);
 
         const auto candidates = getNeighbors(cur, src);
 
@@ -110,6 +105,31 @@ H3Index RoutingTable::findNextHop(
 
     if (const RoutingInfo routingInfoToDst = routingTable[dst]; routingInfoToDst.nextHop != 0)
         return routingInfoToDst.nextHop;
+    return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
+}
+
+H3Index RoutingTable::handleLoop(
+    const H3Index cur,
+    const H3Index src,
+    const H3Index dst,
+    const H3Index sender,
+    int *bundleLoopEpoch,
+    const double nextPositionUpdate
+) {
+    const PairTableKey key{src, dst};
+
+    if (*bundleLoopEpoch < pairTable[key].loopEpoch) { // Bundle's loop has already been resolved locally.
+        *bundleLoopEpoch = pairTable[key].loopEpoch;
+        return routingTable[dst].nextHop;
+    }
+
+    if (*bundleLoopEpoch == pairTable[key].loopEpoch) { // Bundle's loop has not been resolved locally
+        (*bundleLoopEpoch)++;
+        pairTable[key].loopEpoch++;
+    } else { // Bundle's loop has been resolved remotely. Update local state. ToDo: test.
+        pairTable[key].loopEpoch = *bundleLoopEpoch;
+    }
+
     return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
 }
 
