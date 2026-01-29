@@ -31,7 +31,6 @@ template <> struct std::hash<PairTableKey> {
 struct PairTableInfo {
     int distance = 0;
     int loopEpoch = 0;
-    int lastResolvedLoopEpoch = -1;
 };
 
 struct RoutingInfo {
@@ -44,6 +43,7 @@ struct RoutingInfo {
 class RoutingTable {
     std::unordered_map<H3Index, RoutingInfo> routingTable;
     std::unordered_map<PairTableKey, PairTableInfo> pairTable;
+    std::unordered_map<int, int> loopEpochTable; // ToDo: remove
     Antop* antop;
     double ttl = 0.0;
 

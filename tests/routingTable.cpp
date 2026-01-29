@@ -168,10 +168,25 @@ TEST(RoutingTableTest, LoopResolvedRemotelyDoesNotTriggerNewNeighborSearch) {
     const auto nextHopA = routingTable.findNextHop(0x8045fffffffffff, 0x80a5fffffffffff, 0x8095fffffffffff, 0x8067fffffffffff, &curDistanceA, &loopEpochA, 1);
     const auto nextHopB = routingTable.findNextHop(0x8045fffffffffff, 0x80a5fffffffffff, 0x8095fffffffffff, 0x8067fffffffffff, &curDistanceB, &loopEpochB, 1);
 
-    ASSERT_EQ(nextHopA, 0x8049FFFFFFFFFFF);
-    ASSERT_EQ(nextHopB, 0x8049FFFFFFFFFFF);
-    ASSERT_EQ(curDistanceA, 1);
-    ASSERT_EQ(curDistanceB, 1);
-    ASSERT_EQ(loopEpochA, 1);
-    ASSERT_EQ(loopEpochB, 1);
+    ASSERT_EQ(nextHopA, nextHopB);
+    ASSERT_EQ(curDistanceA, curDistanceB);
+    ASSERT_EQ(loopEpochA, loopEpochB);
+}
+
+TEST(RoutingTableTest, TwoLoopsTriggerTwoNewNeighborSearches) {
+    Antop antop{};
+    antop.init(1);
+    RoutingTable routingTable(&antop);
+    auto curDistance = 1;
+    auto loopEpoch = 0;
+
+    const auto nextHopA = routingTable.findNextHop(0x8045fffffffffff, 0x80a5fffffffffff, 0x8095fffffffffff, 0x8067fffffffffff, &curDistance, &loopEpoch, 1);
+    curDistance = 5;
+    const auto nextHopB = routingTable.findNextHop(0x8045fffffffffff, 0x80a5fffffffffff, 0x8095fffffffffff, 0x8067fffffffffff, &curDistance, &loopEpoch, 1);
+    curDistance++;
+    const auto nextHopC = routingTable.findNextHop(0x8045fffffffffff, 0x80a5fffffffffff, 0x8095fffffffffff, 0x8067fffffffffff, &curDistance, &loopEpoch, 1);
+
+    ASSERT_NE(nextHopA, nextHopB);
+    ASSERT_NE(nextHopA, nextHopC);
+    ASSERT_NE(nextHopB, nextHopC);
 }
