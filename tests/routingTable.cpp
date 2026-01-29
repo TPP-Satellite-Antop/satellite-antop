@@ -190,3 +190,23 @@ TEST(RoutingTableTest, TwoLoopsTriggerTwoNewNeighborSearches) {
     ASSERT_NE(nextHopA, nextHopC);
     ASSERT_NE(nextHopB, nextHopC);
 }
+
+TEST(RoutingTableTest, Aaa) {
+    Antop antop{};
+    antop.init(1);
+    RoutingTable routingTableA(&antop);
+    RoutingTable routingTableB(&antop);
+    RoutingTable routingTableC(&antop);
+    auto curDistance = 5;
+    auto loopEpoch = 0;
+
+    const auto nextHopA = routingTableA.findNextHop(0x80d9fffffffffff, 0, 0x802dfffffffffff, 0x8095fffffffffff, &curDistance, &loopEpoch, 1);
+    curDistance++;
+    routingTableB.findNextHop(0x80bffffffffffff, 0, 0x802dfffffffffff, 0x80d9fffffffffff, &curDistance, &loopEpoch, 1);
+    curDistance++;
+    routingTableC.findNextHop(0x80dbfffffffffff, 0, 0x802dfffffffffff, 0x80bffffffffffff, &curDistance, &loopEpoch, 1);
+    curDistance++;
+    const auto nextHopB = routingTableA.findNextHop(0x80d9fffffffffff, 0, 0x802dfffffffffff, 0x80dbfffffffffff, &curDistance, &loopEpoch, 1);
+
+    ASSERT_NE(nextHopA, nextHopB);
+}

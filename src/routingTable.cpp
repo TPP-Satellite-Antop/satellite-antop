@@ -79,19 +79,19 @@ H3Index RoutingTable::findNextHop(
     if (this->expired(nextPositionUpdate))
         this->clear(nextPositionUpdate);
 
+    const PairTableKey pairTableKey{src, dst};
+    int storedDistance = *curDistance;
+    if (const auto it = pairTable.find(pairTableKey); it != pairTable.end())
+        storedDistance = it->second.distance;
+
+    if (isLoop(storedDistance, *curDistance)) {
+        *curDistance = storedDistance;
+        return handleLoop(cur, src, dst, sender, bundleLoopEpoch, nextPositionUpdate);
+    }
+
+    pairTable[pairTableKey].distance = storedDistance == 0 ? *curDistance : std::min(storedDistance, *curDistance);
+
     if (src != 0) {
-        const PairTableKey pairTableKey{src, dst};
-        int storedDistance = *curDistance;
-        if (const auto it = pairTable.find(pairTableKey); it != pairTable.end())
-            storedDistance = it->second.distance;
-
-        if (isLoop(storedDistance, *curDistance)) {
-            *curDistance = storedDistance;
-            return handleLoop(cur, src, dst, sender, bundleLoopEpoch, nextPositionUpdate);
-        }
-
-        pairTable[pairTableKey].distance = storedDistance == 0 ? *curDistance : std::min(storedDistance, *curDistance);
-
         const auto candidates = getNeighbors(cur, src);
 
         if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(sender, routingInfoToSrc, *curDistance, candidates)) {
