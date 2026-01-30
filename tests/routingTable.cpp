@@ -1,18 +1,18 @@
 #include <gtest/gtest.h>
 #include "routingTable.h"
-#include "antop.h"
+#include "hypercube.h"
 
 TEST(RoutingTableTest, GetResolution) {
-    Antop antop{};
-    antop.init(1);
+    hypercube antop{};
+    antop.init(0x8047fffffffffff, 1);
     const RoutingTable routingTable(&antop);
 
     ASSERT_EQ(routingTable.getAntopResolution(), antop.getResolution());
 }
 
 TEST(RoutingTableTest, ExpirationResetsTables) {
-    Antop antop{};
-    antop.init(1);
+    hypercube antop{};
+    antop.init(0x8047fffffffffff, 1);
     RoutingTable routingTable(&antop);
 
     constexpr auto cur = 0x8041fffffffffff;
@@ -31,8 +31,8 @@ TEST(RoutingTableTest, ExpirationResetsTables) {
 }
 
 TEST(RoutingTableTest, SimpleUncachedHop) {
-    Antop antop{};
-    antop.init(1);
+    hypercube antop{};
+    antop.init(0x8047fffffffffff, 1);
     RoutingTable routingTable(&antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
@@ -44,8 +44,8 @@ TEST(RoutingTableTest, SimpleUncachedHop) {
 }
 
 TEST(RoutingTableTest, SimpleCachedHop) {
-    Antop antop{};
-    antop.init(1);
+    hypercube antop{};
+    antop.init(0x8047fffffffffff, 1);
     RoutingTable routingTable(&antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
@@ -58,8 +58,8 @@ TEST(RoutingTableTest, SimpleCachedHop) {
 }
 
 TEST(RoutingTableTest, SimpleCachedReturnHop) {
-    Antop antop{};
-    antop.init(1);
+    hypercube antop{};
+    antop.init(0x8047fffffffffff, 1);
     RoutingTable routingTable(&antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
@@ -72,8 +72,8 @@ TEST(RoutingTableTest, SimpleCachedReturnHop) {
 }
 
 TEST(RoutingTableTest, FindNewNeighborRotatesCandidates) {
-    Antop antop{};
-    antop.init(1);
+    hypercube antop{};
+    antop.init(0x8047fffffffffff, 1);
     RoutingTable routingTable(&antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
@@ -95,8 +95,8 @@ TEST(RoutingTableTest, FindNewNeighborRotatesCandidates) {
 }
 
 TEST(RoutingTableTest, PreviousUpdateBundleDoesNotCreateInvalidCacheRecord) {
-    Antop antop{};
-    antop.init(1);
+    hypercube antop{};
+    antop.init(0x8047fffffffffff, 1);
     RoutingTable routingTable(&antop);
     auto curDistance = 2;
     auto loopEpoch = 0;
@@ -110,8 +110,8 @@ TEST(RoutingTableTest, PreviousUpdateBundleDoesNotCreateInvalidCacheRecord) {
 }
 
 TEST(RoutingTableTest, NewNeighborSearchIsTriggeredUponLoopDetection) {
-    Antop antop{};
-    antop.init(1);
+    hypercube antop{};
+    antop.init(0x8047fffffffffff, 1);
     RoutingTable routingTable(&antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
@@ -126,8 +126,8 @@ TEST(RoutingTableTest, NewNeighborSearchIsTriggeredUponLoopDetection) {
 }
 
 TEST(RoutingTableTest, NewNeighborSearchIsNotTriggeredUponResolvedLoopDetection) {
-    Antop antop{};
-    antop.init(1);
+    hypercube antop{};
+    antop.init(0x8047fffffffffff, 1);
     RoutingTable routingTable(&antop);
     auto curDistanceA = 1;
     auto curDistanceB = 1;
@@ -150,8 +150,8 @@ TEST(RoutingTableTest, NewNeighborSearchIsNotTriggeredUponResolvedLoopDetection)
 }
 
 TEST(RoutingTableTest, LoopResolvedRemotelyDoesNotTriggerNewNeighborSearch) {
-    Antop antop{};
-    antop.init(1);
+    hypercube antop{};
+    antop.init(0x8047fffffffffff, 1);
     RoutingTable routingTable(&antop);
     auto curDistanceA = 1;
     auto curDistanceB = 1;
@@ -174,8 +174,8 @@ TEST(RoutingTableTest, LoopResolvedRemotelyDoesNotTriggerNewNeighborSearch) {
 }
 
 TEST(RoutingTableTest, TwoLoopsTriggerTwoNewNeighborSearches) {
-    Antop antop{};
-    antop.init(1);
+    hypercube antop{};
+    antop.init(0x8047fffffffffff, 1);
     RoutingTable routingTable(&antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
@@ -192,8 +192,8 @@ TEST(RoutingTableTest, TwoLoopsTriggerTwoNewNeighborSearches) {
 }
 
 TEST(RoutingTableTest, Aaa) {
-    Antop antop{};
-    antop.init(1);
+    hypercube antop{};
+    antop.init(0x8047fffffffffff, 1);
     RoutingTable routingTableA(&antop);
     RoutingTable routingTableB(&antop);
     RoutingTable routingTableC(&antop);

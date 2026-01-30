@@ -10,10 +10,7 @@
 static constexpr int MAX_NEIGHBORS = 7;
 static constexpr int DISTANCE = 1;
 
-class Antop {
-    std::unordered_map<H3Index, std::vector<H3Index>> neighborsByIdx{};
-    std::unordered_map<H3Index, Cell> cellByIdx;
-    std::unordered_map<Address, H3Index> addresses;
+class hypercube {
     int resolution{};
     static constexpr int INVALID_IDX = 0;
 
@@ -29,13 +26,17 @@ class Antop {
 
     int neighbors();
 
-    void allocateAddresses();
+    void allocateAddresses(H3Index origin);
 
 public:
+    std::unordered_map<H3Index, std::vector<H3Index>> neighborsByIdx{};
+    std::unordered_map<H3Index, Cell> cellByIdx;
+    std::unordered_map<Address, H3Index> addresses;
+
     int distance(H3Index idx1, H3Index idx2);
 
-    Antop() = default; // ToDo: replace default to custom constructor. This constructor should reserve memory for all three maps to avoid unnecessary rehashing.
-    void init(int satellites);
+    hypercube() = default; // ToDo: replace default to custom constructor. This constructor should reserve memory for all three maps to avoid unnecessary rehashing.
+    void init(H3Index origin, int satellites);
     int getResolution() const;
     std::vector<H3Index> getHopCandidates(H3Index src, H3Index dst);
 };

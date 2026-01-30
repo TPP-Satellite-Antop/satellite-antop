@@ -1,7 +1,7 @@
 #include <iostream>
 #include <queue>
 #include <ranges>
-#include "antop.h"
+#include "hypercube.h"
 #include "address.h"
 #include "errors.h"
 #include "resolution.h"
@@ -40,11 +40,11 @@ std::array<H3Index, MAX_NEIGHBORS> getNeighbors(const H3Index idx) {
     return neighbors;
 }
 
-int Antop::getResolution() const {
+int hypercube::getResolution() const {
     return resolution;
 }
 
-bool Antop::isNewAddrValid(const Address& addr, const H3Index idx) {
+bool hypercube::isNewAddrValid(const Address& addr, const H3Index idx) {
     if (addresses.contains(addr)) return false;
 
     std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx);
@@ -68,7 +68,7 @@ bool Antop::isNewAddrValid(const Address& addr, const H3Index idx) {
     return true;
 }
 
-void Antop::buildNeighborGraph() {
+void hypercube::buildNeighborGraph() {
     std::unordered_map<H3Index, std::unordered_set<H3Index>> neighborsSetByIdx{};
 
     for (const auto &idx: cellByIdx | std::views::keys) {
@@ -84,7 +84,7 @@ void Antop::buildNeighborGraph() {
         neighborsByIdx.insert({key, std::vector(set.begin(), set.end())});
 }
 
-void Antop::allocateBaseAddress(const H3Index origin, const H3Index idx, std::queue<H3Index>& cells_queue) {
+void hypercube::allocateBaseAddress(const H3Index origin, const H3Index idx, std::queue<H3Index>& cells_queue) {
     if (idx == INVALID_IDX || idx == origin || cellByIdx.contains(idx))
         return;
 
@@ -110,7 +110,7 @@ void Antop::allocateBaseAddress(const H3Index origin, const H3Index idx, std::qu
     cells_queue.push(idx);
 }
 
-void Antop::allocateSupplementaryAddresses() {
+void hypercube::allocateSupplementaryAddresses() {
     for (const auto& [idx, cell1] : cellByIdx) {
         for (std::array<H3Index, MAX_NEIGHBORS> out = getNeighbors(idx); const unsigned long h3 : out) {
             if (h3 == INVALID_IDX || h3 == idx)
@@ -143,7 +143,7 @@ void Antop::allocateSupplementaryAddresses() {
     }
 }
 
-void Antop::allocateBaseAddresses(H3Index idx) {
+void hypercube::allocateBaseAddresses(H3Index idx) {
     std::queue<H3Index> cells_queue;
     cells_queue.push(idx);
 
@@ -163,7 +163,7 @@ void Antop::allocateBaseAddresses(H3Index idx) {
 }
 
 // ToDo: move to tests/antop.cpp.
-int Antop::neighbors() {
+int hypercube::neighbors() {
     int neighborCount = 0;
     for (const auto& [idx1, cell1] : cellByIdx) {
         std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx1);
@@ -190,9 +190,7 @@ int Antop::neighbors() {
     return neighborCount;
 }
 
-void Antop::allocateAddresses() {
-    H3Index idx = getOriginForResolution(resolution);
-
+void hypercube::allocateAddresses(H3Index origin) {
     auto originCell = Cell();
 
     const Address addr(false);
@@ -201,17 +199,17 @@ void Antop::allocateAddresses() {
     originCell.addAddress(addr);
     originCell.addAddress(addrPrime);
 
-    cellByIdx.insert({idx, originCell});
+    cellByIdx.insert({origin, originCell});
 
-    allocateBaseAddresses(idx);
+    allocateBaseAddresses(origin);
     allocateSupplementaryAddresses();
 
     buildNeighborGraph();
 }
 
-void Antop::init(const int satellites) {
+void hypercube::init(const H3Index origin, const int satellites) {
     resolution = findResolution(satellites);
-    allocateAddresses();
+    allocateAddresses(origin);
 
     std::cout << "Resolution: " << std::dec << resolution << std::endl;
     std::cout << "Unique Cells: " << std::dec << cellByIdx.size() << std::endl;
@@ -219,7 +217,7 @@ void Antop::init(const int satellites) {
     std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION[resolution] - 12) * 6 + 60 - neighbors() << std::endl << std::endl;
 }
 
-int Antop::distance(const H3Index idx1, const H3Index idx2) {
+int hypercube::distance(const H3Index idx1, const H3Index idx2) {
     const auto dstCell = cellByIdx.at(idx2);
 
     int distance = cellByIdx.at(idx1).distanceTo(dstCell);
@@ -232,7 +230,7 @@ int Antop::distance(const H3Index idx1, const H3Index idx2) {
 }
 
 // Returns src´s neighbors sorted by distance to dst asc
-std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index dst) {
+std::vector<H3Index> hypercube::getHopCandidates(const H3Index src, const H3Index dst) {
     std::vector<H3Index> neighbors = neighborsByIdx.at(src);
 
     std::ranges::sort(neighbors, [&](const H3Index a, const H3Index b) {

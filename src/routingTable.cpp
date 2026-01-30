@@ -5,7 +5,7 @@
 constexpr int THRESHOLD_DISTANCE = 0;
 constexpr std::bitset<NEIGHBORS> MSB_MASK = {0b100000};
 
-RoutingTable::RoutingTable(Antop* antop) {
+RoutingTable::RoutingTable(hypercube* antop) {
     this->antop = antop;
 }
 

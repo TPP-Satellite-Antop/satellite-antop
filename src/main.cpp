@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include "antop.h"
+#include "hypercube.h"
 
 void a(int num) {
-    Antop antop{};
+    hypercube antop{};
     antop.init(num);
 }
 
