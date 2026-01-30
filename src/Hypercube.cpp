@@ -1,8 +1,8 @@
 #include <iostream>
 #include <queue>
 #include <ranges>
-#include "hypercube.h"
-#include "address.h"
+#include "Hypercube.h"
+#include "Address.h"
 #include "errors.h"
 #include "resolution.h"
 #include <algorithm>
@@ -40,11 +40,11 @@ std::array<H3Index, MAX_NEIGHBORS> getNeighbors(const H3Index idx) {
     return neighbors;
 }
 
-int hypercube::getResolution() const {
+int Hypercube::getResolution() const {
     return resolution;
 }
 
-bool hypercube::isNewAddrValid(const Address& addr, const H3Index idx) {
+bool Hypercube::isNewAddrValid(const Address& addr, const H3Index idx) {
     if (addresses.contains(addr)) return false;
 
     std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx);
@@ -68,7 +68,7 @@ bool hypercube::isNewAddrValid(const Address& addr, const H3Index idx) {
     return true;
 }
 
-void hypercube::buildNeighborGraph() {
+void Hypercube::buildNeighborGraph() {
     std::unordered_map<H3Index, std::unordered_set<H3Index>> neighborsSetByIdx{};
 
     for (const auto &idx: cellByIdx | std::views::keys) {
@@ -84,7 +84,7 @@ void hypercube::buildNeighborGraph() {
         neighborsByIdx.insert({key, std::vector(set.begin(), set.end())});
 }
 
-void hypercube::allocateBaseAddress(const H3Index origin, const H3Index idx, std::queue<H3Index>& cells_queue) {
+void Hypercube::allocateBaseAddress(const H3Index origin, const H3Index idx, std::queue<H3Index>& cells_queue) {
     if (idx == INVALID_IDX || idx == origin || cellByIdx.contains(idx))
         return;
 
@@ -110,7 +110,7 @@ void hypercube::allocateBaseAddress(const H3Index origin, const H3Index idx, std
     cells_queue.push(idx);
 }
 
-void hypercube::allocateSupplementaryAddresses() {
+void Hypercube::allocateSupplementaryAddresses() {
     for (const auto& [idx, cell1] : cellByIdx) {
         for (std::array<H3Index, MAX_NEIGHBORS> out = getNeighbors(idx); const unsigned long h3 : out) {
             if (h3 == INVALID_IDX || h3 == idx)
@@ -143,7 +143,7 @@ void hypercube::allocateSupplementaryAddresses() {
     }
 }
 
-void hypercube::allocateBaseAddresses(H3Index idx) {
+void Hypercube::allocateBaseAddresses(H3Index idx) {
     std::queue<H3Index> cells_queue;
     cells_queue.push(idx);
 
@@ -163,7 +163,7 @@ void hypercube::allocateBaseAddresses(H3Index idx) {
 }
 
 // ToDo: move to tests/antop.cpp.
-int hypercube::neighbors() {
+int Hypercube::neighbors() {
     int neighborCount = 0;
     for (const auto& [idx1, cell1] : cellByIdx) {
         std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx1);
@@ -190,7 +190,7 @@ int hypercube::neighbors() {
     return neighborCount;
 }
 
-void hypercube::allocateAddresses(H3Index origin) {
+void Hypercube::allocateAddresses(H3Index origin) {
     auto originCell = Cell();
 
     const Address addr(false);
@@ -207,7 +207,7 @@ void hypercube::allocateAddresses(H3Index origin) {
     buildNeighborGraph();
 }
 
-void hypercube::init(const H3Index origin, const int satellites) {
+void Hypercube::init(const H3Index origin, const int satellites) {
     resolution = findResolution(satellites);
     allocateAddresses(origin);
 
@@ -217,7 +217,7 @@ void hypercube::init(const H3Index origin, const int satellites) {
     std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION[resolution] - 12) * 6 + 60 - neighbors() << std::endl << std::endl;
 }
 
-int hypercube::distance(const H3Index idx1, const H3Index idx2) {
+int Hypercube::distance(const H3Index idx1, const H3Index idx2) {
     const auto dstCell = cellByIdx.at(idx2);
 
     int distance = cellByIdx.at(idx1).distanceTo(dstCell);
@@ -230,7 +230,7 @@ int hypercube::distance(const H3Index idx1, const H3Index idx2) {
 }
 
 // Returns src´s neighbors sorted by distance to dst asc
-std::vector<H3Index> hypercube::getHopCandidates(const H3Index src, const H3Index dst) {
+std::vector<H3Index> Hypercube::getHopCandidates(const H3Index src, const H3Index dst) {
     std::vector<H3Index> neighbors = neighborsByIdx.at(src);
 
     std::ranges::sort(neighbors, [&](const H3Index a, const H3Index b) {

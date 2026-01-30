@@ -1,9 +1,9 @@
+#include <queue>
+#include <unordered_map>
 #include "util.h"
 
-#include <cstdint>
-
-int hammingDistance(const std::uint8_t a, const uint8_t b) {
-    uint8_t x = a ^ b;
+int hammingDistance(const std::uint8_t origin, const uint8_t target) {
+    uint8_t x = origin ^ target;
     uint8_t count = 0;
 
     while (x) {
@@ -12,4 +12,37 @@ int hammingDistance(const std::uint8_t a, const uint8_t b) {
     }
 
     return count;
+}
+
+int h3Distance(const H3Index origin, const H3Index target) {
+    if (origin == target) return 0;
+
+    std::queue<H3Index> q;
+    std::unordered_map<H3Index, int> dist;
+
+    q.push(origin);
+    dist[origin] = 0;
+
+    while (!q.empty()) {
+        auto cur = q.front();
+        q.pop();
+
+        const int d = dist[cur];
+
+        H3Index neighbors[7];
+        gridDisk(cur, 1, neighbors);
+
+        for (const auto n : neighbors) {
+            if (n == 0) continue;
+
+            if (!dist.contains(n)) {
+                if (n == target) return d + 1;
+
+                dist[n] = d + 1;
+                q.push(n);
+            }
+        }
+    }
+
+    return -1; // Unreachable (shouldn't happen as long as origin and target cells belong to the same resolution).
 }

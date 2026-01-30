@@ -1,4 +1,4 @@
-#include "cell.h"
+#include "Cell.h"
 #include "limits"
 
 constexpr int INFINITE = std::numeric_limits<int>::max();

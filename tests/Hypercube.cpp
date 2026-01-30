@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
-#include "hypercube.h"
+#include "Hypercube.h"
+
+#include "util.h"
 
 extern "C" {
 #include "localij.h"
@@ -9,7 +11,7 @@ extern "C" {
 #include <iomanip>
 
 TEST(AntopTest, NeighborRouting) {
-    hypercube antop{};
+    Hypercube antop{};
     antop.init(0x8047fffffffffff, 1);
 
     auto candidates = antop.getHopCandidates(0x80bffffffffffff, 0x800ffffffffffff);
@@ -171,49 +173,11 @@ void printDistances(const uint8_t distances[122][122]) {
     }
 }
 
-int trueH3Distance(H3Index start, H3Index goal) {
-    if (start == goal)
-        return 0;
-
-    std::queue<H3Index> q;
-    std::unordered_map<H3Index, int> dist;
-
-    q.push(start);
-    dist[start] = 0;
-
-    while (!q.empty()) {
-        auto cur = q.front();
-        q.pop();
-
-        int d = dist[cur];
-
-        H3Index neighbors[7];
-        gridDisk(cur, 1, neighbors);
-
-        for (const auto n : neighbors) {
-            if (n == 0)
-                continue;
-
-            if (!dist.contains(n)) {
-                if (n == goal)
-                    return d + 1;
-
-                dist[n] = d + 1;
-                q.push(n);
-            }
-        }
-    }
-
-    return -1; // unreachable (should never happen at same resolution)
-}
-
-
-
 TEST(AntopTest, Aaa) {
-    std::array<hypercube, 12> aaa{};
+    std::array<Hypercube, 12> aaa{};
 
     for (int i = 0; i < 12; i++) {
-        aaa[i] = hypercube{};
+        aaa[i] = Hypercube{};
         aaa[i].init(pentagons.at(i), 1);
     }
 
@@ -226,7 +190,7 @@ TEST(AntopTest, Aaa) {
             const auto idxA = indexes[i];
             const auto idxB = indexes[j];
 
-            const auto distanceH3 = trueH3Distance(idxA, idxB);
+            const auto distanceH3 = h3Distance(idxA, idxB);
             //std::cout << "[" << std::hex << idxA << "," << idxB << "]: " << std::dec << distanceH3 << std::endl;
 
             for (const auto& a : aaa) {

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "address.h"
+#include "Address.h"
 
 extern "C" {
     #include "algos.h"

@@ -6,7 +6,7 @@ add_sanitizer_flags()
 
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(TEST_MAIN SatelliteAntopTest)
-set(TEST_SOURCES address.cpp util.cpp resolution.cpp cell.cpp hypercube.cpp routingTable.cpp)
+set(TEST_SOURCES Address.cpp util.cpp resolution.cpp Cell.cpp Hypercube.cpp RoutingTable.cpp)
 
 add_executable(${TEST_MAIN} ${TEST_SOURCES})
 target_link_libraries(${TEST_MAIN} PUBLIC ${LIBRARY_NAME} GTest::gtest_main)

@@ -4,13 +4,13 @@
 #include <functional>
 #include <queue>
 #include <unordered_map>
-#include "cell.h"
+#include "Cell.h"
 #include "latLng.h"
 
 static constexpr int MAX_NEIGHBORS = 7;
 static constexpr int DISTANCE = 1;
 
-class hypercube {
+class Antop {
     int resolution{};
     static constexpr int INVALID_IDX = 0;
 
