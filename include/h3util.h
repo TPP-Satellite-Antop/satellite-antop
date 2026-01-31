@@ -66,8 +66,7 @@ constexpr std::array<CellInfo, maxRes> cellInfoByResolution = {{
     { pentagonsRes2, cellsRes2 },
 }};
 
-int getResolution(int satellites);
-
+int findResolution(int satellites);
 
 #endif //H3UTIL_H
 
