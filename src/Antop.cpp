@@ -17,12 +17,14 @@ struct Antop::Impl {
 
 template <int Resolution>
 class AntopImpl final : public Antop::Impl {
+    using CellID = uint8_t;
+
     static constexpr int cells = cellsPerRes[Resolution];
 
-    uint8_t hypercubeLookup[cells][cells]{};
+    CellID hypercubeLookup[cells][cells]{};
     std::array<Hypercube, pentagonsPerRes> hypercubes;
     std::unordered_map<H3Index, std::vector<H3Index>> neighborsByIdx;
-    std::unordered_map<H3Index, uint8_t> cellIdByIdx;
+    std::unordered_map<H3Index, CellID> cellIdByIdx;
 
     template<std::size_t... I>
     static std::array<Hypercube, pentagonsPerRes> buildHypercubes(std::index_sequence<I...>) {
