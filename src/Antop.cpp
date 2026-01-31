@@ -31,6 +31,7 @@ class AntopImpl final : public Antop::Impl {
 
     template<std::size_t... I>
     static std::array<Hypercube, pentagonsPerRes> buildHypercubes(std::index_sequence<I...>) {
+        // ToDo: add concurrency / parallelism.
         return { Hypercube(cellInfoByRes[Resolution].pentagons[I])... };
     }
 
