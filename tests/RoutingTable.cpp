@@ -54,6 +54,26 @@ TEST_F(RoutingTableTestWithAntop, SimpleUncachedHop) {
     ASSERT_EQ(curDistance, 1);
 }
 
+TEST_F(RoutingTableTestWithAntop, DistanceDiscrepancyDoesNotGreatlyAffectRouting) {
+    std::unordered_map<H3Index, RoutingTable> routingTables{};
+    auto curDistance = 1;
+    auto loopEpoch = 0;
+    H3Index cur = 0x808dfffffffffff;
+    H3Index sender = 0x8025fffffffffff;
+    constexpr H3Index dst = 0x8033fffffffffff;
+
+    // Although arbitrary, 10 hops should be more than enough to go from 8087fffffffffff to 8033fffffffffff (optimal #hops = 5)
+    while (cur != dst && curDistance < 10) {
+        auto [it, _] = routingTables.try_emplace(cur, antop);
+        const auto nextHop = it->second.findNextHop(cur, 0x8087fffffffffff, dst, sender, &curDistance, &loopEpoch, 1);
+        sender = cur;
+        cur = nextHop;
+        curDistance++;
+    }
+
+    ASSERT_TRUE(curDistance < 10);
+}
+
 TEST_F(RoutingTableTestWithAntop, SimpleCachedHop) {
     auto routingTable = RoutingTable(antop);
     auto curDistance = 1;
@@ -185,7 +205,7 @@ TEST_F(RoutingTableTestWithAntop, TwoLoopsTriggerTwoNewNeighborSearches) {
     ASSERT_NE(nextHopB, nextHopC);
 }
 
-TEST_F(RoutingTableTestWithAntop, Aaa) {
+TEST_F(RoutingTableTestWithAntop, LoopDetectionIsTriggeredWithSourceNodeDown) {
     auto routingTableA = RoutingTable(antop);
     auto routingTableB = RoutingTable(antop);
     auto routingTableC = RoutingTable(antop);
