@@ -58,7 +58,6 @@ public:
                         hypercubeLookup[i][j] = static_cast<uint8_t>(k);
                         hypercubeLookup[j][i] = static_cast<uint8_t>(k);
 
-                        // ToDo: validate
                         if (offset == 0 && distanceH3 == 1) {
                             neighborsSetByIdx[idxA].insert(idxB);
                             neighborsSetByIdx[idxB].insert(idxA);
