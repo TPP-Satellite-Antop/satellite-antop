@@ -3,10 +3,10 @@
 
 #include <unordered_map>
 #include <bitset>
+#include <vector>
 
+#include "Antop.h"
 #include "h3api.h"
-#include "Hypercube.h"
-#include <bitset>
 
 constexpr int NEIGHBORS = 6;
 
@@ -44,7 +44,7 @@ class RoutingTable {
     std::unordered_map<H3Index, RoutingInfo> routingTable;
     std::unordered_map<PairTableKey, PairTableInfo> pairTable;
     std::unordered_map<int, int> loopEpochTable; // ToDo: remove
-    Hypercube* antop;
+    Antop* antop;
     double ttl = 0.0;
 
     std::vector<H3Index> getNeighbors(H3Index src, H3Index dst);
@@ -52,7 +52,7 @@ class RoutingTable {
     bool expired(double nextPositionUpdate) const;
 
 public:
-    explicit RoutingTable(Hypercube* antop);
+    explicit RoutingTable(Antop* antop);
     H3Index findNextHop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int *curDistance, int *bundleLoopEpoch, double nextPositionUpdate);
     H3Index handleLoop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int *bundleLoopEpoch, double nextPositionUpdate);
     H3Index findNewNeighbor(H3Index cur, H3Index dst, H3Index sender, double nextPositionUpdate);

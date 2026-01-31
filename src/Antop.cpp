@@ -11,8 +11,8 @@
 
 struct Antop::Impl {
     virtual ~Impl() = default;
-    virtual std::vector<H3Index>
-    getHopCandidates(H3Index src, H3Index dst) = 0;
+    virtual std::vector<H3Index> getHopCandidates(H3Index src, H3Index dst) = 0;
+    virtual int getResolution() = 0;
 };
 
 template <int Resolution>
@@ -20,7 +20,7 @@ class AntopImpl final : public Antop::Impl {
     static constexpr int cells = cellsPerRes[Resolution];
 
     uint8_t hypercubeLookup[cells][cells];
-    std::array<Hypercube, pentagonsPerRes> hypercubes;
+    std::array<Hypercube, pentagonsPerRes> hypercubes = {};
     std::unordered_map<H3Index, std::vector<H3Index>> neighborsByIdx;
 
 public:
@@ -76,6 +76,10 @@ public:
 
         return neighbors;
     }
+
+    int getResolution() override {
+        return Resolution;
+    }
 };
 
 Antop::Antop(const int satellites) {
@@ -98,4 +102,8 @@ Antop::~Antop() = default;
 
 std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index dst) const {
     return impl->getHopCandidates(src, dst);
+}
+
+int Antop::getResolution() const {
+    return impl->getResolution();
 }

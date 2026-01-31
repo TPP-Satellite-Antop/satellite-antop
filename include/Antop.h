@@ -10,7 +10,8 @@ public:
     explicit Antop(int satellites);
     ~Antop();
 
-    std::vector<H3Index> getHopCandidates(H3Index src, H3Index dst) const;
+    [[nodiscard]] std::vector<H3Index> getHopCandidates(H3Index src, H3Index dst) const;
+    [[nodiscard]] int getResolution() const;
 
 private:
     struct Impl;
