@@ -34,7 +34,7 @@ FetchContent_Declare(h3 GIT_REPOSITORY https://github.com/uber/h3.git GIT_TAG v4
 FetchContent_MakeAvailable(h3)
 install(DIRECTORY ${h3_SOURCE_DIR}/src/h3lib/include/ DESTINATION include/h3)
 
-add_library(${LIBRARY_NAME} src/distance.cpp src/Address.cpp src/Cell.cpp src/hypercube.cpp src/RoutingTable.cpp src/antop.cpp)
+add_library(${LIBRARY_NAME} src/distance.cpp src/h3util.cpp src/Address.cpp src/Cell.cpp src/Hypercube.cpp src/RoutingTable.cpp src/Antop.cpp)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_INCLUDE_DIR} ${h3_SOURCE_DIR}/src ${h3_SOURCE_DIR}/src/h3lib/include)
 target_link_libraries(${LIBRARY_NAME} PUBLIC h3)
 
