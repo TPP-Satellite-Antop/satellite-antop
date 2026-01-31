@@ -4,11 +4,11 @@
 #include "RoutingTable.h"
 
 class RoutingTableTestWithAntop : public testing::Test {
-protected:
+public:
     static Antop* antop;
     
     static void SetUpTestSuite() {
-        antop = new Antop(100);
+        if (antop == nullptr) antop = new Antop(100);
     }
 
     static void TearDownTestSuite() {
@@ -26,7 +26,7 @@ TEST_F(RoutingTableTestWithAntop, GetResolution) {
 }
 
 TEST_F(RoutingTableTestWithAntop, ExpirationResetsTables) {
-    RoutingTable routingTable(antop);
+    auto routingTable = RoutingTable(antop);
 
     constexpr auto cur = 0x8041fffffffffff;
     constexpr auto src = 0x8025fffffffffff;
@@ -44,7 +44,7 @@ TEST_F(RoutingTableTestWithAntop, ExpirationResetsTables) {
 }
 
 TEST_F(RoutingTableTestWithAntop, SimpleUncachedHop) {
-    RoutingTable routingTable(antop);
+    auto routingTable = RoutingTable(antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
 
@@ -55,7 +55,7 @@ TEST_F(RoutingTableTestWithAntop, SimpleUncachedHop) {
 }
 
 TEST_F(RoutingTableTestWithAntop, SimpleCachedHop) {
-    RoutingTable routingTable(antop);
+    auto routingTable = RoutingTable(antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
 
@@ -67,7 +67,7 @@ TEST_F(RoutingTableTestWithAntop, SimpleCachedHop) {
 }
 
 TEST_F(RoutingTableTestWithAntop, SimpleCachedReturnHop) {
-    RoutingTable routingTable(antop);
+    auto routingTable = RoutingTable(antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
 
@@ -100,7 +100,7 @@ TEST_F(RoutingTableTestWithAntop, FindNewNeighborRotatesCandidates) {
 }
 
 TEST_F(RoutingTableTestWithAntop, PreviousUpdateBundleDoesNotCreateInvalidCacheRecord) {
-    RoutingTable routingTable(antop);
+    auto routingTable = RoutingTable(antop);
     auto curDistance = 2;
     auto loopEpoch = 0;
 
@@ -113,7 +113,7 @@ TEST_F(RoutingTableTestWithAntop, PreviousUpdateBundleDoesNotCreateInvalidCacheR
 }
 
 TEST_F(RoutingTableTestWithAntop, NewNeighborSearchIsTriggeredUponLoopDetection) {
-    RoutingTable routingTable(antop);
+    auto routingTable = RoutingTable(antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
 
@@ -127,7 +127,7 @@ TEST_F(RoutingTableTestWithAntop, NewNeighborSearchIsTriggeredUponLoopDetection)
 }
 
 TEST_F(RoutingTableTestWithAntop, NewNeighborSearchIsNotTriggeredUponResolvedLoopDetection) {
-    RoutingTable routingTable(antop);
+    auto routingTable = RoutingTable(antop);
     auto curDistanceA = 1;
     auto curDistanceB = 1;
     auto loopEpochA = 0;
@@ -148,7 +148,7 @@ TEST_F(RoutingTableTestWithAntop, NewNeighborSearchIsNotTriggeredUponResolvedLoo
 }
 
 TEST_F(RoutingTableTestWithAntop, LoopResolvedRemotelyDoesNotTriggerNewNeighborSearch) {
-    RoutingTable routingTable(antop);
+    auto routingTable = RoutingTable(antop);
     auto curDistanceA = 1;
     auto curDistanceB = 1;
     auto loopEpochA = 0;
@@ -170,7 +170,7 @@ TEST_F(RoutingTableTestWithAntop, LoopResolvedRemotelyDoesNotTriggerNewNeighborS
 }
 
 TEST_F(RoutingTableTestWithAntop, TwoLoopsTriggerTwoNewNeighborSearches) {
-    RoutingTable routingTable(antop);
+    auto routingTable = RoutingTable(antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
 
@@ -186,9 +186,9 @@ TEST_F(RoutingTableTestWithAntop, TwoLoopsTriggerTwoNewNeighborSearches) {
 }
 
 TEST_F(RoutingTableTestWithAntop, Aaa) {
-    RoutingTable routingTableA(antop);
-    RoutingTable routingTableB(antop);
-    RoutingTable routingTableC(antop);
+    auto routingTableA = RoutingTable(antop);
+    auto routingTableB = RoutingTable(antop);
+    auto routingTableC = RoutingTable(antop);
     auto curDistance = 5;
     auto loopEpoch = 0;
 
