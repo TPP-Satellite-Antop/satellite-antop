@@ -53,6 +53,3 @@ target_link_options(${EXECUTABLE_NAME} PRIVATE -coverage)
 
 install(TARGETS ${LIBRARY_NAME} DESTINATION lib)
 install(DIRECTORY ${PROJECT_INCLUDE_DIR}/ DESTINATION include)
-
-
-

@@ -7,6 +7,7 @@
 
 class Antop {
 public:
+    struct Impl;
     explicit Antop(int satellites);
     ~Antop();
 
@@ -14,7 +15,6 @@ public:
     [[nodiscard]] int getResolution() const;
 
 private:
-    struct Impl;
     std::unique_ptr<Impl> impl;
 };
 

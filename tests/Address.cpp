@@ -14,12 +14,12 @@ extern "C" {
 #include <algorithm>
 
 Direction coordIJKToDirection(const CoordIJK& d) {
-    CoordIJK n = d;
+    auto [i, j, k] = d;
 
     for (int dir = 0; dir <= 6; ++dir) {
-        if (n.i == UNIT_VECS[dir].i &&
-            n.j == UNIT_VECS[dir].j &&
-            n.k == UNIT_VECS[dir].k) {
+        if (i == UNIT_VECS[dir].i &&
+            j == UNIT_VECS[dir].j &&
+            k == UNIT_VECS[dir].k) {
             return static_cast<Direction>(dir);
         }
     }
@@ -28,7 +28,7 @@ Direction coordIJKToDirection(const CoordIJK& d) {
 }
 
 std::vector<H3Index> traverseIJK(
-    H3Index origin,
+    const H3Index origin,
     const std::vector<CoordIJK>& path
 ) {
     std::vector<H3Index> result;
@@ -63,7 +63,7 @@ TEST(AddressTest, DeepCopyAddress) {
 
 
 TEST(AddressTest, IterateIjkAddressReachesIdx) {
-    H3Index origin = 0x8047fffffffffff;
+    const H3Index origin = 0x8047fffffffffff;
     // current = 0x080dbfffffffffff;
     std::vector<H3Index> neighbors = {
         0x80BFFFFFFFFFFFF,

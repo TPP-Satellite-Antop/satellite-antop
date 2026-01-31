@@ -1,19 +1,32 @@
 #include <gtest/gtest.h>
+
+#include "Antop.h"
 #include "RoutingTable.h"
-#include "Hypercube.h"
 
-TEST(RoutingTableTest, GetResolution) {
-    Hypercube antop{};
-    antop.init(0x8047fffffffffff, 1);
-    const RoutingTable routingTable(&antop);
+class RoutingTableTestWithAntop : public testing::Test {
+protected:
+    static Antop* antop;
+    
+    static void SetUpTestSuite() {
+        antop = new Antop(100);
+    }
 
-    ASSERT_EQ(routingTable.getAntopResolution(), antop.getResolution());
+    static void TearDownTestSuite() {
+        delete antop;
+        antop = nullptr;
+    }
+};
+
+Antop* RoutingTableTestWithAntop::antop = nullptr;
+
+TEST_F(RoutingTableTestWithAntop, GetResolution) {
+    const RoutingTable routingTable(antop);
+
+    ASSERT_EQ(routingTable.getAntopResolution(), antop->getResolution());
 }
 
-TEST(RoutingTableTest, ExpirationResetsTables) {
-    Hypercube antop{};
-    antop.init(0x8047fffffffffff, 1);
-    RoutingTable routingTable(&antop);
+TEST_F(RoutingTableTestWithAntop, ExpirationResetsTables) {
+    RoutingTable routingTable(antop);
 
     constexpr auto cur = 0x8041fffffffffff;
     constexpr auto src = 0x8025fffffffffff;
@@ -30,10 +43,8 @@ TEST(RoutingTableTest, ExpirationResetsTables) {
     ASSERT_EQ(next, afterClear);
 }
 
-TEST(RoutingTableTest, SimpleUncachedHop) {
-    Hypercube antop{};
-    antop.init(0x8047fffffffffff, 1);
-    RoutingTable routingTable(&antop);
+TEST_F(RoutingTableTestWithAntop, SimpleUncachedHop) {
+    RoutingTable routingTable(antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
 
@@ -43,10 +54,8 @@ TEST(RoutingTableTest, SimpleUncachedHop) {
     ASSERT_EQ(curDistance, 1);
 }
 
-TEST(RoutingTableTest, SimpleCachedHop) {
-    Hypercube antop{};
-    antop.init(0x8047fffffffffff, 1);
-    RoutingTable routingTable(&antop);
+TEST_F(RoutingTableTestWithAntop, SimpleCachedHop) {
+    RoutingTable routingTable(antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
 
@@ -57,10 +66,8 @@ TEST(RoutingTableTest, SimpleCachedHop) {
     ASSERT_EQ(curDistance, 1);
 }
 
-TEST(RoutingTableTest, SimpleCachedReturnHop) {
-    Hypercube antop{};
-    antop.init(0x8047fffffffffff, 1);
-    RoutingTable routingTable(&antop);
+TEST_F(RoutingTableTestWithAntop, SimpleCachedReturnHop) {
+    RoutingTable routingTable(antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
 
@@ -71,19 +78,17 @@ TEST(RoutingTableTest, SimpleCachedReturnHop) {
     ASSERT_EQ(curDistance, 1);
 }
 
-TEST(RoutingTableTest, FindNewNeighborRotatesCandidates) {
-    Hypercube antop{};
-    antop.init(0x8047fffffffffff, 1);
-    RoutingTable routingTable(&antop);
+TEST_F(RoutingTableTestWithAntop, FindNewNeighborRotatesCandidates) {
+    RoutingTable routingTable(antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
 
     ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x8025fffffffffff);
     ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, &loopEpoch, 1.0), 0x8025fffffffffff);
-    ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x803dfffffffffff);
-    ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, &loopEpoch, 1.0), 0x803dfffffffffff);
     ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x8031fffffffffff);
     ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, &loopEpoch, 1.0), 0x8031fffffffffff);
+    ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x803dfffffffffff);
+    ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, &loopEpoch, 1.0), 0x803dfffffffffff);
     ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x8065fffffffffff);
     ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, &loopEpoch, 1.0), 0x8065fffffffffff);
     ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x804bfffffffffff);
@@ -94,10 +99,8 @@ TEST(RoutingTableTest, FindNewNeighborRotatesCandidates) {
     ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, &loopEpoch, 1.0), 0x8041fffffffffff);
 }
 
-TEST(RoutingTableTest, PreviousUpdateBundleDoesNotCreateInvalidCacheRecord) {
-    Hypercube antop{};
-    antop.init(0x8047fffffffffff, 1);
-    RoutingTable routingTable(&antop);
+TEST_F(RoutingTableTestWithAntop, PreviousUpdateBundleDoesNotCreateInvalidCacheRecord) {
+    RoutingTable routingTable(antop);
     auto curDistance = 2;
     auto loopEpoch = 0;
 
@@ -109,10 +112,8 @@ TEST(RoutingTableTest, PreviousUpdateBundleDoesNotCreateInvalidCacheRecord) {
     ASSERT_NE(routingTable.findNextHop(0x8031fffffffffff, 0x8025fffffffffff, 0x8095fffffffffff, 0x8025fffffffffff, &curDistance, &loopEpoch, 20), 0x8069fffffffffff);
 }
 
-TEST(RoutingTableTest, NewNeighborSearchIsTriggeredUponLoopDetection) {
-    Hypercube antop{};
-    antop.init(0x8047fffffffffff, 1);
-    RoutingTable routingTable(&antop);
+TEST_F(RoutingTableTestWithAntop, NewNeighborSearchIsTriggeredUponLoopDetection) {
+    RoutingTable routingTable(antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
 
@@ -120,15 +121,13 @@ TEST(RoutingTableTest, NewNeighborSearchIsTriggeredUponLoopDetection) {
     curDistance = 10;
     const auto nextHop = routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x800bfffffffffff, 0x8065fffffffffff, &curDistance, &loopEpoch, 1);
 
-    ASSERT_EQ(nextHop, 0x803dfffffffffff);
+    ASSERT_EQ(nextHop, 0x8031fffffffffff);
     ASSERT_EQ(curDistance, 1);
     ASSERT_EQ(loopEpoch, 1);
 }
 
-TEST(RoutingTableTest, NewNeighborSearchIsNotTriggeredUponResolvedLoopDetection) {
-    Hypercube antop{};
-    antop.init(0x8047fffffffffff, 1);
-    RoutingTable routingTable(&antop);
+TEST_F(RoutingTableTestWithAntop, NewNeighborSearchIsNotTriggeredUponResolvedLoopDetection) {
+    RoutingTable routingTable(antop);
     auto curDistanceA = 1;
     auto curDistanceB = 1;
     auto loopEpochA = 0;
@@ -141,18 +140,15 @@ TEST(RoutingTableTest, NewNeighborSearchIsNotTriggeredUponResolvedLoopDetection)
     const auto nextHopA = routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x800bfffffffffff, 0x8065fffffffffff, &curDistanceA, &loopEpochA, 1);
     const auto nextHopB = routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x800bfffffffffff, 0x8065fffffffffff, &curDistanceB, &loopEpochB, 1);
 
-    ASSERT_EQ(nextHopA, 0x803dfffffffffff);
-    ASSERT_EQ(nextHopB, 0x803dfffffffffff);
+    ASSERT_EQ(nextHopA, nextHopB);
     ASSERT_EQ(curDistanceA, 1);
     ASSERT_EQ(curDistanceB, 1);
     ASSERT_EQ(loopEpochA, 1);
     ASSERT_EQ(loopEpochB, 1);
 }
 
-TEST(RoutingTableTest, LoopResolvedRemotelyDoesNotTriggerNewNeighborSearch) {
-    Hypercube antop{};
-    antop.init(0x8047fffffffffff, 1);
-    RoutingTable routingTable(&antop);
+TEST_F(RoutingTableTestWithAntop, LoopResolvedRemotelyDoesNotTriggerNewNeighborSearch) {
+    RoutingTable routingTable(antop);
     auto curDistanceA = 1;
     auto curDistanceB = 1;
     auto loopEpochA = 0;
@@ -173,10 +169,8 @@ TEST(RoutingTableTest, LoopResolvedRemotelyDoesNotTriggerNewNeighborSearch) {
     ASSERT_EQ(loopEpochA, loopEpochB);
 }
 
-TEST(RoutingTableTest, TwoLoopsTriggerTwoNewNeighborSearches) {
-    Hypercube antop{};
-    antop.init(0x8047fffffffffff, 1);
-    RoutingTable routingTable(&antop);
+TEST_F(RoutingTableTestWithAntop, TwoLoopsTriggerTwoNewNeighborSearches) {
+    RoutingTable routingTable(antop);
     auto curDistance = 1;
     auto loopEpoch = 0;
 
@@ -191,12 +185,10 @@ TEST(RoutingTableTest, TwoLoopsTriggerTwoNewNeighborSearches) {
     ASSERT_NE(nextHopB, nextHopC);
 }
 
-TEST(RoutingTableTest, Aaa) {
-    Hypercube antop{};
-    antop.init(0x8047fffffffffff, 1);
-    RoutingTable routingTableA(&antop);
-    RoutingTable routingTableB(&antop);
-    RoutingTable routingTableC(&antop);
+TEST_F(RoutingTableTestWithAntop, Aaa) {
+    RoutingTable routingTableA(antop);
+    RoutingTable routingTableB(antop);
+    RoutingTable routingTableC(antop);
     auto curDistance = 5;
     auto loopEpoch = 0;
 

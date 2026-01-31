@@ -1,21 +1,5 @@
-#include <iostream>
-
-#include "Hypercube.h"
-
-void a(int num) {
-    Hypercube antop{};
-    antop.init(num);
-}
+#include "Antop.h"
 
 int main() {
-    try {
-        a(100);
-        a(800);
-        a(5000);
-
-        return 0;
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return 1;
-    }
+    Antop(120);
 }
