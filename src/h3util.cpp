@@ -4,10 +4,10 @@
 // of 80%, assuming perfect distribution.
 constexpr std::array thresholdByRes = { 0, 674, 4706 };
 
-int findResolution(const size_t satellites) {
+int findResolution(const int satellites) {
     for (int i = maxRes - 1; i >= 0; i--) {
         if (satellites >= thresholdByRes[i])
             return i;
     }
-    return 0; // Unreachable
+    return 0;
 }
