@@ -24,10 +24,9 @@ class AntopImpl final : public Antop::Impl {
 
 public:
     AntopImpl() {
-        // Initialize hypercubes with each pentagon as a hypercube center
+        // Initialize hypercubes with each pentagon as origin
         for (int i = 0; i < pentagonsPerRes; i++) {
-            hypercubes[i] = Hypercube{};
-            hypercubes[i].init(cellInfoByResolution[Resolution].pentagons[i], Resolution);
+            hypercubes[i] = Hypercube(cellInfoByRes[Resolution].pentagons[i]);
         }
 
         uint8_t distanceOffsets[cells][cells];
@@ -35,8 +34,8 @@ public:
 
         for (int i = 0; i < cells; i++) {
             for (int j = i; j < cells; j++) {
-                const auto idxA = cellInfoByResolution[Resolution].cells[i];
-                const auto idxB = cellInfoByResolution[Resolution].cells[j];
+                const auto idxA = cellInfoByRes[Resolution].cells[i];
+                const auto idxB = cellInfoByRes[Resolution].cells[j];
                 const auto distanceH3 = h3Distance(idxA, idxB);
 
                 for (int k = 0; k < pentagonsPerRes; k++) {

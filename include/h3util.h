@@ -60,7 +60,7 @@ constexpr std::array<H3Index, cellsPerRes[2]> cellsRes2 = {
     // ToDo: populate
 };
 
-constexpr std::array<CellInfo, maxRes> cellInfoByResolution = {{
+constexpr std::array<CellInfo, maxRes> cellInfoByRes = {{
     { pentagonsRes0, cellsRes0 },
     { pentagonsRes1, cellsRes1 },
     { pentagonsRes2, cellsRes2 },
