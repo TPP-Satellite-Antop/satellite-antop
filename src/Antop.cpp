@@ -53,15 +53,17 @@ public:
 
                 for (int k = 0; k < pentagonsPerRes; k++) {
                     const auto distance = hypercubes[k].distance(idxA, idxB);
-                    const auto offset = std::abs(distanceH3 - distance);
+                    const auto offset = distance - distanceH3;
+                    const auto offsetAbs = std::abs(offset);
 
-                    if (offset < distanceOffsets[i][j]) {
-                        distanceOffsets[i][j] = offset;
-                        distanceOffsets[j][i] = offset;
+                    // Prefer hypercubes that increase routing accuracy or that keep accuracy the same but overestimate distances.
+                    if (offsetAbs < distanceOffsets[i][j] || (offsetAbs == distanceOffsets[i][j] && offset > 0)) {
+                        distanceOffsets[i][j] = offsetAbs;
+                        distanceOffsets[j][i] = offsetAbs;
                         hypercubeLookup[i][j] = static_cast<uint8_t>(k);
                         hypercubeLookup[j][i] = static_cast<uint8_t>(k);
 
-                        if (offset == 0 && distanceH3 == 1) {
+                        if (offsetAbs == 0 && distanceH3 == 1) {
                             neighborsSetByIdx[idxA].insert(idxB);
                             neighborsSetByIdx[idxB].insert(idxA);
                         }
@@ -88,14 +90,6 @@ public:
                 const auto idxB = cellInfoByRes[Resolution].cells[j];
                 const auto distance = h3Distance(idxA, idxB);
                 const auto error = static_cast<double>(distanceOffsets[i][j]) / static_cast<double>(distance);
-                if (idxA == 0x80a7fffffffffff && idxB == 0x8033fffffffffff) { // 8011fffffffffff,8029fffffffffff
-                    std::cout << "Offset: " << static_cast<int>(distanceOffsets[i][j]) << std::endl;
-                    std::cout << "Distance: " << distance << std::endl;
-                }
-
-                if (error == 0.5) {
-                    std::cout << std::hex << idxA << ',' << idxB << std::dec << std::endl;
-                }
                 mre += error;
                 errors.push_back(error);
             }
