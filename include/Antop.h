@@ -1,32 +1,20 @@
 #ifndef ANTOP_H
 #define ANTOP_H
 
-#include <functional>
-#include <queue>
 #include <unordered_map>
-#include "Cell.h"
-#include "latLng.h"
 
-static constexpr int MAX_NEIGHBORS = 7;
-static constexpr int DISTANCE = 1;
+#include "Hypercube.h"
+#include "Cell.h"
+#include "h3util.h"
 
 class Antop {
-    int resolution{};
-    static constexpr int INVALID_IDX = 0;
+    uint8_t hypercubeLookup[122][122]; // Matches two H3 cells to the hypercube ID recommended to calculate distance between them.
+    std::array<Hypercube, pentagonsPerRes> hypercubes;
 
-    bool isNewAddrValid(const Address& originAddr, H3Index idx);
 
-    void buildNeighborGraph();
 
-    void allocateBaseAddress(H3Index origin, H3Index idx, std::queue<H3Index> &cells_queue);
 
-    void allocateSupplementaryAddresses();
 
-    void allocateBaseAddresses(H3Index idx);
-
-    int neighbors();
-
-    void allocateAddresses(H3Index origin);
 
 public:
     std::unordered_map<H3Index, std::vector<H3Index>> neighborsByIdx{};
@@ -35,8 +23,8 @@ public:
 
     int distance(H3Index idx1, H3Index idx2);
 
-    hypercube() = default; // ToDo: replace default to custom constructor. This constructor should reserve memory for all three maps to avoid unnecessary rehashing.
-    void init(H3Index origin, int satellites);
+    Antop() = default; // ToDo: replace default to custom constructor. This constructor should reserve memory for all three maps to avoid unnecessary rehashing.
+    void init(int satellites);
     int getResolution() const;
     std::vector<H3Index> getHopCandidates(H3Index src, H3Index dst);
 };

@@ -1,6 +1,6 @@
 #include <queue>
 #include <unordered_map>
-#include "util.h"
+#include "distance.h"
 
 int hammingDistance(const std::uint8_t origin, const uint8_t target) {
     uint8_t x = origin ^ target;

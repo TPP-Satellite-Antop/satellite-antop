@@ -1,5 +1,5 @@
-#ifndef ANTOP_H
-#define ANTOP_H
+#ifndef HYPERCUBE_H
+#define HYPERCUBE_H
 
 #include <functional>
 #include <queue>
@@ -41,4 +41,4 @@ public:
     std::vector<H3Index> getHopCandidates(H3Index src, H3Index dst);
 };
 
-#endif //ANTOP_H
+#endif //HYPERCUBE_H

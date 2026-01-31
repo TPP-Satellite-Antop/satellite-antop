@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "Hypercube.h"
 
-#include "util.h"
+#include "distance.h"
 
 extern "C" {
 #include "localij.h"
@@ -29,10 +29,7 @@ TEST(AntopTest, NeighborRouting) {
     ASSERT_EQ(candidates, exp);
 }
 
-std::array<H3Index, 12> pentagons{
-    0x8091fffffffffff, 0x807ffffffffffff, 0x80a7fffffffffff, 0x80d7fffffffffff, 0x80c3fffffffffff, 0x8031fffffffffff,
-    0x8063fffffffffff, 0x804dfffffffffff, 0x8075fffffffffff, 0x80ebfffffffffff, 0x801dfffffffffff, 0x8009fffffffffff
-};
+
 
 std::array<H3Index, 122> indexes{
     0x8063fffffffffff,
