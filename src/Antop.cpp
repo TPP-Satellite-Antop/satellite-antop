@@ -24,7 +24,7 @@ class AntopImpl final : public Antop::Impl {
 
     static constexpr int cells = cellsPerRes[Resolution];
 
-    CellID hypercubeLookup[cells][cells]{};
+    std::vector<CellID> hypercubeLookup; // Size = cells * cells
     std::array<Hypercube, pentagonsPerRes> hypercubes;
     std::unordered_map<H3Index, std::vector<H3Index>> neighborsByIdx;
     std::unordered_map<H3Index, CellID> cellIdByIdx;
@@ -37,17 +37,23 @@ class AntopImpl final : public Antop::Impl {
 public:
     AntopImpl() : hypercubes(buildHypercubes(std::make_index_sequence<pentagonsPerRes>{})) {
         std::unordered_map<H3Index, std::unordered_set<H3Index> > neighborsSetByIdx;
+        std::vector<uint8_t> distanceOffsets;
+
+        hypercubeLookup.resize(cells * cells);
+        distanceOffsets.resize(cells * cells);
         neighborsByIdx.reserve(cells);
         neighborsSetByIdx.reserve(cells);
 
-        uint8_t distanceOffsets[cells][cells];
-        std::fill_n(&distanceOffsets[0][0], cells * cells, 255);
+        std::fill_n(&distanceOffsets[0], cells * cells, 255);
 
         for (int i = 0; i < cells; i++) {
             const auto idxA = cellInfoByRes[Resolution].cells[i];
             cellIdByIdx[idxA] = i;
 
             for (int j = i; j < cells; j++) {
+                const auto tableIdx = i * cells + j;
+                const auto tableIdxInv = j * cells + i;
+
                 const auto idxB = cellInfoByRes[Resolution].cells[j];
                 const auto distanceH3 = h3Distance(idxA, idxB);
 
@@ -57,11 +63,11 @@ public:
                     const auto offsetAbs = std::abs(offset);
 
                     // Prefer hypercubes that increase routing accuracy or that keep accuracy the same but overestimate distances.
-                    if (offsetAbs < distanceOffsets[i][j] || (offsetAbs == distanceOffsets[i][j] && offset > 0)) {
-                        distanceOffsets[i][j] = offsetAbs;
-                        distanceOffsets[j][i] = offsetAbs;
-                        hypercubeLookup[i][j] = static_cast<uint8_t>(k);
-                        hypercubeLookup[j][i] = static_cast<uint8_t>(k);
+                    if (offsetAbs < distanceOffsets[tableIdx] || (offsetAbs == distanceOffsets[tableIdx] && offset > 0)) {
+                        distanceOffsets[tableIdx] = offsetAbs;
+                        distanceOffsets[tableIdxInv] = offsetAbs;
+                        hypercubeLookup[tableIdx] = static_cast<uint8_t>(k);
+                        hypercubeLookup[tableIdxInv] = static_cast<uint8_t>(k);
 
                         if (offsetAbs == 0 && distanceH3 == 1) {
                             neighborsSetByIdx[idxA].insert(idxB);
@@ -89,7 +95,7 @@ public:
             for (int j = i+1; j < cells; j++) {
                 const auto idxB = cellInfoByRes[Resolution].cells[j];
                 const auto distance = h3Distance(idxA, idxB);
-                const auto error = static_cast<double>(distanceOffsets[i][j]) / static_cast<double>(distance);
+                const auto error = static_cast<double>(distanceOffsets[i * cells + j]) / static_cast<double>(distance);
                 mre += error;
                 errors.push_back(error);
             }
@@ -109,7 +115,7 @@ public:
 
         std::cout << "Neighbors - Target: " << (cellsPerRes[Resolution] - 12) * 6 + 12 * 5 << " /// Actual: " << neighbors << std::endl;
         std::cout << "Mean: " << (1 - mre) << std::endl;
-        std::cout << "Median " << median << "" << std::endl;
+        std::cout << "Median: " << median << "" << std::endl;
         std::cout << "P90: " << percentile(0.90)  << "" << std::endl;
         std::cout << "P95: " << percentile(0.95)  << "" << std::endl;
         std::cout << "P99: " << percentile(0.99)  << "" << std::endl;
@@ -117,7 +123,7 @@ public:
     }
 
     std::vector<H3Index> getHopCandidates(const H3Index src, const H3Index dst) override {
-        const auto& hypercube = hypercubes[hypercubeLookup[cellIdByIdx[src]][cellIdByIdx[dst]]];
+        const auto& hypercube = hypercubes[hypercubeLookup[cellIdByIdx[src] * cells + cellIdByIdx[dst]]];
         std::vector<H3Index> neighbors = neighborsByIdx.at(src);
 
         std::ranges::sort(neighbors, [&](const H3Index a, const H3Index b) {

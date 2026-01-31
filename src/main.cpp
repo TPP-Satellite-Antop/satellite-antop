@@ -1,5 +1,5 @@
 #include "Antop.h"
 
 int main() {
-    Antop(120);
+    Antop(6000);
 }
