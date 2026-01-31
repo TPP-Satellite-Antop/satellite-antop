@@ -1,8 +1,6 @@
 #include <queue>
-#include <ranges>
 #include <algorithm>
 #include <functional>
-#include <unordered_set>
 
 #include "Hypercube.h"
 #include "Address.h"
@@ -73,22 +71,6 @@ bool Hypercube::isNewAddrValid(const Address& addr, const H3Index idx) {
     }
 
     return true;
-}
-
-void Hypercube::buildNeighborGraph() {
-    std::unordered_map<H3Index, std::unordered_set<H3Index>> neighborsSetByIdx{};
-
-    for (const auto &idx: cellByIdx | std::views::keys) {
-        for (const std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx); const H3Index neighbor : neighbors) {
-            if (neighbor != idx && neighbor != INVALID_IDX && cellByIdx[idx].distanceTo(cellByIdx[neighbor]) == 1) {
-                neighborsSetByIdx[idx].insert(neighbor);
-                neighborsSetByIdx[neighbor].insert(idx);
-            }
-        }
-    }
-
-    for (const auto& [key, set] : neighborsSetByIdx)
-        neighborsByIdx.insert({key, std::vector(set.begin(), set.end())});
 }
 
 void Hypercube::allocateBaseAddress(const H3Index origin, const H3Index idx, std::queue<H3Index>& cells_queue) {
@@ -182,6 +164,4 @@ void Hypercube::allocateAddresses(H3Index origin) {
 
     allocateBaseAddresses(origin);
     allocateSupplementaryAddresses();
-
-    buildNeighborGraph();
 }

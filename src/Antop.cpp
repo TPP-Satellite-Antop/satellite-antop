@@ -1,8 +1,9 @@
 #include <array>
-#include <stdexcept>
-#include <unordered_map>
 #include <vector>
 #include <algorithm>
+#include <stdexcept>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "Antop.h"
 #include "Hypercube.h"
@@ -24,10 +25,13 @@ class AntopImpl final : public Antop::Impl {
 
 public:
     AntopImpl() {
+        std::unordered_map<H3Index, std::unordered_set<H3Index>> neighborsSetByIdx;
+        neighborsByIdx.reserve(cells);
+        neighborsSetByIdx.reserve(cells);
+
         // Initialize hypercubes with each pentagon as origin
-        for (int i = 0; i < pentagonsPerRes; i++) {
+        for (int i = 0; i < pentagonsPerRes; i++)
             hypercubes[i] = Hypercube(cellInfoByRes[Resolution].pentagons[i]);
-        }
 
         uint8_t distanceOffsets[cells][cells];
         std::fill_n(&distanceOffsets[0][0], cells * cells, 255);
@@ -47,10 +51,19 @@ public:
                         distanceOffsets[j][i] = offset;
                         hypercubeLookup[i][j] = k;
                         hypercubeLookup[j][i] = k;
+
+                        // ToDo: validate
+                        if (offset == 0 && distanceH3 == 1) {
+                            neighborsSetByIdx[idxA].insert(idxB);
+                            neighborsSetByIdx[idxB].insert(idxA);
+                        }
                     }
                 }
             }
         }
+
+        for (const auto& [key, set] : neighborsSetByIdx)
+            neighborsByIdx.insert({key, std::vector(set.begin(), set.end())});
     }
 
     std::vector<H3Index> getHopCandidates(const H3Index src, const H3Index dst) override {

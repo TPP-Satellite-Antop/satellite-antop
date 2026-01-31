@@ -8,13 +8,10 @@
 #include "latLng.h"
 
 class Hypercube {
-    std::unordered_map<H3Index, std::vector<H3Index>> neighborsByIdx{};
     std::unordered_map<H3Index, Cell> cellByIdx;
-    std::unordered_map<Address, H3Index> addresses;
+    std::unordered_map<Address, H3Index> addresses; // ToDo: move as function parameter as it's only needed when building the hypercube.
 
     bool isNewAddrValid(const Address& addr, H3Index idx);
-
-    void buildNeighborGraph();
 
     void allocateBaseAddress(H3Index origin, H3Index idx, std::queue<H3Index> &cells_queue);
 
