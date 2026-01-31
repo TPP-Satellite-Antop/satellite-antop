@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <vector>
+#include <algorithm>
 
 #include "Antop.h"
 #include "Hypercube.h"
@@ -20,8 +21,6 @@ class AntopImpl final : public Antop::Impl {
     uint8_t hypercubeLookup[cells][cells];
     std::array<Hypercube, pentagonsPerRes> hypercubes;
     std::unordered_map<H3Index, std::vector<H3Index>> neighborsByIdx;
-    // std::unordered_map<H3Index, Cell> cellByIdx;
-    // std::unordered_map<Address, H3Index> addresses;
 
 public:
     AntopImpl() {
@@ -38,11 +37,10 @@ public:
             for (int j = i; j < cells; j++) {
                 const auto idxA = cellInfoByResolution[Resolution].cells[i];
                 const auto idxB = cellInfoByResolution[Resolution].cells[j];
-
                 const auto distanceH3 = h3Distance(idxA, idxB);
 
                 for (int k = 0; k < pentagonsPerRes; k++) {
-                    const auto distance = hypercubes[k].cellByIdx.at(idxA).distanceTo(hypercubes[k].cellByIdx.at(idxB));
+                    const auto distance = hypercubes[k].distance(idxA, idxB);
                     const auto offset = abs(distanceH3 - distance);
 
                     if (offset < distanceOffsets[i][j]) {
@@ -51,18 +49,20 @@ public:
                         hypercubeLookup[i][j] = k;
                         hypercubeLookup[j][i] = k;
                     }
-
-
-                    distanceOffsets[i][j] = std::min(distanceOffsets[i][j], static_cast<uint8_t>());
-                    distanceOffsets[j][i] = distanceOffsets[i][j];
                 }
             }
         }
     }
 
     std::vector<H3Index> getHopCandidates(const H3Index src, const H3Index dst) override {
-        // ToDo
-        return {};
+        const auto& hypercube = hypercubes[hypercubeLookup[src][dst]];
+        std::vector<H3Index> neighbors = neighborsByIdx.at(src);
+
+        std::ranges::sort(neighbors, [&](const H3Index a, const H3Index b) {
+            return hypercube.distance(a, dst) < hypercube.distance(b, dst);
+        });
+
+        return neighbors;
     }
 };
 
