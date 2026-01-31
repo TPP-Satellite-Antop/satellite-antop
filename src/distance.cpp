@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include "distance.h"
 
-int hammingDistance(const std::uint8_t origin, const uint8_t target) {
+int hammingDistance(const uint8_t origin, const uint8_t target) {
     uint8_t x = origin ^ target;
     uint8_t count = 0;
 
@@ -14,6 +14,7 @@ int hammingDistance(const std::uint8_t origin, const uint8_t target) {
     return count;
 }
 
+// ToDo: cache the result of this since it's a major performance killer for high resolutions.
 int h3Distance(const H3Index origin, const H3Index target) {
     if (origin == target) return 0;
 
@@ -44,5 +45,5 @@ int h3Distance(const H3Index origin, const H3Index target) {
         }
     }
 
-    return -1; // Unreachable (shouldn't happen as long as origin and target cells belong to the same resolution).
+    return 255; // Unreachable (shouldn't happen as long as origin and target cells belong to the same resolution).
 }
