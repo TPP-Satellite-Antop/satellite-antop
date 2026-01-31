@@ -79,48 +79,8 @@ public:
             }
         }
 
-        std::vector<double> errors;
-        size_t neighbors = 0;
-        double mre = 0;
-        double median = 0;
-
-        for (const auto &[key, set]: neighborsSetByIdx) {
+        for (const auto &[key, set]: neighborsSetByIdx)
             neighborsByIdx.insert({key, std::vector(set.begin(), set.end())});
-            neighbors += set.size();
-        }
-
-        // Accuracy metrics
-        for (int i = 0; i < cells; i++) {
-            const auto idxA = cellInfoByRes[Resolution].cells[i];
-
-            for (int j = i+1; j < cells; j++) {
-                const auto idxB = cellInfoByRes[Resolution].cells[j];
-                const auto distance = h3Distance(idxA, idxB);
-                const auto error = static_cast<double>(distanceOffsets[i * cells + j]) / static_cast<double>(distance);
-                mre += error;
-                errors.push_back(error);
-            }
-        }
-
-        const size_t n = errors.size();
-        std::ranges::sort(errors);
-        mre /= static_cast<double>(n);
-
-        if (n % 2 == 0) median = 0.5 * (errors[n/2 - 1] + errors[n/2]);
-        else median = errors[n/2];
-
-        auto percentile = [&](const double p) {
-            const size_t idx = static_cast<size_t>(std::ceil(p * static_cast<double>(n))) - 1;
-            return errors[std::min(idx, n - 1)];
-        };
-
-        std::cout << "Neighbors - Target: " << (cellsPerRes[Resolution] - 12) * 6 + 12 * 5 << " /// Actual: " << neighbors << std::endl;
-        std::cout << "Mean: " << (1 - mre) << std::endl;
-        std::cout << "Median: " << median << "" << std::endl;
-        std::cout << "P90: " << percentile(0.90)  << "" << std::endl;
-        std::cout << "P95: " << percentile(0.95)  << "" << std::endl;
-        std::cout << "P99: " << percentile(0.99)  << "" << std::endl;
-        std::cout << "P100 " << errors.back()  << "" << std::endl;
     }
 
     std::vector<H3Index> getHopCandidates(const H3Index src, const H3Index dst) override {
