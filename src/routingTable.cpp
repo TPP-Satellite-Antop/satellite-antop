@@ -70,6 +70,7 @@ H3Index RoutingTable::findNextHop(
     const H3Index dst,
     const H3Index sender,
     int *curDistance,
+    int *bundleLoopEpoch,
     const double nextPositionUpdate
 ) {
     if (curDistance == nullptr)
@@ -78,19 +79,19 @@ H3Index RoutingTable::findNextHop(
     if (this->expired(nextPositionUpdate))
         this->clear(nextPositionUpdate);
 
+    const PairTableKey pairTableKey{src, dst};
+    int storedDistance = *curDistance;
+    if (const auto it = pairTable.find(pairTableKey); it != pairTable.end())
+        storedDistance = it->second.distance;
+
+    if (isLoop(storedDistance, *curDistance)) {
+        *curDistance = storedDistance;
+        return handleLoop(cur, src, dst, sender, bundleLoopEpoch, nextPositionUpdate);
+    }
+
+    pairTable[pairTableKey].distance = storedDistance == 0 ? *curDistance : std::min(storedDistance, *curDistance);
+
     if (src != 0) {
-        const PairTableKey pairTableKey{src, dst};
-        int storedDistance = *curDistance;
-        if (const auto it = pairTable.find(pairTableKey); it != pairTable.end())
-            storedDistance = it->second;
-
-        if (isLoop(storedDistance, *curDistance)) {
-            *curDistance = storedDistance;
-            return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
-        }
-
-        pairTable[pairTableKey] = storedDistance == 0 ? *curDistance : std::min(storedDistance, *curDistance);
-
         const auto candidates = getNeighbors(cur, src);
 
         if (const RoutingInfo routingInfoToSrc = routingTable[src]; shouldUpdateSrcInfo(sender, routingInfoToSrc, *curDistance, candidates)) {
@@ -104,6 +105,30 @@ H3Index RoutingTable::findNextHop(
 
     if (const RoutingInfo routingInfoToDst = routingTable[dst]; routingInfoToDst.nextHop != 0)
         return routingInfoToDst.nextHop;
+    return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
+}
+
+H3Index RoutingTable::handleLoop(
+    const H3Index cur,
+    const H3Index src,
+    const H3Index dst,
+    const H3Index sender,
+    int *bundleLoopEpoch,
+    const double nextPositionUpdate
+) {
+    const PairTableKey key{src, dst};
+
+    if (*bundleLoopEpoch < pairTable[key].loopEpoch) { // Loop has already been resolved locally.
+        *bundleLoopEpoch = pairTable[key].loopEpoch;
+        return routingTable[dst].nextHop;
+    }
+
+    (*bundleLoopEpoch)++;
+    pairTable[key].loopEpoch++;
+
+    if (*bundleLoopEpoch > pairTable[key].loopEpoch) // Loop has been resolved remotely. Update local state.
+        pairTable[key].loopEpoch = *bundleLoopEpoch;
+
     return findNewNeighbor(cur, dst, sender, nextPositionUpdate);
 }
 

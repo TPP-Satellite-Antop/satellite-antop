@@ -28,16 +28,21 @@ template <> struct std::hash<PairTableKey> {
     }
 };
 
+struct PairTableInfo {
+    int distance = 0;
+    int loopEpoch = 0;
+};
+
 struct RoutingInfo {
     H3Index nextHop = 0;
     int distance = 0;
     std::vector<H3Index> neighbors = {};
-    std::bitset<NEIGHBORS> visitedBitmap{0}; // Each bit represents a neighbour. Since a pentagon has up to 5 neighbours, in that case, its last bit must never be used.
+    std::bitset<NEIGHBORS> visitedBitmap{0}; // Each bit represents a neighbor. Since a pentagon has up to 5 neighbors, in that case, its last bit must never be used.
 };
 
 class RoutingTable {
     std::unordered_map<H3Index, RoutingInfo> routingTable;
-    std::unordered_map<PairTableKey, int> pairTable; // Maps (src,dst) to distance
+    std::unordered_map<PairTableKey, PairTableInfo> pairTable;
     Antop* antop;
     double ttl = 0.0;
 
@@ -47,7 +52,8 @@ class RoutingTable {
 
 public:
     explicit RoutingTable(Antop* antop);
-    H3Index findNextHop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int *curDistance, double nextPositionUpdate);
+    H3Index findNextHop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int *curDistance, int *bundleLoopEpoch, double nextPositionUpdate);
+    H3Index handleLoop(H3Index cur, H3Index src, H3Index dst, H3Index sender, int *bundleLoopEpoch, double nextPositionUpdate);
     H3Index findNewNeighbor(H3Index cur, H3Index dst, H3Index sender, double nextPositionUpdate);
     int getAntopResolution() const;
 };
