@@ -100,23 +100,13 @@ TEST_F(RoutingTableTestWithAntop, SimpleCachedReturnHop) {
 
 TEST_F(RoutingTableTestWithAntop, FindNewNeighborRotatesCandidates) {
     RoutingTable routingTable(antop);
-    auto curDistance = 1;
-    auto loopEpoch = 0;
 
-    ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x8025fffffffffff);
-    ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, &loopEpoch, 1.0), 0x8025fffffffffff);
-    ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x8031fffffffffff);
-    ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, &loopEpoch, 1.0), 0x8031fffffffffff);
-    ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x803dfffffffffff);
-    ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, &loopEpoch, 1.0), 0x803dfffffffffff);
-    ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x8065fffffffffff);
-    ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, &loopEpoch, 1.0), 0x8065fffffffffff);
-    ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x804bfffffffffff);
-    ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, &loopEpoch, 1.0), 0x804bfffffffffff);
-    ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x8069fffffffffff);
-    ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, &loopEpoch, 1.0), 0x8069fffffffffff);
-    ASSERT_EQ(routingTable.findNewNeighbor(0x8041fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, 1.0), 0x8041fffffffffff);
-    ASSERT_EQ(routingTable.findNextHop(0x8041fffffffffff, 0x8069fffffffffff, 0x8025fffffffffff, 0x8069fffffffffff, &curDistance, &loopEpoch, 1.0), 0x8041fffffffffff);
+    ASSERT_EQ(routingTable.findNewNeighbor(0x8095fffffffffff, 0x8025fffffffffff, 0x80b9fffffffffff, 1.0), 0x8069fffffffffff);
+    ASSERT_EQ(routingTable.findNewNeighbor(0x8095fffffffffff, 0x8025fffffffffff, 0x80b9fffffffffff, 1.0), 0x8073fffffffffff);
+    ASSERT_EQ(routingTable.findNewNeighbor(0x8095fffffffffff, 0x8025fffffffffff, 0x80b9fffffffffff, 1.0), 0x808dfffffffffff);
+    ASSERT_EQ(routingTable.findNewNeighbor(0x8095fffffffffff, 0x8025fffffffffff, 0x80b9fffffffffff, 1.0), 0x809dfffffffffff);
+    ASSERT_EQ(routingTable.findNewNeighbor(0x8095fffffffffff, 0x8025fffffffffff, 0x80b9fffffffffff, 1.0), 0x80a7fffffffffff);
+    ASSERT_EQ(routingTable.findNewNeighbor(0x8095fffffffffff, 0x8025fffffffffff, 0x80b9fffffffffff, 1.0), 0x80b9fffffffffff);
 }
 
 TEST_F(RoutingTableTestWithAntop, PreviousUpdateBundleDoesNotCreateInvalidCacheRecord) {

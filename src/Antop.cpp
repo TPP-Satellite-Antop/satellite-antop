@@ -84,11 +84,13 @@ public:
     }
 
     std::vector<H3Index> getHopCandidates(const H3Index src, const H3Index dst) override {
-        const auto& hypercube = hypercubes[hypercubeLookup[cellIdByIdx[src] * cells + cellIdByIdx[dst]]];
         std::vector<H3Index> neighbors = neighborsByIdx.at(src);
 
         std::ranges::sort(neighbors, [&](const H3Index a, const H3Index b) {
-            return hypercube.distance(a, dst) < hypercube.distance(b, dst);
+            const auto& hypercubeA = hypercubes[hypercubeLookup[cellIdByIdx[a] * cells + cellIdByIdx[dst]]];
+            const auto& hypercubeB = hypercubes[hypercubeLookup[cellIdByIdx[b] * cells + cellIdByIdx[dst]]];
+
+            return hypercubeA.distance(a, dst) < hypercubeB.distance(b, dst);
         });
 
         return neighbors;
