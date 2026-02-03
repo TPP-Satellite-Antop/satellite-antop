@@ -45,5 +45,6 @@ int h3Distance(const H3Index origin, const H3Index target) {
         }
     }
 
-    return 255; // Unreachable (shouldn't happen as long as origin and target cells belong to the same resolution).
+    // Unreachable (shouldn't happen under normal conditions).
+    throw std::runtime_error("Origin and target cells resolution do not match");
 }
