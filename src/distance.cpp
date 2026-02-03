@@ -1,5 +1,6 @@
 #include <queue>
 #include <unordered_map>
+#include <stdexcept>
 #include "distance.h"
 
 int hammingDistance(const uint8_t origin, const uint8_t target) {
