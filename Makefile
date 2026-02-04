@@ -10,7 +10,11 @@ run: build
 .PHONY: run
 
 test: build
-	docker run -it satellite-antop:latest sh -c "cd build && ctest"
+	docker run -it satellite-antop:latest sh -c "./build/tests/SatelliteAntopTest"
+.PHONY: run
+
+test-ci: build
+	docker run -it satellite-antop:latest sh -c "ctest -T Test -T Coverage --test-dir build"
 .PHONY: run
 
 clean:

@@ -1,4 +1,4 @@
-#include <util.h>
+#include <distance.h>
 #include <gtest/gtest.h>
 
 TEST(HammingDistance, Equal) {

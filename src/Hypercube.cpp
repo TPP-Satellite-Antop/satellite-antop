@@ -1,18 +1,27 @@
-#include <iostream>
 #include <queue>
-#include <ranges>
-#include "antop.h"
-#include "address.h"
-#include "errors.h"
-#include "resolution.h"
 #include <algorithm>
 #include <functional>
-#include <limits>
-#include <unordered_set>
+
+#include "Hypercube.h"
+#include "Address.h"
+#include "h3util.h"
+#include "errors.h"
 
 extern "C" {
     #include "localij.h"
     #include "coordijk.h"
+}
+
+static constexpr int MAX_NEIGHBORS = 7;
+static constexpr int DISTANCE = 1;
+static constexpr int INVALID_IDX = 0;
+
+Hypercube::Hypercube(const H3Index origin) {
+    allocateAddresses(origin);
+}
+
+int Hypercube::distance(const H3Index idx1, const H3Index idx2) const {
+    return cellByIdx.at(idx1).distanceTo(cellByIdx.at(idx2));
 }
 
 // Returns IJK coordinates according to the origin
@@ -28,7 +37,7 @@ CoordIJK getNeighborCoordinates(const H3Index origin, const H3Index neighbor) {
     offset.i -= originOffset.i;
     offset.j -= originOffset.j;
     offset.k -= originOffset.k;
-    _ijkNormalize(&originOffset); // ToDo: validate if it's even necessary.
+    _ijkNormalize(&originOffset); // Potentially redundant, but not harmful to have
 
     return offset;
 }
@@ -40,11 +49,7 @@ std::array<H3Index, MAX_NEIGHBORS> getNeighbors(const H3Index idx) {
     return neighbors;
 }
 
-int Antop::getResolution() const {
-    return resolution;
-}
-
-bool Antop::isNewAddrValid(const Address& addr, const H3Index idx) {
+bool Hypercube::isNewAddrValid(const Address& addr, const H3Index idx) {
     if (addresses.contains(addr)) return false;
 
     std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx);
@@ -68,23 +73,7 @@ bool Antop::isNewAddrValid(const Address& addr, const H3Index idx) {
     return true;
 }
 
-void Antop::buildNeighborGraph() {
-    std::unordered_map<H3Index, std::unordered_set<H3Index>> neighborsSetByIdx{};
-
-    for (const auto &idx: cellByIdx | std::views::keys) {
-        for (const std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx); const H3Index neighbor : neighbors) {
-            if (neighbor != idx && neighbor != INVALID_IDX && cellByIdx[idx].distanceTo(cellByIdx[neighbor]) == 1) {
-                neighborsSetByIdx[idx].insert(neighbor);
-                neighborsSetByIdx[neighbor].insert(idx);
-            }
-        }
-    }
-
-    for (const auto& [key, set] : neighborsSetByIdx)
-        neighborsByIdx.insert({key, std::vector(set.begin(), set.end())});
-}
-
-void Antop::allocateBaseAddress(const H3Index origin, const H3Index idx, std::queue<H3Index>& cells_queue) {
+void Hypercube::allocateBaseAddress(const H3Index origin, const H3Index idx, std::queue<H3Index>& cells_queue) {
     if (idx == INVALID_IDX || idx == origin || cellByIdx.contains(idx))
         return;
 
@@ -110,7 +99,7 @@ void Antop::allocateBaseAddress(const H3Index origin, const H3Index idx, std::qu
     cells_queue.push(idx);
 }
 
-void Antop::allocateSupplementaryAddresses() {
+void Hypercube::allocateSupplementaryAddresses() {
     for (const auto& [idx, cell1] : cellByIdx) {
         for (std::array<H3Index, MAX_NEIGHBORS> out = getNeighbors(idx); const unsigned long h3 : out) {
             if (h3 == INVALID_IDX || h3 == idx)
@@ -143,7 +132,7 @@ void Antop::allocateSupplementaryAddresses() {
     }
 }
 
-void Antop::allocateBaseAddresses(H3Index idx) {
+void Hypercube::allocateBaseAddresses(H3Index idx) {
     std::queue<H3Index> cells_queue;
     cells_queue.push(idx);
 
@@ -162,37 +151,7 @@ void Antop::allocateBaseAddresses(H3Index idx) {
     }
 }
 
-// ToDo: move to tests/antop.cpp.
-int Antop::neighbors() {
-    int neighborCount = 0;
-    for (const auto& [idx1, cell1] : cellByIdx) {
-        std::array<H3Index, MAX_NEIGHBORS> neighbors = getNeighbors(idx1);
-
-        for (const auto& [idx2, cell2] : cellByIdx) {
-            if (idx1 == idx2)
-                continue;
-
-            if (cell1.distanceTo(cell2) == 1) {
-                bool isNeighbor = false;
-                for (const auto& neighbor : neighbors) {
-                    if (neighbor == idx2) {
-                        isNeighbor = true;
-                        break;
-                    }
-                }
-
-                if (!isNeighbor)
-                    std::cerr << "Cell " << std::hex << idx1 << " is not a neighbor of cell " << std::hex << idx2 << std::dec << std::endl;
-                neighborCount++;
-            }
-        }
-    }
-    return neighborCount;
-}
-
-void Antop::allocateAddresses() {
-    H3Index idx = getOriginForResolution(resolution);
-
+void Hypercube::allocateAddresses(H3Index origin) {
     auto originCell = Cell();
 
     const Address addr(false);
@@ -201,43 +160,8 @@ void Antop::allocateAddresses() {
     originCell.addAddress(addr);
     originCell.addAddress(addrPrime);
 
-    cellByIdx.insert({idx, originCell});
+    cellByIdx.insert({origin, originCell});
 
-    allocateBaseAddresses(idx);
+    allocateBaseAddresses(origin);
     allocateSupplementaryAddresses();
-
-    buildNeighborGraph();
-}
-
-void Antop::init(const int satellites) {
-    resolution = findResolution(satellites);
-    allocateAddresses();
-
-    std::cout << "Resolution: " << std::dec << resolution << std::endl;
-    std::cout << "Unique Cells: " << std::dec << cellByIdx.size() << std::endl;
-    std::cout << "Number of addresses: " << std::dec << addresses.size() << std::endl;
-    std::cout << std::dec << "Missing neighbors: " << (CELLS_BY_RESOLUTION[resolution] - 12) * 6 + 60 - neighbors() << std::endl << std::endl;
-}
-
-int Antop::distance(const H3Index idx1, const H3Index idx2) {
-    const auto dstCell = cellByIdx.at(idx2);
-
-    int distance = cellByIdx.at(idx1).distanceTo(dstCell);
-
-    for (const H3Index neighbor : neighborsByIdx[idx1]) {
-        distance = std::min(distance, 1+cellByIdx[neighbor].distanceTo(dstCell));
-    }
-
-    return distance;
-}
-
-// Returns src´s neighbors sorted by distance to dst asc
-std::vector<H3Index> Antop::getHopCandidates(const H3Index src, const H3Index dst) {
-    std::vector<H3Index> neighbors = neighborsByIdx.at(src);
-
-    std::ranges::sort(neighbors, [&](const H3Index a, const H3Index b) {
-        return distance(a, dst) < distance(b, dst);
-    });
-
-    return neighbors;
 }

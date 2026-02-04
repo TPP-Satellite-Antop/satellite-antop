@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "cell.h"
+#include "Cell.h"
 
 TEST(CellTest, EmptyCellsDistance) {
     const Cell cell1;
