@@ -1,6 +1,7 @@
 #include "RoutingTable.h"
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 constexpr int THRESHOLD_DISTANCE = 0;
 constexpr std::bitset<NEIGHBORS> MSB_MASK = {0b100000};
@@ -13,7 +14,7 @@ RoutingTable::RoutingTable(Antop* antop) {
 bool shouldUpdateSrcInfo(const H3Index sender, const RoutingInfo &routingInfoToSrc, const int curDistance, const std::vector<H3Index>& neighbors) {
     return sender != 0
         && (routingInfoToSrc.nextHop == 0 || routingInfoToSrc.distance > curDistance)
-        && std::ranges::find(neighbors, sender) != neighbors.end();
+        && std::find(neighbors.begin(), neighbors.end(), sender) != neighbors.end();
 }
 
 bool isLoop(const int storedDistance, const int curDistance) {
