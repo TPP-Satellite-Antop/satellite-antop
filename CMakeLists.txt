@@ -51,5 +51,10 @@ endif()
 target_compile_options(${EXECUTABLE_NAME} PRIVATE -coverage)
 target_link_options(${EXECUTABLE_NAME} PRIVATE -coverage)
 
+find_package(OpenMP REQUIRED)
+
+target_link_libraries(${LIBRARY_NAME} PUBLIC OpenMP::OpenMP_CXX)
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC OpenMP::OpenMP_CXX)
+
 install(TARGETS ${LIBRARY_NAME} DESTINATION lib)
 install(DIRECTORY ${PROJECT_INCLUDE_DIR}/ DESTINATION include)

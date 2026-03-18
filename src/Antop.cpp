@@ -7,6 +7,9 @@
 #include <iostream>
 #include <cmath>
 #include <iomanip>
+#include <fstream>
+#include <omp.h>
+#include <sstream>
 
 #include "Antop.h"
 #include "Hypercube.h"
@@ -37,90 +40,107 @@ class AntopImpl final : public Antop::Impl {
 
 public:
     AntopImpl() : hypercubes(buildHypercubes(std::make_index_sequence<pentagonsPerRes>{})) {
-        std::unordered_map<H3Index, std::unordered_set<H3Index> > neighborsSetByIdx;
+        std::unordered_map<H3Index, std::unordered_set<H3Index>> neighborsSetByIdx;
         std::vector<uint8_t> distanceOffsets;
+        std::vector<uint16_t> h3Distances;
 
         hypercubeLookup.resize(cells * cells);
         distanceOffsets.resize(cells * cells);
+        h3Distances.resize(cells * cells);
         neighborsByIdx.reserve(cells);
         neighborsSetByIdx.reserve(cells);
 
-        std::fill_n(&distanceOffsets[0], cells * cells, 255);
+        std::fill_n(distanceOffsets.begin(), cells * cells, 255);
 
+        // 🔒 Build this BEFORE parallel region (unordered_map is NOT thread-safe)
         for (int i = 0; i < cells; i++) {
-            const auto idxA = cellInfoByRes[Resolution].cells[i];
-            cellIdByIdx[idxA] = i;
+            const auto idx = cellInfoByRes[Resolution].cells[i];
+            cellIdByIdx[idx] = i;
+        }
 
-            for (int j = i; j < cells; j++) {
-                const auto tableIdx = i * cells + j;
-                const auto tableIdxInv = j * cells + i;
+        std::string filename = "distance_errors_res" + std::to_string(Resolution) + ".csv";
+        std::ofstream file(filename);
+        file << "distance_h3,absolute_error,relative_error\n";
 
-                const auto idxB = cellInfoByRes[Resolution].cells[j];
-                const auto distanceH3 = h3Distance(idxA, idxB);
+        #pragma omp parallel
+        {
+            std::stringstream local_buffer;
+            std::unordered_map<H3Index, std::unordered_set<H3Index>> local_neighbors;
 
-                for (int k = 0; k < pentagonsPerRes; k++) {
-                    const auto distance = hypercubes[k].distance(idxA, idxB);
-                    const auto offset = distance - distanceH3;
-                    const auto offsetAbs = std::abs(offset);
+            #pragma omp for schedule(dynamic, 8)
+            for (int i = 0; i < cells; i++) {
+                const auto idxA = cellInfoByRes[Resolution].cells[i];
 
-                    // Prefer hypercubes that increase routing accuracy or that keep accuracy the same but overestimate distances.
-                    if (offsetAbs < distanceOffsets[tableIdx] || (offsetAbs == distanceOffsets[tableIdx] && offset > 0)) {
-                        distanceOffsets[tableIdx] = offsetAbs;
-                        distanceOffsets[tableIdxInv] = offsetAbs;
-                        hypercubeLookup[tableIdx] = static_cast<uint8_t>(k);
-                        hypercubeLookup[tableIdxInv] = static_cast<uint8_t>(k);
+                for (int j = i + 1; j < cells; j++) {
+                    const auto tableIdx = i * cells + j;
+                    const auto tableIdxInv = j * cells + i;
 
-                        if (offsetAbs == 0 && distanceH3 == 1) {
-                            neighborsSetByIdx[idxA].insert(idxB);
-                            neighborsSetByIdx[idxB].insert(idxA);
+                    const auto idxB = cellInfoByRes[Resolution].cells[j];
+                    const auto distanceH3 = h3Distance(idxA, idxB);
+
+                    h3Distances[tableIdx] = distanceH3;
+                    h3Distances[tableIdxInv] = distanceH3;
+
+                    int bestOffsetAbs = 255;
+                    int bestOffset = 0;
+                    uint8_t bestK = 0;
+
+                    for (int k = 0; k < pentagonsPerRes; k++) {
+                        const auto distance = hypercubes[k].distance(idxA, idxB);
+                        const int offset = distance - distanceH3;
+                        const int offsetAbs = std::abs(offset);
+
+                        if (offsetAbs < bestOffsetAbs || (offsetAbs == bestOffsetAbs && offset > 0)) {
+                            bestOffsetAbs = offsetAbs;
+                            bestOffset = offset;
+                            bestK = static_cast<uint8_t>(k);
+
+                            if (offsetAbs == 0 && distanceH3 == 1) {
+                                local_neighbors[idxA].insert(idxB);
+                                local_neighbors[idxB].insert(idxA);
+                            }
                         }
                     }
+
+                    distanceOffsets[tableIdx] = bestOffsetAbs;
+                    distanceOffsets[tableIdxInv] = bestOffsetAbs;
+                    hypercubeLookup[tableIdx] = bestK;
+                    hypercubeLookup[tableIdxInv] = bestK;
+
+                    const double relativeError =
+                        distanceH3 == 0 ? 0.0 :
+                        static_cast<double>(std::abs(bestOffset)) /
+                        static_cast<double>(distanceH3);
+
+                    local_buffer << distanceH3 << ","
+                                 << bestOffset << ","
+                                 << relativeError << "\n";
+                }
+
+                if (i % 100 == 0) {
+                    #pragma omp critical
+                    std::cout << "Processed " << i << " cells" << std::endl;
+                }
+            }
+
+            // 🔒 Merge results (minimal critical section)
+            #pragma omp critical
+            {
+                file << local_buffer.str();
+
+                for (auto &[k, v] : local_neighbors) {
+                    auto &globalSet = neighborsSetByIdx[k];
+                    globalSet.insert(v.begin(), v.end());
                 }
             }
         }
 
-        std::vector<double> errors;
-        size_t neighbors = 0;
-        double mre = 0;
-        double median = 0;
-
-        for (const auto &[key, set]: neighborsSetByIdx) {
+        // Convert sets → vectors
+        for (const auto &[key, set] : neighborsSetByIdx) {
             neighborsByIdx.insert({key, std::vector(set.begin(), set.end())});
-            neighbors += set.size();
         }
 
-        // Accuracy metrics
-        for (int i = 0; i < cells; i++) {
-            const auto idxA = cellInfoByRes[Resolution].cells[i];
-
-            for (int j = i+1; j < cells; j++) {
-                const auto idxB = cellInfoByRes[Resolution].cells[j];
-                const auto distance = h3Distance(idxA, idxB);
-                const auto error = static_cast<double>(distanceOffsets[i * cells + j]) / static_cast<double>(distance);
-                mre += error;
-                errors.push_back(error);
-            }
-        }
-
-        const size_t n = errors.size();
-        std::ranges::sort(errors);
-        mre /= static_cast<double>(n);
-
-        if (n % 2 == 0) median = 0.5 * (errors[n/2 - 1] + errors[n/2]);
-        else median = errors[n/2];
-
-        auto percentile = [&](const double p) {
-            const size_t idx = static_cast<size_t>(std::ceil(p * static_cast<double>(n))) - 1;
-            return errors[std::min(idx, n - 1)];
-        };
-
-        std::cout << "Neighbors - Target: " << (cellsPerRes[Resolution] - 12) * 6 + 12 * 5 << " /// Actual: " << neighbors << std::endl;
-        std::cout << "Mean: " << (1 - mre) << std::endl;
-        std::cout << "Median: " << median << "" << std::endl;
-        std::cout << "P90: " << percentile(0.90)  << "" << std::endl;
-        std::cout << "P95: " << percentile(0.95)  << "" << std::endl;
-        std::cout << "P99: " << percentile(0.99)  << "" << std::endl;
-        std::cout << "P100 " << errors.back()  << "" << std::endl;
+        file.close();
     }
 
     std::vector<H3Index> getHopCandidates(const H3Index src, const H3Index dst) override {
