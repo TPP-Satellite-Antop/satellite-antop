@@ -51,14 +51,14 @@ TEST(AddressTest, DeepCopyAddress) {
     constexpr CoordIJK coord{1, 1, 0};
 
     Address address1(false);
-    address1.push(&coord); // 00000110
+    address1.push(&coord); // 11000000
 
     Address address2 = address1.copy();
-    address2.push(&coord); // 00110110
+    address2.push(&coord); // 11011000
 
     ASSERT_NE(address1.data(), address2.data());
-    ASSERT_EQ(address1.data(), std::vector<uint8_t>{IJ_AXES_DIGIT});
-    ASSERT_EQ(address2.data(), std::vector<uint8_t>{IJ_AXES_DIGIT + (IJ_AXES_DIGIT << 3)});
+    ASSERT_EQ(address1.data(), std::vector<uint8_t>{0b11000000});
+    ASSERT_EQ(address2.data(), std::vector<uint8_t>{0b11011000});
 }
 
 
@@ -74,7 +74,7 @@ TEST(AddressTest, IterateIjkAddressReachesIdx) {
         0x80D9FFFFFFFFFFF
     };
 
-    std::vector path = {
+    const std::vector path = {
         CoordIJK(0,1,1),
         CoordIJK(0,0,1),
         CoordIJK(1,0,0),
@@ -90,7 +90,7 @@ TEST(AddressTest, IterateIjkAddressReachesIdx) {
 
     auto hexes = traverseIJK(origin, path);
     ASSERT_TRUE(
-        std::ranges::any_of(neighbors, [&](H3Index n) {
+        std::ranges::any_of(neighbors, [&](const H3Index n) {
             return std::ranges::find(hexes, n) != hexes.end();
         })
     );
@@ -102,11 +102,11 @@ TEST(AddressTest, PushSomeCoordToEmptyAddress) {
     constexpr CoordIJK coord2{0, 1, 0};
     constexpr CoordIJK coord3{1, 1, 0};
 
-    address.push(&coord1);
-    address.push(&coord2);
-    address.push(&coord3);
+    address.push(&coord1); // 11000000
+    address.push(&coord2); // 11001000
+    address.push(&coord3); // 11001011 00000000
 
-    const auto exp = std::vector<uint8_t>{IJ_AXES_DIGIT + (J_AXES_DIGIT << 3), IJ_AXES_DIGIT};
+    const auto exp = std::vector<uint8_t>{0b11001011, 0b00000000};
 
     ASSERT_EQ(address.data(), exp);
 }
