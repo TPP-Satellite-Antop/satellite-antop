@@ -26,8 +26,6 @@ public:
     [[nodiscard]] std::vector<uint8_t> data() const;
     [[nodiscard]] bool prime() const;
 
-    bool operator<(const Address &addr) const;
-
     bool operator==(const Address &addr) const;
 
     friend std::ostream& operator<<(std::ostream& os, const Address& addr);

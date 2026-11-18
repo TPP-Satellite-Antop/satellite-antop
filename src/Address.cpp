@@ -99,16 +99,6 @@ std::vector<uint8_t> Address::data() const {
 bool Address::prime() const {
     return _prime;
 }
-/*
-bool Address::operator<(const Address& addr) const {
-    if (prime() != addr.prime())
-        return prime() < addr.prime();
-    if (_size != addr._size)
-        return _size < addr._size;
-    if (_len != addr._len)
-        return _len < addr._len;
-    return _data < addr._data;
-}*/
 
 /**
  * Compares the current Address instance with another Address instance to determine equality.
