@@ -13,7 +13,7 @@ extern "C" {
 #include <iomanip>
 #include <algorithm>
 
-Direction coordIJKToDirection(const CoordIJK& d) {
+static Direction coordIJKToDirection(const CoordIJK& d) {
     auto [i, j, k] = d;
 
     for (int dir = 0; dir <= 6; ++dir) {
@@ -27,7 +27,7 @@ Direction coordIJKToDirection(const CoordIJK& d) {
     throw std::runtime_error("CoordIJK does not map to a unit H3 direction");
 }
 
-std::vector<H3Index> traverseIJK(
+static std::vector<H3Index> traverseIJK(
     const H3Index origin,
     const std::vector<CoordIJK>& path
 ) {
@@ -63,7 +63,7 @@ TEST(AddressTest, DeepCopyAddress) {
 
 
 TEST(AddressTest, IterateIjkAddressReachesIdx) {
-    const H3Index origin = 0x8047fffffffffff;
+    constexpr H3Index origin = 0x8047fffffffffff;
     // current = 0x080dbfffffffffff;
     std::vector<H3Index> neighbors = {
         0x80BFFFFFFFFFFFF,
