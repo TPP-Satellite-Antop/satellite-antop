@@ -5,8 +5,20 @@
 #include <bits/ostream.tcc>
 #include <limits>
 
-#define RIGHT_MASK 0b0000111
-#define LEFT_MASK 0b0011100
+/**
+ * Returns a mask identifying the meaningful bits in a byte. Bits are stored MSB-first.
+ */
+static uint8_t validBitsMask(const size_t index, const size_t len, const uint8_t size) {
+    if (index >= len)
+        return 0;
+
+    if (index < len - 1)
+        return 0xFF;
+
+    const uint8_t usedBits = size == 0 ? 8 : size;
+
+    return static_cast<uint8_t>(0xFFu << (8 - usedBits));
+}
 
 Address::Address() = default;
 
@@ -16,25 +28,20 @@ Address::Address(const bool prime)
 Address Address::copy() const {
     Address addr(prime());
     addr._data = this->_data;
-    addr._size = this->_size;
-    addr._len = this->_len;
+    addr.bitOffset = this->bitOffset;
     return addr;
 }
 
 /**
- * Adds a coordinate to the Address instance, encoding it as a direction
- * and updating the internal data structure to accommodate the new entry.
+ * Adds a coordinate to the Address instance, encoding it as a 3-bit direction.
  *
- * Behavior:
- * - Converts the given coordinate into a direction value.
- * - If the direction value is invalid (>= `INVALID_DIGIT`), the method performs no operation.
- * - Encodes the direction into an internal compact array `_data`:
- *   - For even-sized data, the direction is appended as a new element.
- *   - For odd-sized data, the direction is packed into the last element of `_data`
- *     by shifting the direction value left by 3 bits and adding it to the element.
- * - Updates the internal `_size` and `_len` variables to reflect the added coordinate.
+ * Directions are packed continuously into _data, starting from the most significant bit of each byte.
  *
- * @param coord A pointer to a `CoordIJK` structure representing the coordinate to be added to the Address.
+ * - Invalid directions (>= INVALID_DIGIT) are ignored.
+ * - bitOffset tracks the next available bit position in the last byte (0–7).
+ * - Directions spanning two bytes are split across the byte boundary.
+ *
+ * @param coord A pointer to a CoordIJK structure representing the coordinate to be added to the Address.
  */
 void Address::push(const CoordIJK *coord) {
     const uint8_t direction = _unitIjkToDigit(coord);
@@ -42,50 +49,48 @@ void Address::push(const CoordIJK *coord) {
         return;
     }
 
-    if (_size % 2 == 0) {
-        _data.push_back(direction);
-        _len++;
-    } else {
-        _data[_len - 1] += direction << 3;
+    if (bitOffset == 0)
+        _data.push_back(0);
+
+    if (bitOffset <= 5)
+        _data[_data.size() - 1] |= direction << (5 - bitOffset);
+    else {
+        _data[_data.size() - 1] |= direction >> (bitOffset - 5);
+        _data.push_back(direction << (8 - (bitOffset - 5)));
     }
 
-    _size++;
+    bitOffset = (bitOffset + 3) % 8;
 }
 
-// Calculates hamming distance between this and addr, filling the shortest address with zeros.
+/**
+ * Calculates hamming distance between this and addr, filling the shortest address with zeros.
+ */
 int Address::distanceTo(const Address &addr) const {
-    if (prime() != addr.prime()) {
+    if (prime() != addr.prime())
         return std::numeric_limits<int>::max();
-    }
 
-    const size_t maxLen = std::max(this->_len, addr._len);
+    const size_t maxLen = std::max(_data.size(), addr._data.size());
     int dist = 0;
 
     for (size_t i = 0; i < maxLen; ++i) {
-        const auto a = i < _len       ? _data[i]       : 0;
-        const auto b = i < addr._len  ? addr._data[i]  : 0;
-        dist += hammingDistance(a, b);
+        const uint8_t a = i < _data.size() ? _data[i] : 0;
+        const uint8_t b = i < addr._data.size() ? addr._data[i] : 0;
+
+        const uint8_t maskedA = a & validBitsMask(i, _data.size(), bitOffset);
+        const uint8_t maskedB = b & validBitsMask(i, addr._data.size(), addr.bitOffset);
+
+        dist += hammingDistance(maskedA, maskedB);
     }
 
     return dist;
 }
 
-std::vector<uint8_t> Address::data() {
+std::vector<uint8_t> Address::data() const {
     return _data;
 }
 
 bool Address::prime() const {
     return _prime;
-}
-
-bool Address::operator<(const Address& addr) const {
-    if (prime() != addr.prime())
-        return prime() < addr.prime();
-    if (_size != addr._size)
-        return _size < addr._size;
-    if (_len != addr._len)
-        return _len < addr._len;
-    return _data < addr._data;
 }
 
 /**
@@ -101,25 +106,24 @@ bool Address::operator<(const Address& addr) const {
  * @return True if the two Address instances are considered equal, false otherwise.
  */
 bool Address::operator==(const Address& addr) const {
-    if (prime() != addr.prime()){
+    if (_prime != addr._prime) {
         return false;
     }
 
-    const size_t shortest = _len < addr._len ? _len : addr._len;
-    const size_t longest = _len >= addr._len ? _len : addr._len;
+    const size_t maxLen = std::max(_data.size(), addr._data.size());
 
-    for (size_t i = 0; i < shortest; i++) {
-        if (_data[i] != addr._data[i]) {
+    for (size_t i = 0; i < maxLen; ++i) {
+        uint8_t a = i < _data.size() ? _data[i] : 0;
+        uint8_t b = i < addr._data.size() ? addr._data[i] : 0;
+
+        if (i == _data.size() - 1 && bitOffset != 0)
+            a &= static_cast<uint8_t>(0xFF << (8 - bitOffset));
+
+        if (i == addr._data.size() - 1 && addr.bitOffset != 0)
+            b &= static_cast<uint8_t>(0xFF << (8 - addr.bitOffset));
+
+        if (a != b)
             return false;
-        }
-    }
-
-    const std::vector<uint8_t> data = _len == longest ? this->_data : addr._data;
-
-    for (size_t i = shortest; i < longest; i++) {
-        if (data[i] != 0) {
-            return false;
-        }
     }
 
     return true;
@@ -129,7 +133,7 @@ size_t Address::hash() const {
     size_t result = std::hash<bool>{}(prime());
     for (const uint8_t byte : _data) {
         if (byte != 0) {
-            result = (result * 31) + std::hash<uint8_t>{}(byte);
+            result = result * 31 + std::hash<uint8_t>{}(byte);
         }
     }
 

@@ -9,8 +9,7 @@ extern "C" {
 }
 
 class Address {
-    size_t _size = 0;
-    size_t _len = 0;
+    size_t bitOffset = 0;
     bool _prime{};
 
 public:
@@ -24,12 +23,10 @@ public:
 
     [[nodiscard]] int distanceTo(const Address &addr) const;
 
-    std::vector<uint8_t> data();
+    [[nodiscard]] std::vector<uint8_t> data() const;
     [[nodiscard]] bool prime() const;
 
-    bool operator<(const Address &other) const;
-
-    bool operator==(const Address &other) const;
+    bool operator==(const Address &addr) const;
 
     friend std::ostream& operator<<(std::ostream& os, const Address& addr);
 
