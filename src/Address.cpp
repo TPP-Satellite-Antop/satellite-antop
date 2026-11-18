@@ -9,16 +9,12 @@
  * Returns a mask identifying the meaningful bits in a byte. Bits are stored MSB-first.
  */
 static uint8_t validBitsMask(const size_t index, const size_t len, const uint8_t size) {
-    if (index >= len) {
+    if (index >= len)
         return 0;
-    }
 
-    // All bytes except the last are completely filled.
-    if (index < len - 1) {
+    if (index < len - 1)
         return 0xFF;
-    }
 
-    // A size of 0 means the last byte is completely filled.
     const uint8_t usedBits = size == 0 ? 8 : size;
 
     return static_cast<uint8_t>(0xFFu << (8 - usedBits));
